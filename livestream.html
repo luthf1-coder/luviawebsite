@@ -33,17 +33,13 @@
                 LIVE STREAMING LUVIA STUDIO TV
             </h1>
             
-            <div class="video-container">
-                <iframe 
-                    src="https://player.kick.com/luthfi1234321" 
-                    frameborder="0" 
-                    scrolling="no" 
-                    allowfullscreen="true">
-                </iframe>
+            <!-- Dynamic Video/Thumbnail Container -->
+            <div class="video-container" id="kick-player-container">
+                <!-- Konten player/thumbnail akan di-render otomatis melalui JavaScript -->
             </div>
 
             <div class="video-info">
-                <h2>Siaran Langsung - LUVIA STUDIO TV</h2>
+                <h2>LIVE STREAMING LUVIA STUDIO TV</h2>
                 <p>Selamat menyaksikan siaran langsung resmi LUVIA STUDIO TV</p>
             </div>
         </section>
@@ -78,25 +74,60 @@
     <script>
         renderGridRecommendations('live-recommendations-grid');
 
-        const kickChannel = "luthfi1234321";
+        const kickChannel = "luthfi1234321"; // Ganti dengan username Kick kamu
+        
+        // PASTE LINK THUMBNAIL CUSTOM KAMU DI SINI (bisa dari Archive.org atau folder lokal)
+        const customOfflineThumbnail = "https://archive.org/download/nama_item_kamu/thumbnail_offline.jpg"; 
+
         async function checkKickStatus() {
             const badge = document.getElementById('kick-status-badge');
+            const playerContainer = document.getElementById('kick-player-container');
+
             try {
                 const response = await fetch(`https://kick.com/api/v2/channels/${kickChannel}`);
                 const data = await response.json();
 
                 if (data.livestream) {
+                    // JIKA SEDANG LIVE: Tampilkan Iframe Kick Player
                     badge.innerText = "🔴 SEDANG LIVE";
                     badge.className = "badge-live";
+                    playerContainer.innerHTML = `
+                        <iframe 
+                            src="https://player.kick.com/${kickChannel}" 
+                            frameborder="0" 
+                            scrolling="no" 
+                            allowfullscreen="true">
+                        </iframe>
+                    `;
                 } else {
+                    // JIKA OFFLINE: Tampilkan Thumbnail Custom Kamu
                     badge.innerText = "⚪ OFFLINE";
                     badge.className = "badge-offline";
+                    playerContainer.innerHTML = `
+                        <div class="offline-thumb-wrapper">
+                            <img src="${customOfflineThumbnail}" alt="Stream Offline" class="offline-thumb-img">
+                            <div class="offline-overlay">
+                                <h3>STREAM SEDANG OFFLINE</h3>
+                                <p>Terima kasih telah berkunjung. Nantikan siaran langsung kami berikutnya!</p>
+                            </div>
+                        </div>
+                    `;
                 }
             } catch (error) {
+                // FALLBACK: Tampilkan Player Kick secara langsung jika API terhalang
                 badge.innerText = "📺 KICK LIVE";
                 badge.className = "badge-live";
+                playerContainer.innerHTML = `
+                    <iframe 
+                        src="https://player.kick.com/${kickChannel}" 
+                        frameborder="0" 
+                        scrolling="no" 
+                        allowfullscreen="true">
+                    </iframe>
+                `;
             }
         }
+
         checkKickStatus();
     </script>
 </body>
