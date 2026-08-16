@@ -33,13 +33,16 @@
                 LIVE STREAMING LUVIA STUDIO TV
             </h1>
             
-            <!-- Dynamic Video/Thumbnail Container -->
+            <!-- Kontainer Video/Thumbnail Dinamis -->
             <div class="video-container" id="kick-player-container">
-                <!-- Konten player/thumbnail akan di-render otomatis melalui JavaScript -->
+                <!-- Player atau Thumbnail Offline akan dimuat via JS di bawah -->
             </div>
 
             <div class="video-info">
-                <h2>LIVE STREAMING LUVIA STUDIO TV</h2>
+                <h2>Siaran Langsung - LUVIA STUDIO TV</h2>
+                <div id="live-viewers-count-text" style="font-weight: bold; font-size: 1.1rem; margin-bottom: 8px;">
+                    👁️ Menghitung penonton...
+                </div>
                 <p>Selamat menyaksikan siaran langsung resmi LUVIA STUDIO TV</p>
             </div>
         </section>
@@ -74,12 +77,13 @@
     <script>
         renderGridRecommendations('live-recommendations-grid');
 
-        const kickChannel = "luthfi1234321"; // Ganti dengan username Kick kamu
+        const kickChannel = "luthfi1234321"; // Username Kick kamu
         
-        // PASTE LINK THUMBNAIL CUSTOM KAMU DI SINI (bisa dari Archive.org atau folder lokal)
+        // PASTE LINK THUMBNAIL CUSTOM KAMU DARI ARCHIVE.ORG DI SINI:
         const customOfflineThumbnail = "https://archive.org/download/nama_item_kamu/thumbnail_offline.jpg"; 
 
-        async function checkKickStatus() {
+        // Fungsi Cek Status Live & Switch Tampilan Player/Thumbnail
+        async function checkLiveStatusAndRenderPlayer() {
             const badge = document.getElementById('kick-status-badge');
             const playerContainer = document.getElementById('kick-player-container');
 
@@ -88,7 +92,7 @@
                 const data = await response.json();
 
                 if (data.livestream) {
-                    // JIKA SEDANG LIVE: Tampilkan Iframe Kick Player
+                    // JIKA SEDANG LIVE: Tampilkan Iframe Player Kick
                     badge.innerText = "🔴 SEDANG LIVE";
                     badge.className = "badge-live";
                     playerContainer.innerHTML = `
@@ -100,22 +104,22 @@
                         </iframe>
                     `;
                 } else {
-                    // JIKA OFFLINE: Tampilkan Thumbnail Custom Kamu
+                    // JIKA OFFLINE: Tampilkan Custom Thumbnail Pilihan Kamu
                     badge.innerText = "⚪ OFFLINE";
                     badge.className = "badge-offline";
                     playerContainer.innerHTML = `
                         <div class="offline-thumb-wrapper">
                             <img src="${customOfflineThumbnail}" alt="Stream Offline" class="offline-thumb-img">
                             <div class="offline-overlay">
-                                <h3>STREAM SEDANG OFFLINE</h3>
-                                <p>Terima kasih telah berkunjung. Nantikan siaran langsung kami berikutnya!</p>
+                                <h3> </h3>
+                                <p> </p>
                             </div>
                         </div>
                     `;
                 }
             } catch (error) {
-                // FALLBACK: Tampilkan Player Kick secara langsung jika API terhalang
-                badge.innerText = "📺 KICK LIVE";
+                // Fallback jika API terhalang
+                badge.innerText = "🔴 LIVE KICK";
                 badge.className = "badge-live";
                 playerContainer.innerHTML = `
                     <iframe 
@@ -128,7 +132,31 @@
             }
         }
 
-        checkKickStatus();
+        // Kelola Jumlah Penonton Aktif
+        function addViewer() {
+            let current = getActiveLiveViewers();
+            current += 1;
+            localStorage.setItem('active_live_viewers', current);
+            updateActiveLiveViewersDisplay();
+        }
+
+        function removeViewer() {
+            let current = getActiveLiveViewers();
+            if (current > 0) {
+                current -= 1;
+                localStorage.setItem('active_live_viewers', current);
+            }
+            updateActiveLiveViewersDisplay();
+        }
+
+        addViewer();
+
+        window.addEventListener('beforeunload', () => {
+            removeViewer();
+        });
+
+        checkLiveStatusAndRenderPlayer();
+        updateActiveLiveViewersDisplay();
     </script>
 </body>
 </html>
