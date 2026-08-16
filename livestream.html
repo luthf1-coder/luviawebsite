@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>LIVE STREAMING - LUVIA STUDIO OFFICIAL TV</title>
+    <link rel="stylesheet" href="style.css" />
+    <link rel="icon" type="image/png" href="Asset Foto/Thumbnimail .png">
+</head>
+<body>
+
+    <nav>
+        <div class="container nav-container">
+            <div class="nav-history-controls">
+                <button onclick="history.back()" class="btn-nav-history" title="Kembali">←</button>
+                <button onclick="history.forward()" class="btn-nav-history" title="Maju">→</button>
+            </div>
+            <div class="nav-links">
+                <a href="index.html">Beranda</a>
+                <a href="#contact">Social Media</a>
+            </div>
+            <form class="nav-search" onsubmit="return false;">
+                <input type="text" placeholder="Cari video..." aria-label="Cari">
+                <button type="submit">🔍</button>
+            </form>
+        </div>
+    </nav>
+
+    <main class="container page-stream-container">
+        <section class="main-video-section">
+            <h1 class="stream-title">
+                <span id="kick-status-badge" class="badge-live">🔴 CHECKING...</span> 
+                LIVE STREAMING LUVIA STUDIO TV
+            </h1>
+            
+            <div class="video-container">
+                <iframe 
+                    src="https://player.kick.com/luthfi1234321" 
+                    frameborder="0" 
+                    scrolling="no" 
+                    allowfullscreen="true">
+                </iframe>
+            </div>
+
+            <div class="video-info">
+                <h2>Siaran Langsung - LUVIA STUDIO TV</h2>
+                <p>Selamat menyaksikan siaran langsung resmi LUVIA STUDIO TV</p>
+            </div>
+        </section>
+
+        <section class="other-videos-section">
+            <h2>Video Rekomendasi Lainnya</h2>
+            <div class="video-grid" id="live-recommendations-grid">
+                <!-- Rekomendasi otomatis dirender via JS -->
+            </div>
+        </section>
+    </main>
+
+    <section id="contact" class="section">
+        <div class="container">
+            <h2>Follow Us</h2>
+            <div class="contact-links">
+                <p><a href="https://www.youtube.com/@luthfi-fx" target="_blank" class="btn btn-contact">YOUTUBE</a></p>
+                <p><a href="https://www.instagram.com/fauzanlathif_86" target="_blank" class="btn btn-contact">INSTAGRAM</a></p>
+                <p><a href="https://www.tiktok.com/@fauzan_lathif" target="_blank" class="btn btn-contact">TIKTOK</a></p>
+                <p><a href="https://www.dubbindo.site/@luviastudioofficialtv" target="_blank" class="btn btn-contact">UVIDEO DUBBINDO</a></p>
+            </div>
+        </div>
+    </section>
+
+    <footer>
+        <div class="container">
+            <p>&copy 2026 LUVIA STUDIO TV All Right Reserved | Channel Ini Dikelola Oleh TIM MEDIA CENTER LS MEDIA</p>
+        </div>
+    </footer>
+
+    <script src="videos-data.js"></script>
+    <script>
+        renderGridRecommendations('live-recommendations-grid');
+
+        const kickChannel = "luthfi1234321";
+        async function checkKickStatus() {
+            const badge = document.getElementById('kick-status-badge');
+            try {
+                const response = await fetch(`https://kick.com/api/v2/channels/${kickChannel}`);
+                const data = await response.json();
+
+                if (data.livestream) {
+                    badge.innerText = "🔴 SEDANG LIVE";
+                    badge.className = "badge-live";
+                } else {
+                    badge.innerText = "⚪ OFFLINE";
+                    badge.className = "badge-offline";
+                }
+            } catch (error) {
+                badge.innerText = "📺 KICK LIVE";
+                badge.className = "badge-live";
+            }
+        }
+        checkKickStatus();
+    </script>
+</body>
+</html>

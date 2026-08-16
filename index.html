@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="referrer" content="strict-origin-when-cross-origin">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>HALAMAN UTAMA - LUVIA STUDIO OFFICIAL TV</title>
+    <link rel="stylesheet" href="style.css" />
+    <link rel="icon" type="image/png" href="Asset Foto/Thumbnimail .png">
+</head>
+<body>
+    
+    <nav>
+        <div class="container nav-container">
+            <div class="nav-history-controls">
+                <button onclick="history.back()" class="btn-nav-history" title="Kembali">←</button>
+                <button onclick="history.forward()" class="btn-nav-history" title="Maju">→</button>
+            </div>
+            <div class="nav-links">
+                <a href="#about">Tentang</a>
+                <a href="#recommendations">Rekomendasi</a>
+                <a href="#projects">Program TV</a>
+                <a href="#livestreaming">Live Streaming</a>
+                <a href="#contact">Social Media</a>
+            </div>
+            <form class="nav-search" onsubmit="return false;">
+                <input type="text" placeholder="Cari video..." aria-label="Cari">
+                <button type="submit">🔍</button>
+            </form>
+        </div>
+    </nav>
+
+    <header class="header-banner"></header>
+
+    <section id="about" class="section">
+        <div class="container">
+            <div style="text-align: center;">
+                <img src="Asset Foto/Thumbnimail .png" alt="Logo LUVIA STUDIO TV" class="profile-img">
+                <h2> About This</h2>
+                <p>Selamat Datang Di Website Resmi LUVIA STUDIO TV!</p>
+                <p>LUVIA STUDIO TV adalah stasiun televisi swasta nasional yang menayangkan program informasi, hiburan, dan edukasi yang menginspirasi. Dengan jaringan tersebar di Youtube, LUVIA STUDIO TV berkomitmen menghadirkan tayangan yang informatif, inspiratif, dan berkualitas bagi seluruh masyarakat Indonesia.</p>
+                <p>Terus saksikan kami di Youtube: @luthfi-fx</p>
+            </div>       
+        </div>
+    </section>
+
+    <!-- SLIDER REKOMENDASI VIDEO -->
+    <section id="recommendations" class="section">
+        <div class="container">
+            <h2>Rekomendasi Video</h2>
+            <div class="video-slider" id="home-recommendations-slider">
+                <!-- Kartu Utama Live Streaming -->
+                <a href="livestream.html" class="slider-card featured-live">
+                    <div class="thumb-box">
+                        <span id="kick-home-badge" class="badge-live">🔴 CHECKING...</span>
+                        <img src="Asset Foto/Thumbnimail  Banner YT.png" alt="Live Streaming">
+                    </div>
+                    <div class="slider-details">
+                        <h3>LIVE STREAMING LUVIA STUDIO TV</h3>
+                        <p>Siaran Langsung • Klik Untuk Nonton</p>
+                    </div>
+                </a>
+                <!-- Rekomendasi video non-live di-render dari videos-data.js -->
+            </div>
+        </div>
+    </section>
+
+    <section id="projects" class="section gray">
+        <div class="container">
+            <h2> Program TV</h2>
+            <div class="projects">
+                <a href="program-livemusic.html" class="card">
+                    <h3>LIVE MUSIC</h3>
+                    <p>Klik untuk melihat detail & tayangan lengkap program Live Music.</p>
+                </a>
+                <a href="program-bioskop.html" class="card">
+                    <h3>BIOSKOP LIBURAN</h3>
+                    <p>Klik untuk melihat detail & jadwal tayang Bioskop Liburan.</p>
+                </a>
+                <a href="program-maulid.html" class="card">
+                    <h3>NEW MAULID NABI MUHAMMAD SAW</h3>
+                    <p>Klik untuk melihat informasi lengkap & playlist keagamaan.</p>
+                </a>
+            </div>
+
+            <div id="livestreaming" class="livestream-section">
+                <h2>Live Streaming</h2>
+                <div class="livestream-card-container">
+                    <p>Saksikan tayangan siaran langsung eksklusif dari LUVIA STUDIO TV</p>
+                    <a href="livestream.html" class="btn btn-watch">Nonton Streaming</a>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section id="contact" class="section">
+        <div class="container">
+            <h2>Follow Us</h2>
+            <div class="contact-links">
+                <p><a href="https://www.youtube.com/@luthfi-fx" target="_blank" class="btn btn-contact">YOUTUBE</a></p>
+                <p><a href="https://www.instagram.com/fauzanlathif_86" target="_blank" class="btn btn-contact">INSTAGRAM</a></p>
+                <p><a href="https://www.tiktok.com/@fauzan_lathif" target="_blank" class="btn btn-contact">TIKTOK</a></p>
+                <p><a href="https://www.dubbindo.site/@luviastudioofficialtv" target="_blank" class="btn btn-contact">UVIDEO DUBBINDO</a></p>
+            </div>
+        </div>
+    </section>
+
+    <!-- Download CV Khusus Halaman Utama -->
+    <section class="section-cv">
+        <div class="download-cv">
+            <a href="CV LUVIA STUDIO TV.pdf" download class="btn-cv">Download CV</a>
+        </div>
+    </section>
+
+    <footer>
+        <div class="container">
+            <p>&copy 2026 LUVIA STUDIO TV All Right Reserved | Channel Ini Dikelola Oleh TIM MEDIA CENTER LS MEDIA</p>
+        </div>
+    </footer>
+
+    <script src="videos-data.js"></script>
+    <script>
+        renderSliderRecommendations('home-recommendations-slider');
+
+        const kickChannel = "luthfi1234321"; 
+        async function updateHomeLiveBadge() {
+            const badge = document.getElementById('kick-home-badge');
+            if (!badge) return;
+
+            try {
+                const res = await fetch(`https://kick.com/api/v2/channels/${kickChannel}`);
+                const data = await res.json();
+
+                if (data.livestream) {
+                    badge.innerText = "🔴 SEDANG LIVE";
+                    badge.className = "badge-live";
+                } else {
+                    badge.innerText = "⚪ OFFLINE";
+                    badge.className = "badge-offline";
+                }
+            } catch (err) {
+                badge.innerText = "📺 KICK LIVE";
+                badge.className = "badge-live";
+            }
+        }
+        updateHomeLiveBadge();
+    </script>
+</body>
+</html>
