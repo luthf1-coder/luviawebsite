@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>PEMUTAR VIDEO - LUVIA STUDIO OFFICIAL TV</title>
+    <!-- Library CSS Plyr.io -->
     <link rel="stylesheet" href="https://cdn.plyr.io/3.7.8/plyr.css" />
     <link rel="stylesheet" href="style.css" />
     <link rel="icon" type="image/png" href="Asset Foto/Thumbnimail .png">
@@ -39,7 +40,7 @@
 
             <div class="video-info">
                 <h2 id="info-title">...</h2>
-                <p id="info-desc">...</p>
+                <div id="info-desc">...</div>
             </div>
         </section>
 
@@ -53,8 +54,8 @@
                         <img src="Asset Foto/Thumbnimail  Banner YT.png" alt="Live Streaming">
                     </div>
                     <div class="video-details">
-                        <h3>LIVE STREAMING LUVIA STUDIO TV</h3>
-                        <p>LUVIA STUDIO TV • Live Streaming</p>
+                        <h3>LIVE STREAMING INSPIRASI TV</h3>
+                        <p>INSPIRASI TV • Kick.com Stream</p>
                     </div>
                 </a>
                 <!-- Rekomendasi otomatis dirender via JS -->
@@ -76,10 +77,11 @@
 
     <footer>
         <div class="container">
-            <p>&copy 2026 LUVIA STUDIO TV All Right Reserved | Channel Ini Dikelola Oleh TIM MEDIA CENTER LS MEDIA</p>
+            <p>&copy 2026 INSPIRASI TV All Right Reserved | Channel Ini Dikelola Oleh TIM MEDIA CENTER INSPIRASI TV</p>
         </div>
     </footer>
 
+    <!-- BAGIAN SCRIPT YANG DIGANTI SEMUANYA: -->
     <script src="https://cdn.plyr.io/3.7.8/plyr.js"></script>
     <script src="videos-data.js"></script>
     
@@ -90,10 +92,20 @@
 
         const currentVid = videoList.find(v => v.id === currentVideoId) || videoList[0];
 
+        // Tambahkan hitungan ditonton +1 setiap kali halaman ini dimuat
+        const updatedViews = incrementVideoViews(currentVid.id);
+
+        // Render judul, riwayat ditonton, dan deskripsi
         document.getElementById('player-title').innerText = currentVid.title;
         document.getElementById('info-title').innerText = currentVid.title;
-        document.getElementById('info-desc').innerText = currentVid.description;
+        document.getElementById('info-desc').innerHTML = `
+            <div style="font-weight: bold; color: #ff914d; margin-bottom: 8px;">
+                👁️ ${formatViews(updatedViews)}
+            </div>
+            <p>${currentVid.description}</p>
+        `;
         
+        // Pasang video dari Archive.org ke player Plyr.io
         player.source = {
             type: 'video',
             title: currentVid.title,
@@ -101,8 +113,10 @@
             poster: currentVid.thumb
         };
 
+        // Render otomatis kartu video rekomendasi
         renderGridRecommendations('watch-recommendations-grid');
 
+        // Pengecek Status Stream Kick
         const kickChannel = "luthfi1234321";
         async function updateWatchLiveBadge() {
             const badge = document.getElementById('kick-watch-badge');
