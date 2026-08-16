@@ -4,7 +4,7 @@ const videoList = [
         id: "video1",
         title: "Dokumenter Special MOVAST & VROEG SAMEN",
         defaultViews: 0,
-        thumb: "Asset Foto/Thumbnimail  Banner YT.png", 
+        thumb: "https://archive.org/download/flyer-video-perpisahan-3/FLYER%20VIDEO%20PERPISAHAN%20%283%29.png", 
         archiveSrc: "https://archive.org/download/2-teaser-moviekan/2%20teaser%20moviekan.mp4",
         description: "Dokumenter eksklusif kegiatan dan momen kebersamaan MOVAST & VROEG SAMEN di Al-Bahjah Cianjur."
     },
