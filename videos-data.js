@@ -38,8 +38,8 @@ function renderSliderRecommendations(containerId, list = videoList) {
                 <img src="Asset Foto/Thumbnimail  Banner YT.png" alt="Live Streaming">
             </div>
             <div class="slider-details">
-                <h3>LIVE STREAMING INSPIRASI TV</h3>
-                <p>Siaran Langsung Kick.com • Klik Untuk Nonton</p>
+                <h3>LIVE STREAMING LUVIA STUDIO TV</h3>
+                <p>Siaran Langsung • Klik Untuk Nonton</p>
             </div>
         </a>
     `;
@@ -79,7 +79,7 @@ function renderGridRecommendations(containerId, list = videoList) {
                 </div>
                 <div class="video-details">
                     <h3>${vid.title}</h3>
-                    <p>INSPIRASI TV • ${vid.views}</p>
+                    <p>LUVIA STUDIO TV • ${vid.views}</p>
                 </div>
             </a>
         `;
