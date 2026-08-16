@@ -8,22 +8,22 @@ const videoList = [
         archiveSrc: "https://archive.org/download/2-teaser-moviekan/2%20teaser%20moviekan.mp4",
         description: "Dokumenter eksklusif kegiatan dan momen kebersamaan MOVAST & VROEG SAMEN di Al-Bahjah Cianjur."
     },
-    {
-        // id: "video2",
-        // title: "AUDIO MAULID NABI MUHAMMAD SAW",
-        // defaultViews: 0,
-        // thumb: "https://archive.org/download/nama_item_kamu/thumbnail2.jpg",
-        // archiveSrc: "https://archive.org/download/nama_item_kamu/video2_asli.mp4",
-        // description: "Audio Only Maulid Nabi Muhammad SAW Al-Bahjah Cianjur."
-    },
-    {
-        // id: "video3",
-        // title: "LIVE MUSIC EKSKLUSIF SESSION",
-        // defaultViews: 0,
-        // thumb: "https://archive.org/download/nama_item_kamu/thumbnail3.jpg",
-        // archiveSrc: "https://archive.org/download/nama_item_kamu/video3_asli.mp4",
-        // description: "Sesi musik akustik studio LUVIA TV secara eksklusif."
-    }
+    // {
+    //     id: "video2",
+    //     title: "AUDIO MAULID NABI MUHAMMAD SAW",
+    //     defaultViews: 0,
+    //     thumb: "https://archive.org/download/nama_item_kamu/thumbnail2.jpg",
+    //     archiveSrc: "https://archive.org/download/nama_item_kamu/video2_asli.mp4",
+    //     description: "Audio Only Maulid Nabi Muhammad SAW Al-Bahjah Cianjur."
+    // },
+    // {
+    //     id: "video3",
+    //     title: "LIVE MUSIC EKSKLUSIF SESSION",
+    //     defaultViews: 0,
+    //     thumb: "https://archive.org/download/nama_item_kamu/thumbnail3.jpg",
+    //     archiveSrc: "https://archive.org/download/nama_item_kamu/video3_asli.mp4",
+    //     description: "Sesi musik akustik studio LUVIA TV secara eksklusif."
+    // }
 ];
 
 // --- SISTEM PENONTON LIVE REALTIME (OPSI 2: TAB/SESSION COUNTER) ---
