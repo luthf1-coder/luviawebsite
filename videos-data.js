@@ -1,40 +1,94 @@
-// Cukup tambah/edit daftar video di sini! Otomatis memperbarui rekomendasi & sistem pencarian.
+        // Pusat Data Video
 const videoList = [
     {
         id: "video1",
         title: "Dokumenter Special MOVAST & VROEG SAMEN",
-        views: "Eksklusif",
+        defaultViews: 0,
         thumb: "Asset Foto/Thumbnimail  Banner YT.png", 
         archiveSrc: "https://archive.org/download/2-teaser-moviekan/2%20teaser%20moviekan.mp4",
         description: "Dokumenter eksklusif kegiatan dan momen kebersamaan MOVAST & VROEG SAMEN di Al-Bahjah Cianjur."
     },
     {
-        id: "video2",
-        title: "AUDIO MAULID NABI MUHAMMAD SAW",
-        views: "10rb x ditonton",
-        thumb: "https://archive.org/download/nama_item_kamu/thumbnail2.jpg",
-        archiveSrc: "https://archive.org/download/nama_item_kamu/video2_asli.mp4",
-        description: "Audio Only Maulid Nabi Muhammad SAW Al-Bahjah Cianjur."
+        // id: "video2",
+        // title: "AUDIO MAULID NABI MUHAMMAD SAW",
+        // defaultViews: 0,
+        // thumb: "https://archive.org/download/nama_item_kamu/thumbnail2.jpg",
+        // archiveSrc: "https://archive.org/download/nama_item_kamu/video2_asli.mp4",
+        // description: "Audio Only Maulid Nabi Muhammad SAW Al-Bahjah Cianjur."
     },
     {
-        id: "video3",
-        title: "LIVE MUSIC EKSKLUSIF SESSION",
-        views: "5rb x ditonton",
-        thumb: "https://archive.org/download/nama_item_kamu/thumbnail3.jpg",
-        archiveSrc: "https://archive.org/download/nama_item_kamu/video3_asli.mp4",
-        description: "Sesi musik akustik studio LUVIA TV secara eksklusif."
+        // id: "video3",
+        // title: "LIVE MUSIC EKSKLUSIF SESSION",
+        // defaultViews: 0,
+        // thumb: "https://archive.org/download/nama_item_kamu/thumbnail3.jpg",
+        // archiveSrc: "https://archive.org/download/nama_item_kamu/video3_asli.mp4",
+        // description: "Sesi musik akustik studio LUVIA TV secara eksklusif."
     }
 ];
 
-// Fungsi Memuat Kartu ke Slider (Halaman Utama)
+// --- SISTEM PENONTON LIVE REALTIME (OPSI 2: TAB/SESSION COUNTER) ---
+function getActiveLiveViewers() {
+    const viewers = localStorage.getItem('active_live_viewers');
+    return viewers ? parseInt(viewers) : 0;
+}
+
+function updateActiveLiveViewersDisplay() {
+    const count = getActiveLiveViewers();
+    const text = count > 0 ? `${count.toLocaleString('id-ID')} Penonton Aktif` : "Belum Ada Penonton";
+
+    // Update Badge di Kartu Utama
+    const homeBadge = document.getElementById('kick-home-badge');
+    if (homeBadge) {
+        homeBadge.innerText = `🔴 SEDANG LIVE (${count} Penonton)`;
+    }
+
+    const watchBadge = document.getElementById('kick-watch-badge');
+    if (watchBadge) {
+        watchBadge.innerText = `🔴 SEDANG LIVE (${count} Penonton)`;
+    }
+
+    // Update Text di Halaman Pemutar Live Stream
+    const liveViewerElement = document.getElementById('live-viewers-count-text');
+    if (liveViewerElement) {
+        liveViewerElement.innerHTML = `👁️ <span style="color: #53fc18;">${count} Orang</span> Sedang Menonton Saat Ini`;
+    }
+}
+
+// Listen perubahan data penonton antar tab secara instant
+window.addEventListener('storage', (e) => {
+    if (e.key === 'active_live_viewers') {
+        updateActiveLiveViewersDisplay();
+    }
+});
+
+// --- FUNGSI VIEWS VIDEO NON-LIVE ---
+function getVideoViews(videoId) {
+    const storedViews = localStorage.getItem(`views_${videoId}`);
+    const vid = videoList.find(v => v.id === videoId);
+    return storedViews ? parseInt(storedViews) : (vid ? vid.defaultViews : 0);
+}
+
+function incrementVideoViews(videoId) {
+    let currentViews = getVideoViews(videoId);
+    currentViews += 1;
+    localStorage.setItem(`views_${videoId}`, currentViews);
+    return currentViews;
+}
+
+function formatViews(count) {
+    return count.toLocaleString('id-ID') + ' x ditonton';
+}
+
+// --- FUNGSI RENDER REKOMENDASI ---
 function renderSliderRecommendations(containerId, list = videoList) {
     const container = document.getElementById(containerId);
     if (!container) return;
 
+    const liveCount = getActiveLiveViewers();
     let html = `
         <a href="livestream.html" class="slider-card featured-live">
             <div class="thumb-box">
-                <span id="kick-home-badge" class="badge-live">🔴 CHECKING...</span>
+                <span id="kick-home-badge" class="badge-live">🔴 SEDANG LIVE (${liveCount} Penonton)</span>
                 <img src="Asset Foto/Thumbnimail  Banner YT.png" alt="Live Streaming">
             </div>
             <div class="slider-details">
@@ -48,6 +102,7 @@ function renderSliderRecommendations(containerId, list = videoList) {
         html += `<div style="padding: 20px; color: #ffffff; font-weight: bold;">Video tidak ditemukan.</div>`;
     } else {
         list.forEach(vid => {
+            const viewsCount = getVideoViews(vid.id);
             html += `
                 <a href="watch.html?id=${vid.id}" class="slider-card">
                     <div class="thumb-box">
@@ -55,7 +110,7 @@ function renderSliderRecommendations(containerId, list = videoList) {
                     </div>
                     <div class="slider-details">
                         <h3>${vid.title}</h3>
-                        <p>${vid.views}</p>
+                        <p>${formatViews(viewsCount)}</p>
                     </div>
                 </a>
             `;
@@ -65,13 +120,13 @@ function renderSliderRecommendations(containerId, list = videoList) {
     container.innerHTML = html;
 }
 
-// Fungsi Memuat Kartu ke Grid (Halaman Watch & Live)
 function renderGridRecommendations(containerId, list = videoList) {
     const container = document.getElementById(containerId);
     if (!container) return;
 
     let html = '';
     list.forEach(vid => {
+        const viewsCount = getVideoViews(vid.id);
         html += `
             <a href="watch.html?id=${vid.id}" class="video-card">
                 <div class="thumb-box">
@@ -79,7 +134,7 @@ function renderGridRecommendations(containerId, list = videoList) {
                 </div>
                 <div class="video-details">
                     <h3>${vid.title}</h3>
-                    <p>LUVIA STUDIO TV • ${vid.views}</p>
+                    <p>LUVIA STUDIO TV • ${formatViews(viewsCount)}</p>
                 </div>
             </a>
         `;
@@ -87,7 +142,7 @@ function renderGridRecommendations(containerId, list = videoList) {
     container.innerHTML += html;
 }
 
-// --- SISTEM PENCARIAN OTOMATIS (SEARCH ENGINE) ---
+// --- SISTEM PENCARIAN ---
 document.addEventListener('DOMContentLoaded', () => {
     const searchForms = document.querySelectorAll('.nav-search');
 
@@ -103,13 +158,11 @@ document.addEventListener('DOMContentLoaded', () => {
             if (isHomePage) {
                 executeSearchOnHome(query);
             } else {
-                // Jika mencari dari halaman lain, alihkan ke Beranda + parameter kata kunci
                 window.location.href = `index.html?search=${encodeURIComponent(query)}`;
             }
         });
     });
 
-    // Cek apakah ada query pencarian dari URL (saat datang dari halaman lain)
     const urlParams = new URLSearchParams(window.location.search);
     const searchQuery = urlParams.get('search');
     const isHomePage = window.location.pathname.endsWith('index.html') || window.location.pathname === '/' || window.location.pathname.endsWith('/');
@@ -121,7 +174,6 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 });
 
-// Fungsi Eksekusi Filter & Scroll ke Hasil Pencarian
 function executeSearchOnHome(query) {
     const q = query.toLowerCase();
     const filteredVideos = videoList.filter(vid => 
@@ -139,9 +191,5 @@ function executeSearchOnHome(query) {
     const recSection = document.getElementById('recommendations');
     if (recSection) {
         recSection.scrollIntoView({ behavior: 'smooth' });
-    }
-
-    if (typeof updateHomeLiveBadge === 'function') {
-        updateHomeLiveBadge();
     }
 }
