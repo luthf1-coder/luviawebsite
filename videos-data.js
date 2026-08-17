@@ -4,8 +4,10 @@ const videoList = [
         id: "video1",
         title: "Dokumenter Special MOVAST & VROEG SAMEN",
         defaultViews: 0,
-        thumb: "https://archive.org/download/flyer-video-perpisahan-3/FLYER%20VIDEO%20PERPISAHAN%20%283%29.png", 
-        archiveSrc: "https://archive.org/download/2-teaser-moviekan/2%20teaser%20moviekan.mp4",
+        thumb: "https://img.youtube.com/vi/U6N_8dUF30g/maxresdefault.jpg", 
+        archiveSrc: "",
+        driveEmbed: "",
+        youtubeId: "U6N_8dUF30g",
         description: "Dokumenter eksklusif kegiatan dan momen kebersamaan MOVAST & VROEG SAMEN di Al-Bahjah Cianjur."
     },
     {
@@ -13,8 +15,9 @@ const videoList = [
         title: "Spider-Man Brand New Day (2026)",
         defaultViews: 0,
         thumb: "https://archive.org/download/nama_item_kamu/thumbnail2.jpg",
-        driveEmbed: "https://drive.google.com/file/d/1b6MY1_Yf3rsJ6HAynCp9i9nGU7Jt4fqf/preview",
         archiveSrc: "",
+        driveEmbed: "https://drive.google.com/file/d/1b6MY1_Yf3rsJ6HAynCp9i9nGU7Jt4fqf/preview",
+        youtubeId: "",
         description: "Audio Only Maulid Nabi Muhammad SAW Al-Bahjah Cianjur."
     },
     // {
