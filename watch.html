@@ -32,7 +32,8 @@
         <section class="main-video-section">
             <h1 id="player-title" class="stream-title">Memuat Video...</h1>
             
-            <div class="plyr-wrapper" id="player-wrapper">
+            <!-- Kontainer Player (Mendukung Plyr.io, Google Drive Embed, dan YouTube) -->
+            <div class="plyr-wrapper" id="video-player-wrapper">
                 <video id="plyr-player" controls playsinline crossorigin="anonymous" poster="Asset Foto/Thumbnimail  Banner YT.png">
                     <source id="video-source" src="" type="video/mp4" />
                 </video>
@@ -81,7 +82,7 @@
         </div>
     </footer>
 
-    <!-- BAGIAN SCRIPT INTEGRASI DRIVE EMBED & PLYR.IO -->
+    <!-- SCRIPT UTAMA WITH MULTI-SOURCE SUPPORT (DRIVE, YOUTUBE, ARCHIVE) -->
     <script src="https://cdn.plyr.io/3.7.8/plyr.js"></script>
     <script src="videos-data.js"></script>
     
@@ -104,29 +105,36 @@
             <p>${currentVid.description}</p>
         `;
         
-        // Cek apakah video menggunakan Google Drive Embed atau MP4/Archive.org
-        const wrapper = document.getElementById('player-wrapper');
+        // --- LOGIKA MULTI-SOURCE PLAYER ---
+        const playerWrapper = document.getElementById('video-player-wrapper');
 
         if (currentVid.driveEmbed) {
-            // TAMPILKAN IFRAME GOOGLE DRIVE (Anti-Loading)
-            wrapper.innerHTML = `
+            // Option 1: Pemutar Iframe Google Drive (Anti-loading)
+            playerWrapper.innerHTML = `
                 <iframe 
                     src="${currentVid.driveEmbed}" 
                     width="100%" 
-                    height="500" 
+                    height="100%" 
                     allow="autoplay" 
                     allowfullscreen="true"
-                    style="border:none; border-radius:16px; width: 100%; aspect-ratio: 16/9;">
+                    style="position: absolute; top:0; left:0; width:100%; height:100%; border:none;">
                 </iframe>
             `;
+        } else if (currentVid.youtubeId) {
+            // Option 2: Pemutar YouTube menggunakan Plyr.io
+            const player = new Plyr('#plyr-player');
+            player.source = {
+                type: 'video',
+                sources: [{ src: currentVid.youtubeId, provider: 'youtube' }]
+            };
         } else {
-            // TAMPILKAN PEMUTAR PLYR.IO (Archive.org / MP4)
+            // Option 3: Pemutar File Direct MP4 / Archive.org menggunakan Plyr.io
             const player = new Plyr('#plyr-player');
             player.source = {
                 type: 'video',
                 title: currentVid.title,
                 sources: [{ src: currentVid.archiveSrc, type: 'video/mp4' }],
-                poster: currentVid.thumb
+                poster: currentVid.thumb || 'Asset Foto/Thumbnimail  Banner YT.png'
             };
         }
 
