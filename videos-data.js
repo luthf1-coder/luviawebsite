@@ -2,7 +2,7 @@
 const videoList = [
     {
         id: "video1",
-        title: "Dokumenter Special MOVAST & VROEG SAMEN",
+        title: "Special Dokumenter for MOVAST & VROEG SAMEN While in Al-Bahjah Cianjur",
         defaultViews: 0,
         thumb: "https://img.youtube.com/vi/U6N_8dUF30g/maxresdefault.jpg", 
         archiveSrc: "",
