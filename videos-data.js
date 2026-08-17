@@ -8,7 +8,26 @@ const videoList = [
         archiveSrc: "",
         driveEmbed: "",
         youtubeId: "U6N_8dUF30g",
-        description: "Dokumenter eksklusif kegiatan dan momen kebersamaan MOVAST & VROEG SAMEN di Al-Bahjah Cianjur."
+        description: "Semua tentang sebuah Kebersamaan dan Kebahagiaan Angkatan 7 (SMPIQu) & dan Angkatan 1 (SMAIQu) di LPD Al-Bahjah Cianjur
+
+SELAMAT MENYAKSIKAN !!!
+
+MOVAST | MOZOGNIA VALTOZA SERT
+"Remember Us For Centuries"
+
+VROEG SAMEN
+"Together is Us"
+
+VRAMOST | VROEG SAMEN X MOVAST
+"Together We Are Brother"
+
+Follow IG: @mozogniavaltozasert
+
+Supported by: Vroeg Samen (SMAIQu) & SMAIQu Al-Bahjah Cianjur
+
+Playlist Ini dikelola oleh IG: @fauzanlathif_86
+
+2023 - 2026"
     },
     {
         id: "video2",
