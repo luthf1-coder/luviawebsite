@@ -13,7 +13,7 @@ const videoList = [
         title: "Spider-Man Brand New Day (2026)",
         defaultViews: 0,
         thumb: "https://archive.org/download/nama_item_kamu/thumbnail2.jpg",
-        archiveSrc: "https://drive.google.com/uc?export=download&id=1b6MY1_Yf3rsJ6HAynCp9i9nGU7Jt4fqf",
+        archiveSrc: "https://drive.google.com/uc?export=download&id=1b6MY1_Yf3rsJ6HAynCp9i9nGU7Jt4fqf&confirm=t",
         description: "Audio Only Maulid Nabi Muhammad SAW Al-Bahjah Cianjur."
     },
     // {
