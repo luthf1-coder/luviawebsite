@@ -32,7 +32,7 @@
         <section class="main-video-section">
             <h1 id="player-title" class="stream-title">Memuat Video...</h1>
             
-            <div class="plyr-wrapper">
+            <div class="plyr-wrapper" id="player-wrapper">
                 <video id="plyr-player" controls playsinline crossorigin="anonymous" poster="Asset Foto/Thumbnimail  Banner YT.png">
                     <source id="video-source" src="" type="video/mp4" />
                 </video>
@@ -81,12 +81,11 @@
         </div>
     </footer>
 
-    <!-- BAGIAN SCRIPT YANG DIGANTI SEMUANYA: -->
+    <!-- BAGIAN SCRIPT INTEGRASI DRIVE EMBED & PLYR.IO -->
     <script src="https://cdn.plyr.io/3.7.8/plyr.js"></script>
     <script src="videos-data.js"></script>
     
     <script>
-        const player = new Plyr('#plyr-player');
         const urlParams = new URLSearchParams(window.location.search);
         const currentVideoId = urlParams.get('id') || 'video1';
 
@@ -105,13 +104,31 @@
             <p>${currentVid.description}</p>
         `;
         
-        // Pasang video dari Archive.org ke player Plyr.io
-        player.source = {
-            type: 'video',
-            title: currentVid.title,
-            sources: [{ src: currentVid.archiveSrc, type: 'video/mp4' }],
-            poster: currentVid.thumb
-        };
+        // Cek apakah video menggunakan Google Drive Embed atau MP4/Archive.org
+        const wrapper = document.getElementById('player-wrapper');
+
+        if (currentVid.driveEmbed) {
+            // TAMPILKAN IFRAME GOOGLE DRIVE (Anti-Loading)
+            wrapper.innerHTML = `
+                <iframe 
+                    src="${currentVid.driveEmbed}" 
+                    width="100%" 
+                    height="500" 
+                    allow="autoplay" 
+                    allowfullscreen="true"
+                    style="border:none; border-radius:16px; width: 100%; aspect-ratio: 16/9;">
+                </iframe>
+            `;
+        } else {
+            // TAMPILKAN PEMUTAR PLYR.IO (Archive.org / MP4)
+            const player = new Plyr('#plyr-player');
+            player.source = {
+                type: 'video',
+                title: currentVid.title,
+                sources: [{ src: currentVid.archiveSrc, type: 'video/mp4' }],
+                poster: currentVid.thumb
+            };
+        }
 
         // Render otomatis kartu video rekomendasi
         renderGridRecommendations('watch-recommendations-grid');
