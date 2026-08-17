@@ -32,7 +32,7 @@
         <section class="main-video-section">
             <h1 id="player-title" class="stream-title">Memuat Video...</h1>
             
-            <!-- Kontainer Player (Mendukung Plyr.io, Google Drive Embed, dan YouTube) -->
+            <!-- Kontainer Player Multi-Source (Plyr.io / Google Drive / YouTube) -->
             <div class="plyr-wrapper" id="video-player-wrapper">
                 <video id="plyr-player" controls playsinline crossorigin="anonymous" poster="Asset Foto/Thumbnimail  Banner YT.png">
                     <source id="video-source" src="" type="video/mp4" />
@@ -82,7 +82,7 @@
         </div>
     </footer>
 
-    <!-- SCRIPT UTAMA WITH MULTI-SOURCE SUPPORT (DRIVE, YOUTUBE, ARCHIVE) -->
+    <!-- SCRIPT UTAMA WITH FIXED MULTI-SOURCE PLAYER LOGIC -->
     <script src="https://cdn.plyr.io/3.7.8/plyr.js"></script>
     <script src="videos-data.js"></script>
     
@@ -105,19 +105,23 @@
             <p>${currentVid.description}</p>
         `;
         
-        // --- LOGIKA MULTI-SOURCE PLAYER ---
+        // --- LOGIKA MULTI-SOURCE PLAYER (FIXED POSITION & Z-INDEX) ---
         const playerWrapper = document.getElementById('video-player-wrapper');
 
         if (currentVid.driveEmbed) {
-            // Option 1: Pemutar Iframe Google Drive (Anti-loading)
+            // Option 1: Pemutar Iframe Google Drive
+            playerWrapper.style.position = "relative";
+            playerWrapper.style.width = "100%";
+            playerWrapper.style.paddingTop = "56.25%"; // Rasio layar 16:9
+            playerWrapper.style.overflow = "hidden";
+            playerWrapper.style.zIndex = "1";
+
             playerWrapper.innerHTML = `
                 <iframe 
                     src="${currentVid.driveEmbed}" 
-                    width="100%" 
-                    height="100%" 
                     allow="autoplay" 
                     allowfullscreen="true"
-                    style="position: absolute; top:0; left:0; width:100%; height:100%; border:none;">
+                    style="position: absolute; top:0; left:0; width:100%; height:100%; border:none; z-index:2;">
                 </iframe>
             `;
         } else if (currentVid.youtubeId) {
