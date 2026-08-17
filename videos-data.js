@@ -12,20 +12,22 @@ const videoList = [
     },
     {
         id: "video2",
-        title: "Spider-Man Brand New Day (2026)",
+        title: "#part2 Special Dokumenter for MOVAST & VROEG SAMEN While in Al-Bahjah Cianjur (Re-Edited)",
         defaultViews: 0,
-        thumb: "https://archive.org/download/nama_item_kamu/thumbnail2.jpg",
+        thumb: "https://img.youtube.com/vi/sUNYcOKjw-w/maxresdefault.jpg",
         archiveSrc: "",
-        driveEmbed: "https://drive.google.com/file/d/1b6MY1_Yf3rsJ6HAynCp9i9nGU7Jt4fqf/preview",
-        youtubeId: "",
-        description: "Audio Only Maulid Nabi Muhammad SAW Al-Bahjah Cianjur."
+        driveEmbed: "",
+        youtubeId: "sUNYcOKjw-w",
+        description: "Semua tentang sebuah Kebersamaan dan Kebahagiaan Angkatan 7 (SMPIQu) & dan Angkatan 1 (SMAIQu) di LPD Al-Bahjah Cianjur"
     },
     // {
     //     id: "video3",
-    //     title: "LIVE MUSIC EKSKLUSIF SESSION",
+    //     title: "Spider-Man Brand New Day (2026)",
     //     defaultViews: 0,
     //     thumb: "https://archive.org/download/nama_item_kamu/thumbnail3.jpg",
-    //     archiveSrc: "https://archive.org/download/nama_item_kamu/video3_asli.mp4",
+    //     archiveSrc: "",
+    //     driveEmbed: "https://drive.google.com/file/d/1b6MY1_Yf3rsJ6HAynCp9i9nGU7Jt4fqf/preview",
+    //     youtubeId: "",
     //     description: "Sesi musik akustik studio LUVIA TV secara eksklusif."
     // }
 ];
