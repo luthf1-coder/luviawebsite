@@ -1,4 +1,4 @@
-        // Pusat Data Video
+// Pusat Data Video
 const videoList = [
     {
         id: "video1",
@@ -9,6 +9,8 @@ const videoList = [
         driveEmbed: "",
         youtubeId: "U6N_8dUF30g",
         rumbleEmbed: "",
+        // Solusi Direct Download YouTube (Mengarahkan ke service download/direct file)
+        downloadUrl: "https://www.ssyoutube.com/watch?v=U6N_8dUF30g", 
         description: "Semua tentang sebuah Kebersamaan dan Kebahagiaan Angkatan 7 (SMPIQu) & dan Angkatan 1 (SMAIQu) di LPD Al-Bahjah Cianjur"
     },
     {
@@ -20,19 +22,80 @@ const videoList = [
         driveEmbed: "",
         youtubeId: "sUNYcOKjw-w",
         rumbleEmbed: "",
+        downloadUrl: "https://www.ssyoutube.com/watch?v=sUNYcOKjw-w",
         description: "Semua tentang sebuah Kebersamaan dan Kebahagiaan Angkatan 7 (SMPIQu) & dan Angkatan 1 (SMAIQu) di LPD Al-Bahjah Cianjur"
     },
     // {
     //     id: "video3",
-    //     title: "Spider-Man Brand New Day (2026)",
-    //     defaultViews: 0,
-    //     thumb: "https://archive.org/download/nama_item_kamu/thumbnail3.jpg",
+    //     title: "Dokumenter Spesial Multi-Resolusi (Archive.org)",
+    //     defaultViews: 45,
+    //     thumb: "Asset Foto/Thumbnimail  Banner YT.png",
+    //     // Multi-resolusi khusus Archive.org / Direct MP4
+    //     sources: [
+    //         { src: "https://archive.org/download/nama_item_kamu/video_360p.mp4", size: 360, type: "video/mp4" },
+    //         { src: "https://archive.org/download/nama_item_kamu/video_720p.mp4", size: 720, type: "video/mp4" },
+    //         { src: "https://archive.org/download/nama_item_kamu/video_1080p.mp4", size: 1080, type: "video/mp4" }
+    //     ],
+    //     description: "Sesi dokumenter eksklusif dengan pilihan resolusi pemutar dan tombol unduh sesuai kualitas."
+    // },
+    // {
+    //     id: "video4",
+    //     title: "REKAMAN LIVE SPECIAL RUMBLE",
+    //     defaultViews: 50,
+    //     thumb: "Asset Foto/live stream.png",
+    //     archiveSrc: "",
+    //     driveEmbed: "",
+    //     youtubeId: "",
+    //     rumbleEmbed: "https://rumble.com/embed/vxxxxxx/",
+    //     // Solusi 2: Direct MP4 Link dari Dashboard Rumble
+    //     downloadUrl: "https://ak.rumble.com/vxxxxxx.mp4", 
+    //     description: "Hasil rekaman siaran langsung dari platform Rumble."
+    // },
+    // {
+    //     id: "video5",
+    //     title: "Contoh Video Google Drive",
+    //     defaultViews: 10,
+    //     thumb: "Asset Foto/Thumbnimail  Banner YT.png",
     //     archiveSrc: "",
     //     driveEmbed: "https://drive.google.com/file/d/1b6MY1_Yf3rsJ6HAynCp9i9nGU7Jt4fqf/preview",
     //     youtubeId: "",
-    //     description: "Sesi musik akustik studio LUVIA TV secara eksklusif."
+    //     rumbleEmbed: "",
+    //     // Solusi Direct Download Google Drive (Format export=download)
+    //     downloadUrl: "https://drive.google.com/uc?export=download&id=1b6MY1_Yf3rsJ6HAynCp9i9nGU7Jt4fqf",
+    //     description: "Video sampel yang tersimpan di Google Drive."
     // }
 ];
+
+// --- FUNGSI PROSES DOWNLOAD OTOMATIS ---
+function downloadVideoFile(url, filename) {
+    if (!url) {
+        alert("Link unduhan tidak tersedia untuk video ini.");
+        return;
+    }
+    fetch(url)
+        .then(response => response.blob())
+        .then(blob => {
+            const blobUrl = window.URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.style.display = 'none';
+            a.href = blobUrl;
+            a.download = filename || 'video-luvia-tv.mp4';
+            document.body.appendChild(a);
+            a.click();
+            window.URL.revokeObjectURL(blobUrl);
+            a.remove();
+        })
+        .catch(() => {
+            // Fallback jika terkena pembatasan CORS server (akan membuka link download langsung)
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = filename || 'video-luvia-tv.mp4';
+            a.target = '_blank';
+            document.body.appendChild(a);
+            a.click();
+            a.remove();
+        });
+}
 
 // --- SISTEM PENONTON LIVE REALTIME (OPSI 2: TAB/SESSION COUNTER) ---
 function getActiveLiveViewers() {
@@ -42,9 +105,7 @@ function getActiveLiveViewers() {
 
 function updateActiveLiveViewersDisplay() {
     const count = getActiveLiveViewers();
-    const text = count > 0 ? `${count.toLocaleString('id-ID')} Penonton Aktif` : "Belum Ada Penonton";
 
-    // Update Badge di Kartu Utama
     const homeBadge = document.getElementById('kick-home-badge');
     if (homeBadge) {
         homeBadge.innerText = `🔴 SEDANG LIVE (${count} Penonton)`;
@@ -55,14 +116,12 @@ function updateActiveLiveViewersDisplay() {
         watchBadge.innerText = `🔴 SEDANG LIVE (${count} Penonton)`;
     }
 
-    // Update Text di Halaman Pemutar Live Stream
     const liveViewerElement = document.getElementById('live-viewers-count-text');
     if (liveViewerElement) {
         liveViewerElement.innerHTML = `👁️ <span style="color: #53fc18;">${count} Orang</span> Sedang Menonton Saat Ini`;
     }
 }
 
-// Listen perubahan data penonton antar tab secara instant
 window.addEventListener('storage', (e) => {
     if (e.key === 'active_live_viewers') {
         updateActiveLiveViewersDisplay();
