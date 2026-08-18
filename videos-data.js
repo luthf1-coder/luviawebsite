@@ -46,9 +46,9 @@ const videoList = [
     //     archiveSrc: "",
     //     driveEmbed: "",
     //     youtubeId: "",
-    //     rumbleEmbed: "https://rumble.com/embed/vxxxxxx/",
+    //     rumbleEmbed: "https://rumble.com/embed/vID unik/kode identitas video milikmu/",
     //     // Solusi 2: Direct MP4 Link dari Dashboard Rumble
-    //     downloadUrl: "https://ak.rumble.com/vxxxxxx.mp4", 
+    //     downloadUrl: "https://ak.rumble.com/vID unik/kode identitas video milikmu.mp4", 
     //     description: "Hasil rekaman siaran langsung dari platform Rumble."
     // },
     // {
@@ -57,11 +57,11 @@ const videoList = [
     //     defaultViews: 10,
     //     thumb: "Asset Foto/Thumbnimail  Banner YT.png",
     //     archiveSrc: "",
-    //     driveEmbed: "https://drive.google.com/file/d/1b6MY1_Yf3rsJ6HAynCp9i9nGU7Jt4fqf/preview",
+    //     driveEmbed: "https://drive.google.com/file/d/ID_FILE_GDRIVE/preview",
     //     youtubeId: "",
     //     rumbleEmbed: "",
     //     // Solusi Direct Download Google Drive (Format export=download)
-    //     downloadUrl: "https://drive.google.com/uc?export=download&id=1b6MY1_Yf3rsJ6HAynCp9i9nGU7Jt4fqf",
+    //     downloadUrl: "https://drive.google.com/uc?export=download&id=ID_FILE_GDRIVE",
     //     description: "Video sampel yang tersimpan di Google Drive."
     // }
 ];
