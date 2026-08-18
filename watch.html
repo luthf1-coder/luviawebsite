@@ -95,17 +95,54 @@
         // Tambahkan hitungan ditonton +1 setiap kali halaman ini dimuat
         const updatedViews = incrementVideoViews(currentVid.id);
 
-        // Render judul, riwayat ditonton, dan deskripsi
+        // --- GENERATE AREA DOWNLOAD & RESOLUSI ---
+        let downloadAreaHTML = '';
+
+        if (currentVid.sources && currentVid.sources.length > 0) {
+            // Opsi A: Jika video memiliki daftar resolusi (Archive.org / Direct MP4)
+            const optionsHTML = currentVid.sources.map(s => 
+                `<option value="${s.src}">${s.size || 'HD'}p</option>`
+            ).join('');
+
+            downloadAreaHTML = `
+                <div class="download-container">
+                    <span class="download-label">📥 Pilih Resolusi Unduh:</span>
+                    <select id="download-quality-select" class="download-select">
+                        ${optionsHTML}
+                    </select>
+                    <button onclick="downloadVideoFile(document.getElementById('download-quality-select').value, '${currentVid.title.replace(/'/g, "\\'")}.mp4')" 
+                            class="btn-download-action">
+                        Download MP4
+                    </button>
+                </div>
+            `;
+        } else {
+            // Opsi B: Jika video hanya memiliki 1 link download utama (Rumble / Google Drive / YouTube / Single Link)
+            const targetDownloadUrl = currentVid.downloadUrl || currentVid.archiveSrc || '';
+            if (targetDownloadUrl) {
+                downloadAreaHTML = `
+                    <div class="download-container">
+                        <button onclick="downloadVideoFile('${targetDownloadUrl}', '${currentVid.title.replace(/'/g, "\\'")}.mp4')" 
+                                class="btn-download-action">
+                            📥 Download Video (Kualitas Tertinggi)
+                        </button>
+                    </div>
+                `;
+            }
+        }
+
+        // Render susunan: Judul -> Kalimat Deskripsi -> Opsi Download & Resolusi -> Jumlah Ditonton
         document.getElementById('player-title').innerText = currentVid.title;
         document.getElementById('info-title').innerText = currentVid.title;
         document.getElementById('info-desc').innerHTML = `
-            <div style="font-weight: bold; color: #ff914d; margin-bottom: 8px;">
+            <p>${currentVid.description}</p>
+            ${downloadAreaHTML}
+            <div style="font-weight: bold; color: #ff914d; margin-top: 10px;">
                 👁️ ${formatViews(updatedViews)}
             </div>
-            <p>${currentVid.description}</p>
         `;
         
-        // --- LOGIKA MULTI-SOURCE PLAYER (TAMBAHAN RUMBLE) ---
+        // --- LOGIKA MULTI-SOURCE PLAYER (DENGAN PENGATURAN RESOLUSI) ---
         const playerWrapper = document.getElementById('video-player-wrapper');
 
         if (currentVid.driveEmbed) {
@@ -141,18 +178,33 @@
             `;
         } else if (currentVid.youtubeId) {
             // Option 3: Pemutar YouTube
-            const player = new Plyr('#plyr-player');
+            const player = new Plyr('#plyr-player', {
+                controls: ['play-large', 'play', 'progress', 'current-time', 'mute', 'volume', 'captions', 'settings', 'pip', 'airplay', 'fullscreen'],
+                settings: ['quality', 'speed']
+            });
             player.source = {
                 type: 'video',
                 sources: [{ src: currentVid.youtubeId, provider: 'youtube' }]
             };
         } else {
-            // Option 4: Pemutar File Direct MP4 / Archive.org
-            const player = new Plyr('#plyr-player');
+            // Option 4: Pemutar Direct MP4 / Archive.org dengan Pilihan Resolusi Pemutar
+            const videoSources = currentVid.sources || [
+                { src: currentVid.archiveSrc || '', type: 'video/mp4', size: 720 }
+            ];
+            
+            const player = new Plyr('#plyr-player', {
+                controls: ['play-large', 'play', 'progress', 'current-time', 'mute', 'volume', 'captions', 'settings', 'pip', 'airplay', 'fullscreen'],
+                settings: ['quality', 'speed'],
+                quality: {
+                    default: videoSources[0].size || 720,
+                    options: videoSources.map(s => s.size)
+                }
+            });
+
             player.source = {
                 type: 'video',
                 title: currentVid.title,
-                sources: [{ src: currentVid.archiveSrc, type: 'video/mp4' }],
+                sources: videoSources,
                 poster: currentVid.thumb || 'Asset Foto/Thumbnimail  Banner YT.png'
             };
         }
