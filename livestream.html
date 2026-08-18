@@ -4,6 +4,8 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>LIVE STREAMING - LUVIA STUDIO OFFICIAL TV</title>
+    <!-- Library CSS Plyr.io -->
+    <link rel="stylesheet" href="https://cdn.plyr.io/3.7.8/plyr.css" />
     <link rel="stylesheet" href="style.css" />
     <link rel="icon" type="image/png" href="Asset Foto/Thumbnimail .png">
 </head>
@@ -28,28 +30,28 @@
 
     <main class="container page-stream-container">
         <section class="main-video-section">
-            <h1 class="stream-title">
-                <span id="kick-status-badge" class="badge-live">🔴 CHECKING...</span> 
-                LIVE STREAMING LUVIA STUDIO TV
-            </h1>
+            <h1 id="live-player-title" class="stream-title">LIVE STREAMING LUVIA STUDIO TV</h1>
             
-            <!-- Kontainer Video/Thumbnail Dinamis -->
-            <div class="video-container" id="kick-player-container">
-                <!-- Player atau Thumbnail Offline akan dimuat via JS di bawah -->
+            <!-- Kontainer Player Live Streaming (Plyr.io + Multi-Resolusi HLS) -->
+            <div class="plyr-wrapper" id="video-player-wrapper">
+                <video id="plyr-live-player" controls playsinline crossorigin="anonymous" poster="Asset Foto/live stream.png">
+                </video>
             </div>
 
             <div class="video-info">
-                <h2>Siaran Langsung - LUVIA STUDIO TV</h2>
-                <div id="live-viewers-count-text" style="font-weight: bold; font-size: 1.1rem; margin-bottom: 8px;">
-                    👁️ Menghitung penonton...
+                <h2 id="info-title">SIARAN LANGSUNG LUVIA STUDIO TV</h2>
+                <div id="info-desc">
+                    <div id="live-viewers-count-text" style="font-weight: bold; color: #ff914d; margin-bottom: 8px;">
+                        👁️ Memuat data penonton...
+                    </div>
+                    <p>Selamat menyaksikan siaran langsung resmi LUVIA STUDIO TV. Nikmati tayangan kualitatif dengan pilihan resolusi terbaik.</p>
                 </div>
-                <p>Selamat menyaksikan siaran langsung resmi LUVIA STUDIO TV</p>
             </div>
         </section>
 
         <section class="other-videos-section">
-            <h2>Video Rekomendasi Lainnya</h2>
-            <div class="video-grid" id="live-recommendations-grid">
+            <h2>Video Rekomendasi</h2>
+            <div class="video-grid" id="watch-recommendations-grid">
                 <!-- Rekomendasi otomatis dirender via JS -->
             </div>
         </section>
@@ -69,94 +71,91 @@
 
     <footer>
         <div class="container">
-            <p>&copy 2026 LUVIA STUDIO TV All Right Reserved | Channel Ini Dikelola Oleh TIM MEDIA CENTER LS MEDIA</p>
+            <p>&copy 2026 LUVIA STUDIO TV All Right Reserved | Channel Ini Dikelola Oleh TIM MEDIA CENTER LSTV</p>
         </div>
     </footer>
 
+    <!-- SCRIPT UTAMA (Tambahan Hls.js untuk Kontrol Resolusi Stream) -->
+    <script src="https://cdn.plyr.io/3.7.8/plyr.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/hls.js@latest"></script>
     <script src="videos-data.js"></script>
+    
     <script>
-        renderGridRecommendations('live-recommendations-grid');
-
-        const kickChannel = "luthfi1234321"; // Username Kick kamu
+        // --- INISIALISASI PEMUTAR LIVE STREAM MULTI-RESOLUSI ---
+        const videoElement = document.getElementById('plyr-live-player');
         
-        // PASTE LINK THUMBNAIL CUSTOM KAMU DARI ARCHIVE.ORG DI SINI:
-        const customOfflineThumbnail = "Asset Foto/stream offline.png"; 
+        // Masukkan URL Stream HLS (.m3u8) kamu di sini (misal dari Owncast, Restream, Kick HLS, dll)
+        const streamSourceUrl = "https://stream.luviastudio.tv/hls/stream.m3u8"; 
 
-        // Fungsi Cek Status Live & Switch Tampilan Player/Thumbnail
-        async function checkLiveStatusAndRenderPlayer() {
-            const badge = document.getElementById('kick-status-badge');
-            const playerContainer = document.getElementById('kick-player-container');
+        if (Hls.isSupported()) {
+            const hls = new Hls();
+            hls.loadSource(streamSourceUrl);
+            hls.attachMedia(videoElement);
 
-            try {
-                const response = await fetch(`https://kick.com/api/v2/channels/${kickChannel}`);
-                const data = await response.json();
+            hls.on(Hls.Events.MANIFEST_PARSED, function (event, data) {
+                // Mengambil daftar resolusi yang tersedia dari sinyal live streaming
+                const availableQualities = hls.levels.map((l) => l.height);
+                availableQualities.unshift(0); // 0 = Mode Auto
 
-                if (data.livestream) {
-                    // JIKA SEDANG LIVE: Tampilkan Iframe Player Kick
-                    badge.innerText = "🔴 SEDANG LIVE";
-                    badge.className = "badge-live";
-                    playerContainer.innerHTML = `
-                        <iframe 
-                            src="https://player.kick.com/${kickChannel}" 
-                            frameborder="0" 
-                            scrolling="no" 
-                            allowfullscreen="true">
-                        </iframe>
-                    `;
+                const player = new Plyr(videoElement, {
+                    controls: ['play-large', 'play', 'progress', 'current-time', 'mute', 'volume', 'settings', 'pip', 'airplay', 'fullscreen'],
+                    settings: ['quality', 'speed'],
+                    quality: {
+                        default: 0, // Default Auto
+                        options: availableQualities,
+                        forced: true,
+                        onChange: (e) => updateQuality(e),
+                    },
+                    i18n: {
+                        qualityLabel: {
+                            0: 'Auto',
+                        },
+                    },
+                });
+            });
+
+            function updateQuality(newQuality) {
+                if (newQuality === 0) {
+                    hls.currentLevel = -1; // Mode Auto Level
                 } else {
-                    // JIKA OFFLINE: Tampilkan Custom Thumbnail Pilihan Kamu
-                    badge.innerText = "⚪ OFFLINE";
-                    badge.className = "badge-offline";
-                    playerContainer.innerHTML = `
-                        <div class="offline-thumb-wrapper">
-                            <img src="${customOfflineThumbnail}" alt="Stream Offline" class="offline-thumb-img">
-                            <div class="offline-overlay">
-                                <h3> </h3>
-                                <p> </p>
-                            </div>
-                        </div>
-                    `;
+                    hls.levels.forEach((level, levelIndex) => {
+                        if (level.height === newQuality) {
+                            hls.currentLevel = levelIndex;
+                        }
+                    });
                 }
-            } catch (error) {
-                // Fallback jika API terhalang
-                badge.innerText = "🔴 LIVE KICK";
-                badge.className = "badge-live";
-                playerContainer.innerHTML = `
-                    <iframe 
-                        src="https://player.kick.com/${kickChannel}" 
-                        frameborder="0" 
-                        scrolling="no" 
-                        allowfullscreen="true">
-                    </iframe>
-                `;
             }
+        } else if (videoElement.canPlayType('application/vnd.apple.mpegurl')) {
+            // Khusus Browser Safari / iOS (Dukungan HLS Bawaan)
+            videoElement.src = streamSourceUrl;
+            const player = new Plyr(videoElement, {
+                controls: ['play-large', 'play', 'progress', 'current-time', 'mute', 'volume', 'settings', 'pip', 'airplay', 'fullscreen'],
+                settings: ['quality', 'speed']
+            });
+        } else {
+            // Fallback Pemutar Iframe (Jika menggunakan Embed Iframe Kick / Rumble)
+            const playerWrapper = document.getElementById('video-player-wrapper');
+            const liveEmbedUrl = (typeof streamConfig !== 'undefined' && streamConfig.rumbleLiveEmbedUrl) 
+                ? streamConfig.rumbleLiveEmbedUrl 
+                : "https://player.kick.com/luthfi1234321";
+
+            playerWrapper.style.position = "relative";
+            playerWrapper.style.width = "100%";
+            playerWrapper.style.paddingTop = "56.25%";
+            playerWrapper.style.overflow = "hidden";
+
+            playerWrapper.innerHTML = `
+                <iframe src="${liveEmbedUrl}" allowfullscreen="true" style="position: absolute; top:0; left:0; width:100%; height:100%; border:none;"></iframe>
+            `;
         }
 
-        // Kelola Jumlah Penonton Aktif
-        function addViewer() {
-            let current = getActiveLiveViewers();
-            current += 1;
-            localStorage.setItem('active_live_viewers', current);
+        // Render otomatis rekomendasi video
+        renderGridRecommendations('watch-recommendations-grid');
+
+        // Panggil penyesuaian penonton aktif realtime
+        if (typeof updateActiveLiveViewersDisplay === 'function') {
             updateActiveLiveViewersDisplay();
         }
-
-        function removeViewer() {
-            let current = getActiveLiveViewers();
-            if (current > 0) {
-                current -= 1;
-                localStorage.setItem('active_live_viewers', current);
-            }
-            updateActiveLiveViewersDisplay();
-        }
-
-        addViewer();
-
-        window.addEventListener('beforeunload', () => {
-            removeViewer();
-        });
-
-        checkLiveStatusAndRenderPlayer();
-        updateActiveLiveViewersDisplay();
     </script>
 </body>
 </html>
