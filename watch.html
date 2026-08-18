@@ -32,7 +32,7 @@
         <section class="main-video-section">
             <h1 id="player-title" class="stream-title">Memuat Video...</h1>
             
-            <!-- Kontainer Player Multi-Source (Plyr.io / Google Drive / Rumble / YouTube) -->
+            <!-- Kontainer Player Multi-Source (Plyr.io / Drive / Rumble / YouTube / Custom) -->
             <div class="plyr-wrapper" id="video-player-wrapper">
                 <video id="plyr-player" controls playsinline crossorigin="anonymous" poster="Asset Foto/Thumbnimail  Banner YT.png">
                     <source id="video-source" src="" type="video/mp4" />
@@ -142,11 +142,11 @@
             </div>
         `;
         
-        // --- LOGIKA MULTI-SOURCE PLAYER (DENGAN PENGATURAN RESOLUSI) ---
+        // --- LOGIKA MULTI-SOURCE PLAYER (FIXED YOUTUBE, RESOLUSI, & CUSTOM EMBED) ---
         const playerWrapper = document.getElementById('video-player-wrapper');
 
         if (currentVid.driveEmbed) {
-            // Option 1: Pemutar Iframe Google Drive
+            // Option 1: Google Drive
             playerWrapper.style.position = "relative";
             playerWrapper.style.width = "100%";
             playerWrapper.style.paddingTop = "56.25%"; 
@@ -162,7 +162,7 @@
                 </iframe>
             `;
         } else if (currentVid.rumbleEmbed) {
-            // Option 2: Pemutar Iframe Rumble (VOD)
+            // Option 2: Rumble
             playerWrapper.style.position = "relative";
             playerWrapper.style.width = "100%";
             playerWrapper.style.paddingTop = "56.25%";
@@ -176,18 +176,40 @@
                     style="position: absolute; top:0; left:0; width:100%; height:100%; border:none; z-index:2;">
                 </iframe>
             `;
+        } else if (currentVid.customEmbed) {
+            // Option 3: UVideo Dubbindo / Platform Iframe Lainnya
+            playerWrapper.style.position = "relative";
+            playerWrapper.style.width = "100%";
+            playerWrapper.style.paddingTop = "56.25%";
+            playerWrapper.style.overflow = "hidden";
+            playerWrapper.style.zIndex = "1";
+
+            playerWrapper.innerHTML = `
+                <iframe 
+                    src="${currentVid.customEmbed}" 
+                    allowfullscreen="true" 
+                    allow="autoplay; encrypted-media"
+                    style="position: absolute; top:0; left:0; width:100%; height:100%; border:none; z-index:2;">
+                </iframe>
+            `;
         } else if (currentVid.youtubeId) {
-            // Option 3: Pemutar YouTube
-            const player = new Plyr('#plyr-player', {
+            // Option 4: YouTube (Player Single Clean & Opsi Resolusi Aktif)
+            playerWrapper.innerHTML = `
+                <div id="youtube-plyr" data-plyr-provider="youtube" data-plyr-embed-id="${currentVid.youtubeId}"></div>
+            `;
+
+            const player = new Plyr('#youtube-plyr', {
                 controls: ['play-large', 'play', 'progress', 'current-time', 'mute', 'volume', 'captions', 'settings', 'pip', 'airplay', 'fullscreen'],
                 settings: ['quality', 'speed']
             });
-            player.source = {
-                type: 'video',
-                sources: [{ src: currentVid.youtubeId, provider: 'youtube' }]
-            };
         } else {
-            // Option 4: Pemutar Direct MP4 / Archive.org dengan Pilihan Resolusi Pemutar
+            // Option 5: Direct MP4 / Archive.org
+            playerWrapper.innerHTML = `
+                <video id="plyr-player" controls playsinline crossorigin="anonymous" poster="${currentVid.thumb || 'Asset Foto/Thumbnimail  Banner YT.png'}">
+                    <source src="${currentVid.archiveSrc || ''}" type="video/mp4" />
+                </video>
+            `;
+
             const videoSources = currentVid.sources || [
                 { src: currentVid.archiveSrc || '', type: 'video/mp4', size: 720 }
             ];
