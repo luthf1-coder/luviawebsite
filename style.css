@@ -668,3 +668,88 @@ footer {
     font-size: 1rem;
     text-shadow: 0 2px 6px rgba(0, 0, 0, 0.7);
 }
+
+/* ==========================================
+   STYLE KHUSUS AREA DOWNLOAD & RESOLUSI VIDEO
+   ========================================== */
+
+/* Kontainer pembungkus opsi download */
+.download-container {
+    margin: 16px 0;
+    padding: 12px 16px;
+    background: rgba(255, 255, 255, 0.08);
+    border-left: 4px solid #ff914d;
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    flex-wrap: wrap;
+}
+
+.download-label {
+    font-weight: 600;
+    color: #ffffff;
+    font-size: 0.95rem;
+}
+
+/* Dropdown Pemilih Resolusi */
+.download-select {
+    padding: 8px 12px;
+    border-radius: 6px;
+    background-color: #1a1a1a;
+    color: #ff914d;
+    border: 1px solid #ff914d;
+    font-weight: bold;
+    font-size: 0.9rem;
+    cursor: pointer;
+    outline: none;
+    transition: all 0.3s ease;
+}
+
+.download-select:hover, 
+.download-select:focus {
+    background-color: #252525;
+    box-shadow: 0 0 8px rgba(255, 145, 77, 0.4);
+}
+
+/* Tombol Download */
+.btn-download-action {
+    background-color: #ff914d;
+    color: #ffffff;
+    border: none;
+    padding: 9px 18px;
+    border-radius: 6px;
+    cursor: pointer;
+    font-weight: bold;
+    font-size: 0.9rem;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    transition: transform 0.2s ease, background-color 0.2s ease;
+    text-decoration: none;
+}
+
+.btn-download-action:hover {
+    background-color: #e07d3c;
+    transform: translateY(-2px);
+}
+
+.btn-download-action:active {
+    transform: translateY(0);
+}
+
+/* Responsif untuk Layar HP (Mobile) */
+@media screen and (max-width: 600px) {
+    .download-container {
+        flex-direction: column;
+        align-items: stretch;
+        gap: 10px;
+    }
+
+    .download-select, 
+    .btn-download-action {
+        width: 100%;
+        justify-content: center;
+        text-align: center;
+    }
+}
