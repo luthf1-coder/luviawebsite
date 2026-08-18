@@ -8,6 +8,7 @@ const videoList = [
         archiveSrc: "",
         driveEmbed: "",
         youtubeId: "U6N_8dUF30g",
+        rumbleEmbed: "",
         description: "Semua tentang sebuah Kebersamaan dan Kebahagiaan Angkatan 7 (SMPIQu) & dan Angkatan 1 (SMAIQu) di LPD Al-Bahjah Cianjur"
     },
     {
@@ -18,6 +19,7 @@ const videoList = [
         archiveSrc: "",
         driveEmbed: "",
         youtubeId: "sUNYcOKjw-w",
+        rumbleEmbed: "",
         description: "Semua tentang sebuah Kebersamaan dan Kebahagiaan Angkatan 7 (SMPIQu) & dan Angkatan 1 (SMAIQu) di LPD Al-Bahjah Cianjur"
     },
     // {
