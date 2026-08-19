@@ -35,17 +35,7 @@
             object-fit: cover;
             opacity: 0.85;
         }
-        .offline-badge-overlay {
-            position: absolute;
-            background: rgba(0, 0, 0, 0.75);
-            padding: 12px 24px;
-            border-radius: 8px;
-            color: #ffffff;
-            font-weight: bold;
-            text-align: center;
-            border: 1px solid rgba(255, 255, 255, 0.2);
-            backdrop-filter: blur(4px);
-        }
+        
     </style>
 </head>
 <body>
@@ -179,8 +169,7 @@
             playerWrapper.innerHTML = `
                 <div class="offline-banner-container">
                     <img src="${offlineImageSrc}" alt="Siaran Offline" class="offline-banner-img">
-                    <div class="offline-badge-overlay">
-                        ⚪ SIARAN LANGSUNG SAAT INI OFFLINE
+                    
                     </div>
                 </div>
             `;
