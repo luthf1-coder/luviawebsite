@@ -10,7 +10,7 @@
     <link rel="icon" type="image/png" href="Asset Foto/Thumbnimail .png">
     
     <style>
-        /* Perbaikan langsung agar thumbnail rapi & memenuhi player */
+        /* Styling khusus agar pemutar video / thumbnail offline tampil rapi */
         .plyr-wrapper {
             background: #000;
             border-radius: 12px;
@@ -18,10 +18,33 @@
             width: 100%;
             position: relative;
         }
-        .plyr-wrapper video {
-            width: 100% !important;
-            height: auto !important;
-            object-fit: cover !important;
+        .offline-banner-container {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: #111;
+        }
+        .offline-banner-img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            opacity: 0.85;
+        }
+        .offline-badge-overlay {
+            position: absolute;
+            background: rgba(0, 0, 0, 0.75);
+            padding: 12px 24px;
+            border-radius: 8px;
+            color: #ffffff;
+            font-weight: bold;
+            text-align: center;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            backdrop-filter: blur(4px);
         }
     </style>
 </head>
@@ -48,17 +71,16 @@
         <section class="main-video-section">
             <h1 id="live-player-title" class="stream-title">LIVE STREAMING LUVIA STUDIO TV</h1>
             
-            <!-- Kontainer Player Live Streaming (Plyr.io + Multi-Resolusi HLS) -->
+            <!-- Kontainer Utama Player / Thumbnail Offline -->
             <div class="plyr-wrapper" id="video-player-wrapper">
-                <video id="plyr-live-player" controls playsinline crossorigin="anonymous" poster="Asset Foto/live stream.png">
-                </video>
+                <!-- Isi dirender otomatis oleh JavaScript -->
             </div>
 
             <div class="video-info">
                 <h2 id="info-title">SIARAN LANGSUNG LUVIA STUDIO TV</h2>
                 <div id="info-desc">
                     <div id="live-viewers-count-text" style="font-weight: bold; color: #ff914d; margin-bottom: 8px;">
-                        👁️ Memuat data penonton...
+                        👁️ Memuat status siaran...
                     </div>
                     <p>Selamat menyaksikan siaran langsung resmi LUVIA STUDIO TV. Nikmati tayangan kualitatif dengan pilihan resolusi terbaik.</p>
                 </div>
@@ -79,6 +101,7 @@
                         <p>LUVIA STUDIO TV • LIVE</p>
                     </div>
                 </a>
+                <!-- Rekomendasi otomatis dirender via JS -->
             </div>
         </section>
     </main>
@@ -103,58 +126,73 @@
 
     <!-- SCRIPT UTAMA -->
     <script src="https://cdn.plyr.io/3.7.8/plyr.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/hls.js@latest"></script>
     <script src="videos-data.js"></script>
     
     <script>
-        const videoElement = document.getElementById('plyr-live-player');
-        // Masukkan URL Stream HLS (.m3u8) kamu di sini
-        const streamSourceUrl = "https://stream.luviastudio.tv/hls/stream.m3u8"; 
+        // --- KONFIGURASI CHANNEL & GAMBAR OFFLINE ---
+        const kickUsername = "luthfi1234321"; 
+        const offlineImageSrc = "Asset Foto/live stream.png"; 
 
-        if (Hls.isSupported()) {
-            const hls = new Hls();
-            hls.loadSource(streamSourceUrl);
-            hls.attachMedia(videoElement);
+        const playerWrapper = document.getElementById('video-player-wrapper');
+        const viewersText = document.getElementById('live-viewers-count-text');
 
-            hls.on(Hls.Events.MANIFEST_PARSED, function () {
-                const availableQualities = hls.levels.map((l) => l.height);
-                availableQualities.unshift(0); // 0 = Mode Auto
+        // Layout Kontainer Player Rasio 16:9 Pas di Semua Layar
+        playerWrapper.style.position = "relative";
+        playerWrapper.style.width = "100%";
+        playerWrapper.style.paddingTop = "56.25%";
+        playerWrapper.style.overflow = "hidden";
 
-                const player = new Plyr(videoElement, {
-                    // Penambahan POSTER/THUMBNAIL agar muncul
-                    poster: 'Asset Foto/live stream.png',
-                    controls: ['play-large', 'play', 'progress', 'current-time', 'mute', 'volume', 'settings', 'pip', 'airplay', 'fullscreen'],
-                    settings: ['quality', 'speed'],
-                    quality: {
-                        default: 0,
-                        options: availableQualities,
-                        forced: true,
-                        onChange: (e) => updateQuality(e),
-                    },
-                    i18n: { qualityLabel: { 0: 'Auto' } },
-                });
-            });
+        // Fungsi Deteksi Status Live Kick
+        async function checkAndRenderKickStream() {
+            try {
+                const res = await fetch(`https://kick.com/api/v2/channels/${kickUsername}`);
+                const data = await res.json();
 
-            function updateQuality(newQuality) {
-                if (newQuality === 0) {
-                    hls.currentLevel = -1;
+                if (data.livestream && data.livestream.is_live) {
+                    // JIKA SEDANG LIVE -> Tampilkan Player Kick
+                    const viewers = data.livestream.viewer_count || 0;
+                    
+                    playerWrapper.innerHTML = `
+                        <iframe 
+                            src="https://player.kick.com/${kickUsername}" 
+                            allowfullscreen="true" 
+                            scrolling="no"
+                            style="position: absolute; top:0; left:0; width:100%; height:100%; border:none;">
+                        </iframe>
+                    `;
+
+                    if (viewersText) {
+                        viewersText.innerHTML = `🔴 <span style="color: #ff4d4d; font-weight: bold;">SEDANG LIVE</span> • 👁️ ${viewers} Penonton Saat Ini`;
+                    }
                 } else {
-                    hls.levels.forEach((level, levelIndex) => {
-                        if (level.height === newQuality) hls.currentLevel = levelIndex;
-                    });
+                    // JIKA OFFLINE -> Tampilkan Thumbnail Poster Offline
+                    renderOfflineState();
                 }
+            } catch (err) {
+                // Jika Koneksi API Kick Gagal -> Tampilkan Mode Offline
+                renderOfflineState();
             }
-        } else if (videoElement.canPlayType('application/vnd.apple.mpegurl')) {
-            videoElement.src = streamSourceUrl;
-            new Plyr(videoElement, { poster: 'Asset Foto/live stream.png' });
-        } else {
-            // Fallback Iframe
-            const playerWrapper = document.getElementById('video-player-wrapper');
-            playerWrapper.innerHTML = `<iframe src="https://player.kick.com/luthfi1234321" allowfullscreen="true" style="position: absolute; top:0; left:0; width:100%; height:100%; border:none;"></iframe>`;
         }
 
+        // Tampilan Ketika Stream Offline
+        function renderOfflineState() {
+            playerWrapper.innerHTML = `
+                <div class="offline-banner-container">
+                    <img src="${offlineImageSrc}" alt="Siaran Offline" class="offline-banner-img">
+                    <div class="offline-badge-overlay">
+                        ⚪ SIARAN LANGSUNG SAAT INI OFFLINE
+                    </div>
+                </div>
+            `;
+
+            if (viewersText) {
+                viewersText.innerHTML = `⚪ <span style="color: #bbb;">STATUS: SIARAN OFFLINE</span>`;
+            }
+        }
+
+        // Jalankan Fungsi
+        checkAndRenderKickStream();
         renderGridRecommendations('watch-recommendations-grid');
-        updateActiveLiveViewersDisplay();
     </script>
 </body>
 </html>
