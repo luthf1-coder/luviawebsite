@@ -8,6 +8,22 @@
     <link rel="stylesheet" href="https://cdn.plyr.io/3.7.8/plyr.css" />
     <link rel="stylesheet" href="style.css" />
     <link rel="icon" type="image/png" href="Asset Foto/Thumbnimail .png">
+    
+    <style>
+        /* Perbaikan langsung agar thumbnail rapi & memenuhi player */
+        .plyr-wrapper {
+            background: #000;
+            border-radius: 12px;
+            overflow: hidden;
+            width: 100%;
+            position: relative;
+        }
+        .plyr-wrapper video {
+            width: 100% !important;
+            height: auto !important;
+            object-fit: cover !important;
+        }
+    </style>
 </head>
 <body>
 
@@ -52,7 +68,17 @@
         <section class="other-videos-section">
             <h2>Video Rekomendasi</h2>
             <div class="video-grid" id="watch-recommendations-grid">
-                <!-- Rekomendasi otomatis dirender via JS -->
+                <!-- Kartu Utama Live Streaming Kick -->
+                <a href="livestream.html" class="video-card featured-live-card">
+                    <div class="thumb-box">
+                        <span id="kick-watch-badge" class="badge-live">🔴 CHECKING...</span>
+                        <img src="Asset Foto/live stream.png" alt="Live Streaming">
+                    </div>
+                    <div class="video-details">
+                        <h3>LIVE STREAMING LUVIA STUDIO TV</h3>
+                        <p>LUVIA STUDIO TV • LIVE</p>
+                    </div>
+                </a>
             </div>
         </section>
     </main>
@@ -75,16 +101,14 @@
         </div>
     </footer>
 
-    <!-- SCRIPT UTAMA (Tambahan Hls.js untuk Kontrol Resolusi Stream) -->
+    <!-- SCRIPT UTAMA -->
     <script src="https://cdn.plyr.io/3.7.8/plyr.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/hls.js@latest"></script>
     <script src="videos-data.js"></script>
     
     <script>
-        // --- INISIALISASI PEMUTAR LIVE STREAM MULTI-RESOLUSI ---
         const videoElement = document.getElementById('plyr-live-player');
-        
-        // Masukkan URL Stream HLS (.m3u8) kamu di sini (misal dari Owncast, Restream, Kick HLS, dll)
+        // Masukkan URL Stream HLS (.m3u8) kamu di sini
         const streamSourceUrl = "https://stream.luviastudio.tv/hls/stream.m3u8"; 
 
         if (Hls.isSupported()) {
@@ -92,70 +116,45 @@
             hls.loadSource(streamSourceUrl);
             hls.attachMedia(videoElement);
 
-            hls.on(Hls.Events.MANIFEST_PARSED, function (event, data) {
-                // Mengambil daftar resolusi yang tersedia dari sinyal live streaming
+            hls.on(Hls.Events.MANIFEST_PARSED, function () {
                 const availableQualities = hls.levels.map((l) => l.height);
                 availableQualities.unshift(0); // 0 = Mode Auto
 
                 const player = new Plyr(videoElement, {
+                    // Penambahan POSTER/THUMBNAIL agar muncul
+                    poster: 'Asset Foto/live stream.png',
                     controls: ['play-large', 'play', 'progress', 'current-time', 'mute', 'volume', 'settings', 'pip', 'airplay', 'fullscreen'],
                     settings: ['quality', 'speed'],
                     quality: {
-                        default: 0, // Default Auto
+                        default: 0,
                         options: availableQualities,
                         forced: true,
                         onChange: (e) => updateQuality(e),
                     },
-                    i18n: {
-                        qualityLabel: {
-                            0: 'Auto',
-                        },
-                    },
+                    i18n: { qualityLabel: { 0: 'Auto' } },
                 });
             });
 
             function updateQuality(newQuality) {
                 if (newQuality === 0) {
-                    hls.currentLevel = -1; // Mode Auto Level
+                    hls.currentLevel = -1;
                 } else {
                     hls.levels.forEach((level, levelIndex) => {
-                        if (level.height === newQuality) {
-                            hls.currentLevel = levelIndex;
-                        }
+                        if (level.height === newQuality) hls.currentLevel = levelIndex;
                     });
                 }
             }
         } else if (videoElement.canPlayType('application/vnd.apple.mpegurl')) {
-            // Khusus Browser Safari / iOS (Dukungan HLS Bawaan)
             videoElement.src = streamSourceUrl;
-            const player = new Plyr(videoElement, {
-                controls: ['play-large', 'play', 'progress', 'current-time', 'mute', 'volume', 'settings', 'pip', 'airplay', 'fullscreen'],
-                settings: ['quality', 'speed']
-            });
+            new Plyr(videoElement, { poster: 'Asset Foto/live stream.png' });
         } else {
-            // Fallback Pemutar Iframe (Jika menggunakan Embed Iframe Kick / Rumble)
+            // Fallback Iframe
             const playerWrapper = document.getElementById('video-player-wrapper');
-            const liveEmbedUrl = (typeof streamConfig !== 'undefined' && streamConfig.rumbleLiveEmbedUrl) 
-                ? streamConfig.rumbleLiveEmbedUrl 
-                : "https://player.kick.com/luthfi1234321";
-
-            playerWrapper.style.position = "relative";
-            playerWrapper.style.width = "100%";
-            playerWrapper.style.paddingTop = "56.25%";
-            playerWrapper.style.overflow = "hidden";
-
-            playerWrapper.innerHTML = `
-                <iframe src="${liveEmbedUrl}" allowfullscreen="true" style="position: absolute; top:0; left:0; width:100%; height:100%; border:none;"></iframe>
-            `;
+            playerWrapper.innerHTML = `<iframe src="https://player.kick.com/luthfi1234321" allowfullscreen="true" style="position: absolute; top:0; left:0; width:100%; height:100%; border:none;"></iframe>`;
         }
 
-        // Render otomatis rekomendasi video
         renderGridRecommendations('watch-recommendations-grid');
-
-        // Panggil penyesuaian penonton aktif realtime
-        if (typeof updateActiveLiveViewersDisplay === 'function') {
-            updateActiveLiveViewersDisplay();
-        }
+        updateActiveLiveViewersDisplay();
     </script>
 </body>
 </html>
