@@ -69,14 +69,14 @@ const videoList = [
         title: "Detective Conan: Episode One - The Great Detective Turned Small Dubbing Indonesia",
         defaultViews: 10,
         thumb: "Asset Foto/Thumbnimail  Banner YT.png",
-        archiveSrc: "",
+        archiveSrc: "https://cdn.dubbindo.site/driveduo/uploads/34eeded7-a628-47a1-90ff-13fb45a4ad83/34eeded7-a628-47a1-90ff-13fb45a4ad83",
         driveEmbed: "",
         youtubeId: "",
         rumbleEmbed: "",
-        customEmbed: "https://cdn.dubbindo.site/driveduo/uploads/34eeded7-a628-47a1-90ff-13fb45a4ad83/34eeded7-a628-47a1-90ff-13fb45a4ad83",
+        customEmbed: "",
         // Solusi Direct Download Google Drive (Format export=download)
-        downloadUrl: "",
-        description: "Video sampel yang tersimpan di Google Drive."
+        downloadUrl: "https://cdn.dubbindo.site/driveduo/uploads/34eeded7-a628-47a1-90ff-13fb45a4ad83/34eeded7-a628-47a1-90ff-13fb45a4ad83",
+        description: ""
     }
 ];
 
