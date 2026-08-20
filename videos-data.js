@@ -1,3 +1,22 @@
+// ==========================================
+// 1. KONFIGURASI FIREBASE REALTIME DATABASE
+// ==========================================
+// Ganti nilai firebaseConfig di bawah ini dengan konfigurasi Firebase milikmu!
+const firebaseConfig = {
+    apiKey: "AIzaSy...", 
+    authDomain: "luvia-studio-tv.firebaseapp.com",
+    databaseURL: "https://luvia-studio-tv-default-rtdb.firebaseio.com", // PASTIKAN URL DATABASE ADA
+    projectId: "luvia-studio-tv",
+    storageBucket: "luvia-studio-tv.appspot.com",
+    messagingSenderId: "197959268371",
+    appId: "1:197959268371:web:..."
+};
+
+// Inisialisasi Firebase jika library Firebase SDK sudah terunduh di HTML
+if (typeof firebase !== 'undefined' && !firebase.apps.length) {
+    firebase.initializeApp(firebaseConfig);
+}
+
 // Pusat Data Video
 const videoList = [
     {
@@ -9,7 +28,6 @@ const videoList = [
         driveEmbed: "",
         youtubeId: "U6N_8dUF30g",
         rumbleEmbed: "",
-        // Solusi Direct Download YouTube (Mengarahkan ke service download/direct file)
         downloadUrl: "https://www.ssyoutube.com/watch?v=U6N_8dUF30g", 
         description: "Semua tentang sebuah Kebersamaan dan Kebahagiaan Angkatan 7 (SMPIQu) & dan Angkatan 1 (SMAIQu) di LPD Al-Bahjah Cianjur"
     },
@@ -25,46 +43,7 @@ const videoList = [
         downloadUrl: "https://www.ssyoutube.com/watch?v=sUNYcOKjw-w",
         description: "Semua tentang sebuah Kebersamaan dan Kebahagiaan Angkatan 7 (SMPIQu) & dan Angkatan 1 (SMAIQu) di LPD Al-Bahjah Cianjur"
     },
-    // {
-    //     id: "video3",
-    //     title: "Dokumenter Spesial Multi-Resolusi (Archive.org)",
-    //     defaultViews: 45,
-    //     thumb: "Asset Foto/Thumbnimail  Banner YT.png",
-    //     // Multi-resolusi khusus Archive.org / Direct MP4
-    //     sources: [
-    //         { src: "https://archive.org/download/nama_item_kamu/video_360p.mp4", size: 360, type: "video/mp4" },
-    //         { src: "https://archive.org/download/nama_item_kamu/video_720p.mp4", size: 720, type: "video/mp4" },
-    //         { src: "https://archive.org/download/nama_item_kamu/video_1080p.mp4", size: 1080, type: "video/mp4" }
-    //     ],
-    //     description: "Sesi dokumenter eksklusif dengan pilihan resolusi pemutar dan tombol unduh sesuai kualitas."
-    // },
-    // {
-    //     id: "video4",
-    //     title: "REKAMAN LIVE SPECIAL RUMBLE",
-    //     defaultViews: 50,
-    //     thumb: "Asset Foto/live stream.png",
-    //     archiveSrc: "",
-    //     driveEmbed: "",
-    //     youtubeId: "",
-    //     rumbleEmbed: "https://rumble.com/embed/vID unik/kode identitas video milikmu/",
-    //     // Solusi 2: Direct MP4 Link dari Dashboard Rumble
-    //     downloadUrl: "https://ak.rumble.com/vID unik/kode identitas video milikmu.mp4", 
-    //     description: "Hasil rekaman siaran langsung dari platform Rumble."
-    // },
-    // {
-    //     id: "video5",
-    //     title: "Contoh Video Google Drive",
-    //     defaultViews: 10,
-    //     thumb: "Asset Foto/Thumbnimail  Banner YT.png",
-    //     archiveSrc: "",
-    //     driveEmbed: "https://drive.google.com/file/d/ID_FILE_GDRIVE/preview",
-    //     youtubeId: "",
-    //     rumbleEmbed: "",
-    //     // Solusi Direct Download Google Drive (Format export=download)
-    //     downloadUrl: "https://drive.google.com/uc?export=download&id=ID_FILE_GDRIVE",
-    //     description: "Video sampel yang tersimpan di Google Drive."
-    // }
-     {
+    {
         id: "video6",
         title: "Detective Conan: Episode One - The Great Detective Turned Small Dubbing Indonesia",
         defaultViews: 10,
@@ -74,11 +53,64 @@ const videoList = [
         youtubeId: "",
         rumbleEmbed: "",
         customEmbed: "",
-        // Solusi Direct Download Google Drive (Format export=download)
         downloadUrl: "https://cdn.dubbindo.site/driveduo/uploads/34eeded7-a628-47a1-90ff-13fb45a4ad83/34eeded7-a628-47a1-90ff-13fb45a4ad83",
         description: ""
     }
 ];
+
+// ==========================================
+// 2. HELPER VIEWS FIREBASE & FORMATTING
+// ==========================================
+
+// Format angka tayangan (Pencegah NaN)
+function formatViews(views) {
+    const num = parseInt(views, 10);
+    if (isNaN(num)) return '0 Ditonton';
+    return num.toLocaleString('id-ID') + ' Ditonton';
+}
+
+// Fungsi Mendengarkan Perubahan Data Views Realtime dari Firebase
+function listenVideoViews(videoId, defaultViews = 0, callback) {
+    if (typeof firebase === 'undefined' || !firebase.apps.length) {
+        callback(parseInt(defaultViews, 10) || 0);
+        return;
+    }
+    const safeVideoId = String(videoId).replace(/[^a-zA-Z0-9_-]/g, '_');
+    const baseViews = parseInt(defaultViews, 10) || 0;
+    const viewsRef = firebase.database().ref('video_views/' + safeVideoId);
+
+    viewsRef.on('value', (snapshot) => {
+        const firebaseCount = snapshot.val() || 0;
+        callback(baseViews + firebaseCount);
+    }, (err) => {
+        console.error("Firebase Read Error:", err);
+        callback(baseViews);
+    });
+}
+
+// Fungsi Menambah +1 View ke Firebase saat Video Dibuka
+async function incrementVideoViewsAsync(videoId, defaultViews = 0) {
+    const baseViews = parseInt(defaultViews, 10) || 0;
+
+    if (typeof firebase === 'undefined' || !firebase.apps.length) {
+        return baseViews;
+    }
+
+    const safeVideoId = String(videoId).replace(/[^a-zA-Z0-9_-]/g, '_');
+    const viewsRef = firebase.database().ref('video_views/' + safeVideoId);
+
+    return new Promise((resolve) => {
+        viewsRef.transaction((currentValue) => {
+            return (currentValue || 0) + 1;
+        }, (error, committed, snapshot) => {
+            if (committed && snapshot.val() !== null) {
+                resolve(baseViews + snapshot.val());
+            } else {
+                resolve(baseViews);
+            }
+        });
+    });
+}
 
 // --- FUNGSI PROSES DOWNLOAD OTOMATIS ---
 function downloadVideoFile(url, filename) {
@@ -100,7 +132,6 @@ function downloadVideoFile(url, filename) {
             a.remove();
         })
         .catch(() => {
-            // Fallback jika terkena pembatasan CORS server (akan membuka link download langsung)
             const a = document.createElement('a');
             a.href = url;
             a.download = filename || 'video-luvia-tv.mp4';
@@ -111,7 +142,7 @@ function downloadVideoFile(url, filename) {
         });
 }
 
-// --- SISTEM PENONTON LIVE REALTIME (OPSI 2: TAB/SESSION COUNTER) ---
+// --- SISTEM PENONTON LIVE REALTIME ---
 function getActiveLiveViewers() {
     const viewers = localStorage.getItem('active_live_viewers');
     return viewers ? parseInt(viewers) : 0;
@@ -142,25 +173,11 @@ window.addEventListener('storage', (e) => {
     }
 });
 
-// --- FUNGSI VIEWS VIDEO NON-LIVE ---
-function getVideoViews(videoId) {
-    const storedViews = localStorage.getItem(`views_${videoId}`);
-    const vid = videoList.find(v => v.id === videoId);
-    return storedViews ? parseInt(storedViews) : (vid ? vid.defaultViews : 0);
-}
+// ==========================================
+// 3. FUNGSI RENDER REKOMENDASI (GLOBAL VIEWS)
+// ==========================================
 
-function incrementVideoViews(videoId) {
-    let currentViews = getVideoViews(videoId);
-    currentViews += 1;
-    localStorage.setItem(`views_${videoId}`, currentViews);
-    return currentViews;
-}
-
-function formatViews(count) {
-    return count.toLocaleString('id-ID') + ' x ditonton';
-}
-
-// --- FUNGSI RENDER REKOMENDASI ---
+// Render Slider di Halaman Utama (index.html)
 function renderSliderRecommendations(containerId, list = videoList) {
     const container = document.getElementById(containerId);
     if (!container) return;
@@ -181,49 +198,68 @@ function renderSliderRecommendations(containerId, list = videoList) {
 
     if (list.length === 0) {
         html += `<div style="padding: 20px; color: #ffffff; font-weight: bold;">Video tidak ditemukan.</div>`;
+        container.innerHTML = html;
     } else {
+        container.innerHTML = html;
         list.forEach(vid => {
-            const viewsCount = getVideoViews(vid.id);
-            html += `
-                <a href="watch.html?id=${vid.id}" class="slider-card">
-                    <div class="thumb-box">
-                        <img src="${vid.thumb}" alt="${vid.title}">
-                    </div>
-                    <div class="slider-details">
-                        <h3>${vid.title}</h3>
-                        <p>${formatViews(viewsCount)}</p>
-                    </div>
-                </a>
+            const card = document.createElement('a');
+            card.href = `watch.html?id=${vid.id}`;
+            card.className = 'slider-card';
+            card.innerHTML = `
+                <div class="thumb-box">
+                    <img src="${vid.thumb}" alt="${vid.title}">
+                </div>
+                <div class="slider-details">
+                    <h3>${vid.title}</h3>
+                    <p id="view-count-slider-${vid.id}">👁️ Memuat...</p>
+                </div>
             `;
+            container.appendChild(card);
+
+            // Pasang Listener Realtime Per Video
+            listenVideoViews(vid.id, vid.defaultViews || 0, (totalViews) => {
+                const el = document.getElementById(`view-count-slider-${vid.id}`);
+                if (el) el.innerText = `👁️ ${formatViews(totalViews)}`;
+            });
         });
     }
-
-    container.innerHTML = html;
 }
 
+// Render Grid di Halaman Nonton & Live Stream (watch.html & livestream.html)
 function renderGridRecommendations(containerId, list = videoList) {
     const container = document.getElementById(containerId);
     if (!container) return;
 
-    let html = '';
+    // Ambil kartu live jika ada di dalam container
+    const liveCard = container.querySelector('.featured-live-card');
+    container.innerHTML = liveCard ? liveCard.outerHTML : '';
+
     list.forEach(vid => {
-        const viewsCount = getVideoViews(vid.id);
-        html += `
-            <a href="watch.html?id=${vid.id}" class="video-card">
-                <div class="thumb-box">
-                    <img src="${vid.thumb}" alt="${vid.title}">
-                </div>
-                <div class="video-details">
-                    <h3>${vid.title}</h3>
-                    <p>LUVIA STUDIO TV • ${formatViews(viewsCount)}</p>
-                </div>
-            </a>
+        const card = document.createElement('a');
+        card.href = `watch.html?id=${vid.id}`;
+        card.className = 'video-card';
+        card.innerHTML = `
+            <div class="thumb-box">
+                <img src="${vid.thumb}" alt="${vid.title}">
+            </div>
+            <div class="video-details">
+                <h3>${vid.title}</h3>
+                <p>LUVIA STUDIO TV • <span id="view-count-grid-${vid.id}">👁️ Memuat...</span></p>
+            </div>
         `;
+        container.appendChild(card);
+
+        // Pasang Listener Realtime Per Video
+        listenVideoViews(vid.id, vid.defaultViews || 0, (totalViews) => {
+            const el = document.getElementById(`view-count-grid-${vid.id}`);
+            if (el) el.innerText = `👁️ ${formatViews(totalViews)}`;
+        });
     });
-    container.innerHTML += html;
 }
 
-// --- SISTEM PENCARIAN ---
+// ==========================================
+// 4. SISTEM PENCARIAN
+// ==========================================
 document.addEventListener('DOMContentLoaded', () => {
     const searchForms = document.querySelectorAll('.nav-search');
 
@@ -259,7 +295,7 @@ function executeSearchOnHome(query) {
     const q = query.toLowerCase();
     const filteredVideos = videoList.filter(vid => 
         vid.title.toLowerCase().includes(q) || 
-        vid.description.toLowerCase().includes(q)
+        (vid.description && vid.description.toLowerCase().includes(q))
     );
 
     const sectionTitle = document.querySelector('#recommendations h2');
@@ -272,31 +308,5 @@ function executeSearchOnHome(query) {
     const recSection = document.getElementById('recommendations');
     if (recSection) {
         recSection.scrollIntoView({ behavior: 'smooth' });
-    }
-}
-// ============================================================
-// FUNGSI MENGAMBIL & MENAMBAH VIEWS TERPUSAT (SINKRON SEMUA HP)
-// ============================================================
-
-// 1. Format angka views (misal 1500 -> 1.5K views)
-function formatViews(views) {
-    if (views >= 1000000) return (views / 1000000).toFixed(1) + 'M views';
-    if (views >= 1000) return (views / 1000).toFixed(1) + 'K views';
-    return views + ' views';
-}
-
-// 2. Tambahkan +1 view ke server terpusat saat video dibuka
-async function incrementVideoViewsAsync(videoId, defaultViews = 0) {
-    const namespace = "luviastudio_tv_views"; // ID unik website kamu
-    try {
-        const response = await fetch(`https://api.counterapi.dev/v1/${namespace}/${videoId}/up`);
-        const data = await response.json();
-        return data.count + defaultViews;
-    } catch (err) {
-        // Fallback jika koneksi server lambat: gunakan data lokal
-        let localViews = parseInt(localStorage.getItem('view_' + videoId)) || defaultViews;
-        localViews += 1;
-        localStorage.setItem('view_' + videoId, localViews);
-        return localViews;
     }
 }
