@@ -203,13 +203,32 @@
                 { src: currentVid.archiveSrc || '', type: 'video/mp4', size: 720 }
             ];
             
-            const player = new Plyr('#plyr-player', {
-                controls: ['play-large', 'play', 'progress', 'current-time', 'mute', 'volume', 'captions', 'settings', 'pip', 'airplay', 'fullscreen'],
-                settings: ['quality', 'speed'],
-                quality: {
-                    default: videoSources[0].size || 720,
-                    options: videoSources.map(s => s.size)
-                }
+           const player = new Plyr('#plyr-player', {
+    // 1. Pastikan ada 'current-time' dan 'duration' di dalam controls
+    controls: [
+        'play-large', 
+        'play', 
+        'progress', 
+        'current-time', // Menampilkan waktu berjalan
+        'duration',     // Menampilkan total durasi
+        'mute', 
+        'volume', 
+        'captions', 
+        'settings', 
+        'pip', 
+        'airplay', 
+        'fullscreen'
+    ],
+    
+    // 2. Tambahkan 2 baris ini supaya TIDAK hitung mundur
+    invertTime: false,   // Durasi tidak mundur (tidak pakai minus)
+    toggleInvert: false, // Menghilangkan fungsi klik untuk hitung mundur
+    
+    settings: ['quality', 'speed'],
+    quality: {
+        default: videoSources[0].size || 720,
+        options: videoSources.map(s => s.size)
+    }
             });
 
             player.source = {
