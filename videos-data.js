@@ -75,7 +75,7 @@ const videoList = [
         rumbleEmbed: "",
         customEmbed: "https://www.dubbindo.site/embed/4XnYC1xgdjVml5j?color=04abf2",
         // Solusi Direct Download Google Drive (Format export=download)
-        downloadUrl: "https://drive.google.com/uc?export=download&id=ID_FILE_GDRIVE",
+        downloadUrl: "",
         description: "Video sampel yang tersimpan di Google Drive."
     }
 ];
