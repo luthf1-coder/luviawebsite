@@ -2,14 +2,15 @@
 // 1. KONFIGURASI FIREBASE REALTIME DATABASE
 // ==========================================
 // Ganti nilai firebaseConfig di bawah ini dengan konfigurasi Firebase milikmu!
-const firebaseConfig = {
-    apiKey: "AIzaSy...", 
-    authDomain: "luvia-studio-tv.firebaseapp.com",
-    databaseURL: "https://luvia-studio-tv-default-rtdb.firebaseio.com", // PASTIKAN URL DATABASE ADA
-    projectId: "luvia-studio-tv",
-    storageBucket: "luvia-studio-tv.appspot.com",
-    messagingSenderId: "197959268371",
-    appId: "1:197959268371:web:..."
+        const firebaseConfig = {
+  apiKey: "AIzaSyDQfY4Q3ulm0NOZyzSdbzYb53SNCFCZrj0",
+  authDomain: "luvia-studio-tv.firebaseapp.com",
+  databaseURL: "https://luvia-studio-tv-default-rtdb.firebaseio.com",
+  projectId: "luvia-studio-tv",
+  storageBucket: "luvia-studio-tv.firebasestorage.app",
+  messagingSenderId: "197959268371",
+  appId: "1:197959268371:web:009210b197a4a4246d27e6",
+  measurementId: "G-51NHLLES6V"
 };
 
 // Inisialisasi Firebase jika library Firebase SDK sudah terunduh di HTML
