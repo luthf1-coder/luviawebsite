@@ -91,7 +91,26 @@
         const currentVid = videoList.find(v => v.id === currentVideoId) || videoList[0];
 
         // Tambahkan hitungan ditonton +1 setiap kali halaman dimuat
-        const updatedViews = incrementVideoViews(currentVid.id);
+        // const updatedViews = incrementVideoViews(currentVid.id);
+        // Render awal sambil menunggu data dari server terpusat
+document.getElementById('player-title').innerText = currentVid.title;
+document.getElementById('info-title').innerText = currentVid.title;
+
+document.getElementById('info-desc').innerHTML = `
+    <p>${currentVid.description}</p>
+    ${downloadAreaHTML}
+    <div id="views-display-box" style="font-weight: bold; color: #ff914d; margin-top: 10px;">
+        👁️ Memuat jumlah ditonton...
+    </div>
+`;
+
+// Panggil fungsi penambah views terpusat
+incrementVideoViewsAsync(currentVid.id, currentVid.defaultViews || 0).then(totalViews => {
+    const viewsBox = document.getElementById('views-display-box');
+    if (viewsBox) {
+        viewsBox.innerText = `👁️ ${formatViews(totalViews)}`;
+    }
+});
 
         // --- GENERATE AREA DOWNLOAD & RESOLUSI ---
         let downloadAreaHTML = '';
