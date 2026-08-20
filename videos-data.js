@@ -70,7 +70,7 @@ const videoList = [
         defaultViews: 10,
         thumb: "Asset Foto/Thumbnimail  Banner YT.png",
         archiveSrc: "",
-        driveEmbed: "https://drive.google.com/file/d/ID_FILE_GDRIVE/preview",
+        driveEmbed: "",
         youtubeId: "",
         rumbleEmbed: "",
         customEmbed: "https://www.dubbindo.site/embed/4XnYC1xgdjVml5j?color=04abf2",
