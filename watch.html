@@ -90,8 +90,6 @@
 
         const currentVid = videoList.find(v => v.id === currentVideoId) || videoList[0];
 
-        // Tambahkan hitungan ditonton +1 setiap kali halaman dimuat
-        // const updatedViews = incrementVideoViews(currentVid.id);
         // Render awal sambil menunggu data dari server terpusat
 document.getElementById('player-title').innerText = currentVid.title;
 document.getElementById('info-title').innerText = currentVid.title;
