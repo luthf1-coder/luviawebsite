@@ -142,23 +142,29 @@ window.addEventListener('storage', (e) => {
     }
 });
 
-// --- FUNGSI VIEWS VIDEO NON-LIVE ---
-function getVideoViews(videoId) {
-    const storedViews = localStorage.getItem(`views_${videoId}`);
-    const vid = videoList.find(v => v.id === videoId);
-    return storedViews ? parseInt(storedViews) : (vid ? vid.defaultViews : 0);
+// --- FUNGSI VIEWS TERBARU (SINKRON TERPUSAT) ---
+function formatViews(views) {
+    if (views >= 1000000) return (views / 1000000).toFixed(1) + 'M views';
+    if (views >= 1000) return (views / 1000).toFixed(1) + 'K views';
+    return views + ' views';
 }
 
-function incrementVideoViews(videoId) {
-    let currentViews = getVideoViews(videoId);
-    currentViews += 1;
-    localStorage.setItem(`views_${videoId}`, currentViews);
-    return currentViews;
+async function incrementVideoViewsAsync(videoId, defaultViews = 0) {
+    const namespace = "luviastudio_tv_views";
+    try {
+        const response = await fetch(`https://api.counterapi.dev/v1/${namespace}/${videoId}/up`);
+        const data = await response.json();
+        return data.count + defaultViews;
+    } catch (err) {
+        // Fallback jika koneksi server lambat
+        let localViews = parseInt(localStorage.getItem('view_' + videoId)) || defaultViews;
+        localViews += 1;
+        localStorage.setItem('view_' + videoId, localViews);
+        return localViews;
+    }
 }
 
-function formatViews(count) {
-    return count.toLocaleString('id-ID') + ' x ditonton';
-}
+
 
 // --- FUNGSI RENDER REKOMENDASI ---
 function renderSliderRecommendations(containerId, list = videoList) {
