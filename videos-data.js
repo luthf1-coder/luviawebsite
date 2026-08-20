@@ -274,3 +274,29 @@ function executeSearchOnHome(query) {
         recSection.scrollIntoView({ behavior: 'smooth' });
     }
 }
+// ============================================================
+// FUNGSI MENGAMBIL & MENAMBAH VIEWS TERPUSAT (SINKRON SEMUA HP)
+// ============================================================
+
+// 1. Format angka views (misal 1500 -> 1.5K views)
+function formatViews(views) {
+    if (views >= 1000000) return (views / 1000000).toFixed(1) + 'M views';
+    if (views >= 1000) return (views / 1000).toFixed(1) + 'K views';
+    return views + ' views';
+}
+
+// 2. Tambahkan +1 view ke server terpusat saat video dibuka
+async function incrementVideoViewsAsync(videoId, defaultViews = 0) {
+    const namespace = "luviastudio_tv_views"; // ID unik website kamu
+    try {
+        const response = await fetch(`https://api.counterapi.dev/v1/${namespace}/${videoId}/up`);
+        const data = await response.json();
+        return data.count + defaultViews;
+    } catch (err) {
+        // Fallback jika koneksi server lambat: gunakan data lokal
+        let localViews = parseInt(localStorage.getItem('view_' + videoId)) || defaultViews;
+        localViews += 1;
+        localStorage.setItem('view_' + videoId, localViews);
+        return localViews;
+    }
+}
