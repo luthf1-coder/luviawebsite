@@ -227,13 +227,103 @@ function renderSliderRecommendations(containerId, list = videoList) {
 }
 
 // Render Grid di Halaman Nonton & Live Stream (watch.html & livestream.html)
+// --- FUNGSI CEK STATUS LIVE KICK OTOMATIS ---
+async function updateKickBadgeStatus(badgeId) {
+    const badge = document.getElementById(badgeId);
+    if (!badge) return;
+
+    const kickUsername = "luthfi1234321"; // Username Kick kamu
+    try {
+        const res = await fetch(`https://kick.com/api/v2/channels/${kickUsername}`);
+        const data = await res.json();
+
+        if (data.livestream && data.livestream.is_live) {
+            const viewers = data.livestream.viewer_count || 0;
+            badge.innerText = `🔴 SEDANG LIVE (${viewers} Penonton)`;
+            badge.className = "badge-live";
+        } else {
+            badge.innerText = "⚪ OFFLINE";
+            badge.className = "badge-offline";
+        }
+    } catch (err) {
+        badge.innerText = "⚪ OFFLINE";
+        badge.className = "badge-offline";
+    }
+}
+
+// 1. Render Slider di Halaman Utama (index.html)
+function renderSliderRecommendations(containerId, list = videoList) {
+    const container = document.getElementById(containerId);
+    if (!container) return;
+
+    let html = `
+        <a href="livestream.html" class="slider-card featured-live">
+            <div class="thumb-box">
+                <span id="kick-home-badge" class="badge-live">🔍 Memeriksa...</span>
+                <img src="Asset Foto/live stream.png" alt="Live Streaming">
+            </div>
+            <div class="slider-details">
+                <h3>LIVE STREAMING LUVIA STUDIO TV</h3>
+                <p>Siaran Langsung • Klik Untuk Nonton</p>
+            </div>
+        </a>
+    `;
+
+    if (list.length === 0) {
+        html += `<div style="padding: 20px; color: #ffffff; font-weight: bold;">Video tidak ditemukan.</div>`;
+        container.innerHTML = html;
+    } else {
+        container.innerHTML = html;
+        list.forEach(vid => {
+            const card = document.createElement('a');
+            card.href = `watch.html?id=${vid.id}`;
+            card.className = 'slider-card';
+            card.innerHTML = `
+                <div class="thumb-box">
+                    <img src="${vid.thumb}" alt="${vid.title}">
+                </div>
+                <div class="slider-details">
+                    <h3>${vid.title}</h3>
+                    <p id="view-count-slider-${vid.id}">👁️ Memuat...</p>
+                </div>
+            `;
+            container.appendChild(card);
+
+            listenVideoViews(vid.id, vid.defaultViews || 0, (totalViews) => {
+                const el = document.getElementById(`view-count-slider-${vid.id}`);
+                if (el) el.innerText = `👁️ ${formatViews(totalViews)}`;
+            });
+        });
+    }
+
+    // Cek status live Kick otomatis untuk slider
+    updateKickBadgeStatus('kick-home-badge');
+}
+
+// 2. Render Grid di Halaman Nonton & Live Stream (watch.html & livestream.html)
 function renderGridRecommendations(containerId, list = videoList) {
     const container = document.getElementById(containerId);
     if (!container) return;
 
-    // Ambil kartu live jika ada di dalam container
-    const liveCard = container.querySelector('.featured-live-card');
-    container.innerHTML = liveCard ? liveCard.outerHTML : '';
+    const isLivePage = window.location.pathname.includes('livestream.html');
+    let html = '';
+
+    if (!isLivePage) {
+        html = `
+            <a href="livestream.html" class="video-card featured-live-card">
+                <div class="thumb-box">
+                    <span id="kick-watch-badge" class="badge-live">🔍 Memeriksa...</span>
+                    <img src="Asset Foto/live stream.png" alt="Live Streaming">
+                </div>
+                <div class="video-details">
+                    <h3>LIVE STREAMING LUVIA STUDIO TV</h3>
+                    <p>LUVIA STUDIO TV • LIVE</p>
+                </div>
+            </a>
+        `;
+    }
+
+    container.innerHTML = html;
 
     list.forEach(vid => {
         const card = document.createElement('a');
@@ -250,13 +340,18 @@ function renderGridRecommendations(containerId, list = videoList) {
         `;
         container.appendChild(card);
 
-        // Pasang Listener Realtime Per Video
         listenVideoViews(vid.id, vid.defaultViews || 0, (totalViews) => {
             const el = document.getElementById(`view-count-grid-${vid.id}`);
             if (el) el.innerText = `👁️ ${formatViews(totalViews)}`;
         });
     });
+
+    // Cek status live Kick otomatis untuk grid rekomendasi watch.html
+    if (!isLivePage) {
+        updateKickBadgeStatus('kick-watch-badge');
+    }
 }
+
 
 // ==========================================
 // 4. SISTEM PENCARIAN
