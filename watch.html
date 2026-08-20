@@ -8,7 +8,7 @@
     <link rel="stylesheet" href="style.css" />
     <link rel="icon" type="image/png" href="Asset Foto/Thumbnimail .png">
 
-    <!-- SDK Firebase Realtime Database (Anti Blokir & Realtime) -->
+    <!-- SDK Firebase Realtime Database (WAJIB ADA AGAR SCRIPT TIDAK EROR) -->
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-database-compat.js"></script>
 </head>
@@ -60,86 +60,24 @@
     <script src="videos-data.js"></script>
 
     <script>
-        // ==========================================
-        // 1. KONEKSI FIREBASE (PASTE CONFIG KAMU DI SINI)
-        // ==========================================
-        const firebaseConfig = {
-  apiKey: "AIzaSyDQfY4Q3ulm0NOZyzSdbzYb53SNCFCZrj0",
-  authDomain: "luvia-studio-tv.firebaseapp.com",
-  databaseURL: "https://luvia-studio-tv-default-rtdb.firebaseio.com",
-  projectId: "luvia-studio-tv",
-  storageBucket: "luvia-studio-tv.firebasestorage.app",
-  messagingSenderId: "197959268371",
-  appId: "1:197959268371:web:009210b197a4a4246d27e6",
-  measurementId: "G-51NHLLES6V"
-};
-
-        // Inisialisasi Firebase
-        if (!firebase.apps.length) {
-            firebase.initializeApp(firebaseConfig);
-        }
-        const database = firebase.database();
-
-        // Helper Format Views (Anti NaN)
-        function formatViews(views) {
-            const num = parseInt(views, 10);
-            if (isNaN(num)) return '0 Ditonton';
-            return num.toLocaleString('id-ID') + ' Ditonton';
-        }
-
-        // Fungsi Update & Ambil Viewer Realtime Global
-        function updateAndListenViews(videoId, defaultViews = 0, callback) {
-            const safeVideoId = String(videoId).replace(/[^a-zA-Z0-9_-]/g, '_');
-            const baseViews = parseInt(defaultViews, 10) || 0;
-            const viewsRef = database.ref('video_views/' + safeVideoId);
-
-            // Transaksi atomic (+1 hitungan tanpa konflik antar HP)
-            viewsRef.transaction((currentValue) => {
-                return (currentValue || 0) + 1;
-            });
-
-            // Dengarkan perubahan data secara realtime di semua HP & Laptop
-            viewsRef.on('value', (snapshot) => {
-                const firebaseCount = snapshot.val() || 0;
-                const totalViews = baseViews + firebaseCount;
-                callback(totalViews);
-            }, (error) => {
-                console.error("Firebase Error:", error);
-                callback(baseViews);
-            });
-        }
-
-        // Helper Download
-        if (typeof window.downloadVideoFile !== 'function') {
-            window.downloadVideoFile = function(url, filename) {
-                const a = document.createElement('a');
-                a.href = url;
-                a.download = filename || 'video.mp4';
-                a.target = '_blank';
-                document.body.appendChild(a);
-                a.click();
-                document.body.removeChild(a);
-            };
-        }
-
-        // ==========================================
-        // 2. LOGIKA UTAMA HALAMAN WATCH
-        // ==========================================
+        // Ambil ID Video dari URL
         const urlParams = new URLSearchParams(window.location.search);
         const currentVideoId = urlParams.get('id') || 'video1';
+        
+        // Ambil Data Video dari videoList
         const currentVid = (typeof videoList !== 'undefined' && videoList.find(v => v.id === currentVideoId)) || {
             id: currentVideoId,
             title: 'Video Tidak Ditemukan',
-            description: '-',
+            description: 'Maaf, video ini tidak tersedia.',
             defaultViews: 0
         };
 
-        // Render Judul & Deskripsi
+        // 1. Render Judul & Deskripsi Langsung
         document.getElementById('player-title').innerText = currentVid.title;
         document.getElementById('info-title').innerText = currentVid.title;
-        document.getElementById('desc-text').innerText = currentVid.description;
+        document.getElementById('desc-text').innerText = currentVid.description || 'Tidak ada deskripsi.';
 
-        // Render Area Download
+        // 2. Render Area Download
         let downloadAreaHTML = '';
         const safeTitle = (currentVid.title || 'video').replace(/'/g, "\\'");
 
@@ -157,12 +95,7 @@
         }
         document.getElementById('download-area').innerHTML = downloadAreaHTML;
 
-        // Update & Tampilkan Views Realtime
-        updateAndListenViews(currentVid.id, currentVid.defaultViews || 0, (totalViews) => {
-            document.getElementById('views-display-box').innerText = `👁️ ${formatViews(totalViews)}`;
-        });
-
-        // Logika Player Video
+        // 3. Render Player Video
         const playerWrapper = document.getElementById('video-player-wrapper');
         if (currentVid.driveEmbed) {
             playerWrapper.innerHTML = `<iframe src="${currentVid.driveEmbed}" allowfullscreen="true" style="width:100%; aspect-ratio:16/9; border:none;"></iframe>`;
@@ -174,8 +107,8 @@
             playerWrapper.innerHTML = `<iframe src="https://www.youtube.com/embed/${currentVid.youtubeId}?enablejsapi=1" allowfullscreen="true" allow="accelerometer; autoplay; encrypted-media; picture-in-picture" style="width:100%; aspect-ratio:16/9; border:none;"></iframe>`;
         } else {
             playerWrapper.innerHTML = `<video id="plyr-player" controls playsinline poster="${currentVid.thumb || ''}"><source src="${currentVid.archiveSrc || ''}" type="video/mp4" /></video>`;
-            if (document.getElementById('plyr-player')) {
-                const player = new Plyr('#plyr-player', {
+            if (document.getElementById('plyr-player') && typeof Plyr !== 'undefined') {
+                new Plyr('#plyr-player', {
                     invertTime: false,
                     toggleInvert: false,
                     settings: ['quality', 'speed'],
@@ -184,7 +117,21 @@
             }
         }
 
-        // Render Rekomendasi
+        // 4. Update Views secara Async (Aman & Tidak Menyebabkan Stuck)
+        if (typeof incrementVideoViewsAsync === 'function') {
+            incrementVideoViewsAsync(currentVid.id, currentVid.defaultViews || 0).then(totalViews => {
+                const viewsBox = document.getElementById('views-display-box');
+                if (viewsBox && typeof formatViews === 'function') {
+                    viewsBox.innerText = `👁️ ${formatViews(totalViews)}`;
+                }
+            }).catch(() => {
+                document.getElementById('views-display-box').innerText = `👁️ ${currentVid.defaultViews || 0} Ditonton`;
+            });
+        } else {
+            document.getElementById('views-display-box').innerText = `👁️ ${currentVid.defaultViews || 0} Ditonton`;
+        }
+
+        // 5. Render Rekomendasi
         if (typeof renderGridRecommendations === 'function') {
             renderGridRecommendations('watch-recommendations-grid');
         }
