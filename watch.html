@@ -7,6 +7,10 @@
     <link rel="stylesheet" href="https://cdn.plyr.io/3.7.8/plyr.css" />
     <link rel="stylesheet" href="style.css" />
     <link rel="icon" type="image/png" href="Asset Foto/Thumbnimail .png">
+
+    <!-- SDK Firebase Realtime Database (Anti Blokir & Realtime) -->
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-database-compat.js"></script>
 </head>
 <body>
 
@@ -57,45 +61,55 @@
 
     <script>
         // ==========================================
-        // SYSTEM VIEWER GLOBAL (STABIL & ANTI NaN)
+        // 1. KONEKSI FIREBASE (PASTE CONFIG KAMU DI SINI)
         // ==========================================
+        const firebaseConfig = {
+  apiKey: "AIzaSyDQfY4Q3ulm0NOZyzSdbzYb53SNCFCZrj0",
+  authDomain: "luvia-studio-tv.firebaseapp.com",
+  databaseURL: "https://luvia-studio-tv-default-rtdb.firebaseio.com",
+  projectId: "luvia-studio-tv",
+  storageBucket: "luvia-studio-tv.firebasestorage.app",
+  messagingSenderId: "197959268371",
+  appId: "1:197959268371:web:009210b197a4a4246d27e6",
+  measurementId: "G-51NHLLES6V"
+};
 
-        // 1. Helper Format Tampilan (Pencegah NaN)
+        // Inisialisasi Firebase
+        if (!firebase.apps.length) {
+            firebase.initializeApp(firebaseConfig);
+        }
+        const database = firebase.database();
+
+        // Helper Format Views (Anti NaN)
         function formatViews(views) {
             const num = parseInt(views, 10);
             if (isNaN(num)) return '0 Ditonton';
             return num.toLocaleString('id-ID') + ' Ditonton';
         }
 
-        // 2. Mengambil & Menambah Views Online via CounterAPI.dev
-        async function incrementVideoViewsAsync(videoId, defaultViews = 0) {
-            // Sanitasi ID agar karakter unik aman di URL
+        // Fungsi Update & Ambil Viewer Realtime Global
+        function updateAndListenViews(videoId, defaultViews = 0, callback) {
             const safeVideoId = String(videoId).replace(/[^a-zA-Z0-9_-]/g, '_');
-            const workspace = "luviastudio_official_tv";
             const baseViews = parseInt(defaultViews, 10) || 0;
+            const viewsRef = database.ref('video_views/' + safeVideoId);
 
-            try {
-                // Request untuk menaikkan +1 hitungan di server global
-                let response = await fetch(`https://api.counterapi.dev/v1/${workspace}/${safeVideoId}/up`);
-                
-                // Jika counter belum ada di server, otomatis buat baru
-                if (!response.ok) {
-                    response = await fetch(`https://api.counterapi.dev/v1/${workspace}/${safeVideoId}/set?count=1`);
-                }
+            // Transaksi atomic (+1 hitungan tanpa konflik antar HP)
+            viewsRef.transaction((currentValue) => {
+                return (currentValue || 0) + 1;
+            });
 
-                const data = await response.json();
-                
-                if (data && typeof data.count === 'number') {
-                    return baseViews + data.count;
-                }
-                return baseViews;
-            } catch (error) {
-                console.error("Gagal sinkronisasi viewer online:", error);
-                return baseViews;
-            }
+            // Dengarkan perubahan data secara realtime di semua HP & Laptop
+            viewsRef.on('value', (snapshot) => {
+                const firebaseCount = snapshot.val() || 0;
+                const totalViews = baseViews + firebaseCount;
+                callback(totalViews);
+            }, (error) => {
+                console.error("Firebase Error:", error);
+                callback(baseViews);
+            });
         }
 
-        // Helper Download (Memastikan fungsi terdefinisi)
+        // Helper Download
         if (typeof window.downloadVideoFile !== 'function') {
             window.downloadVideoFile = function(url, filename) {
                 const a = document.createElement('a');
@@ -109,7 +123,7 @@
         }
 
         // ==========================================
-        // LOGIKA UTAMA HALAMAN WATCH
+        // 2. LOGIKA UTAMA HALAMAN WATCH
         // ==========================================
         const urlParams = new URLSearchParams(window.location.search);
         const currentVideoId = urlParams.get('id') || 'video1';
@@ -120,12 +134,12 @@
             defaultViews: 0
         };
 
-        // 1. Render Judul & Deskripsi
+        // Render Judul & Deskripsi
         document.getElementById('player-title').innerText = currentVid.title;
         document.getElementById('info-title').innerText = currentVid.title;
         document.getElementById('desc-text').innerText = currentVid.description;
 
-        // 2. Generate Area Download
+        // Render Area Download
         let downloadAreaHTML = '';
         const safeTitle = (currentVid.title || 'video').replace(/'/g, "\\'");
 
@@ -143,12 +157,12 @@
         }
         document.getElementById('download-area').innerHTML = downloadAreaHTML;
 
-        // 3. Update Views (Async Global)
-        incrementVideoViewsAsync(currentVid.id, currentVid.defaultViews || 0).then(totalViews => {
+        // Update & Tampilkan Views Realtime
+        updateAndListenViews(currentVid.id, currentVid.defaultViews || 0, (totalViews) => {
             document.getElementById('views-display-box').innerText = `👁️ ${formatViews(totalViews)}`;
         });
 
-        // 4. Logika Player
+        // Logika Player Video
         const playerWrapper = document.getElementById('video-player-wrapper');
         if (currentVid.driveEmbed) {
             playerWrapper.innerHTML = `<iframe src="${currentVid.driveEmbed}" allowfullscreen="true" style="width:100%; aspect-ratio:16/9; border:none;"></iframe>`;
@@ -170,7 +184,7 @@
             }
         }
 
-        // 5. Render Rekomendasi
+        // Render Rekomendasi
         if (typeof renderGridRecommendations === 'function') {
             renderGridRecommendations('watch-recommendations-grid');
         }
