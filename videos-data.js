@@ -73,7 +73,7 @@ const videoList = [
         driveEmbed: "",
         youtubeId: "",
         rumbleEmbed: "",
-        customEmbed: "https://www.dubbindo.site/embed/4XnYC1xgdjVml5j?color=04abf2",
+        customEmbed: "https://cdn.dubbindo.site/driveduo/uploads/34eeded7-a628-47a1-90ff-13fb45a4ad83/34eeded7-a628-47a1-90ff-13fb45a4ad83",
         // Solusi Direct Download Google Drive (Format export=download)
         downloadUrl: "",
         description: "Video sampel yang tersimpan di Google Drive."
