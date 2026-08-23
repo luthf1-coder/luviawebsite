@@ -21,6 +21,18 @@ if (typeof firebase !== 'undefined' && !firebase.apps.length) {
 // Pusat Data Video
 const videoList = [
     {
+    "id": "kick_1787492930",
+    "title": "Stream via RTMP (OBS, Vmix, Zoom) with Restream",
+    "defaultViews": 0,
+    "thumb": "https://kick.com/favicon.ico",
+    "sources": [],
+    "driveEmbed": "https://drive.google.com/file/d/1cuUqCFFWaqZtINDATx-esjN-JfEtqy0I/preview",
+    "youtubeId": "",
+    "rumbleEmbed": "",
+    "downloadUrl": "https://drive.google.com/uc?export=download&id=1cuUqCFFWaqZtINDATx-esjN-JfEtqy0I",
+    "description": "VOD LS TV"
+},
+    {
     "id": "kick_1787475904",
     "title": "Stream via RTMP (OBS, Vmix, Zoom) with Restream",
     "defaultViews": 0,
