@@ -44,6 +44,45 @@ const videoList = [
         downloadUrl: "https://www.ssyoutube.com/watch?v=sUNYcOKjw-w",
         description: "Semua tentang sebuah Kebersamaan dan Kebahagiaan Angkatan 7 (SMPIQu) & dan Angkatan 1 (SMAIQu) di LPD Al-Bahjah Cianjur"
     },
+    // {
+    //     id: "video3",
+    //     title: "Dokumenter Spesial Multi-Resolusi (Archive.org)",
+    //     defaultViews: 45,
+    //     thumb: "Asset Foto/Thumbnimail  Banner YT.png",
+    //     // Multi-resolusi khusus Archive.org / Direct MP4
+    //     sources: [
+    //         { src: "https://archive.org/download/nama_item_kamu/video_360p.mp4", size: 360, type: "video/mp4" },
+    //         { src: "https://archive.org/download/nama_item_kamu/video_720p.mp4", size: 720, type: "video/mp4" },
+    //         { src: "https://archive.org/download/nama_item_kamu/video_1080p.mp4", size: 1080, type: "video/mp4" }
+    //     ],
+    //     description: "Sesi dokumenter eksklusif dengan pilihan resolusi pemutar dan tombol unduh sesuai kualitas."
+    // },
+    // {
+    //     id: "video4",
+    //     title: "REKAMAN LIVE SPECIAL RUMBLE",
+    //     defaultViews: 50,
+    //     thumb: "Asset Foto/live stream.png",
+    //     archiveSrc: "",
+    //     driveEmbed: "",
+    //     youtubeId: "",
+    //     rumbleEmbed: "https://rumble.com/embed/vID unik/kode identitas video milikmu/",
+    //     // Solusi 2: Direct MP4 Link dari Dashboard Rumble
+    //     downloadUrl: "https://ak.rumble.com/vID unik/kode identitas video milikmu.mp4", 
+    //     description: "Hasil rekaman siaran langsung dari platform Rumble."
+    // },
+    // {
+    //     id: "video5",
+    //     title: "Contoh Video Google Drive",
+    //     defaultViews: 10,
+    //     thumb: "Asset Foto/Thumbnimail  Banner YT.png",
+    //     archiveSrc: "",
+    //     driveEmbed: "https://drive.google.com/file/d/ID_FILE_GDRIVE/preview",
+    //     youtubeId: "",
+    //     rumbleEmbed: "",
+    //     // Solusi Direct Download Google Drive (Format export=download)
+    //     downloadUrl: "https://drive.google.com/uc?export=download&id=ID_FILE_GDRIVE",
+    //     description: "Video sampel yang tersimpan di Google Drive."
+    // },
     {
         id: "video6",
         title: "Detective Conan: Episode One - The Great Detective Turned Small Dubbing Indonesia",
