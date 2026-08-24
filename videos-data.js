@@ -21,19 +21,7 @@ if (typeof firebase !== 'undefined' && !firebase.apps.length) {
 // Pusat Data Video
 const videoList = [
     {
-    "id": "kick_1787539973",
-    "title": "Stream via RTMP (OBS, Vmix, Zoom) with Restream",
-    "defaultViews": 0,
-    "thumb": "https://kick.com/favicon.ico",
-    "sources": [],
-    "driveEmbed": "https://drive.google.com/file/d/1VJIt1YlxHmhjL0pwBxoRsdI_U1OO9gQ6/preview",
-    "youtubeId": "",
-    "rumbleEmbed": "",
-    "downloadUrl": "https://drive.google.com/uc?export=download&id=1VJIt1YlxHmhjL0pwBxoRsdI_U1OO9gQ6",
-    "description": "VOD LS TV"
-},
-    {
-    "id": "kick_1787463801",
+    "id": "video8",
     "title": "VOD LIVE STREAMING BIOSKOP LIBURAN LUVIA STUDIO TV",
     "defaultViews": 0,
     "thumb": "Asset Foto/Thumbnimail  Banner YT.png",
