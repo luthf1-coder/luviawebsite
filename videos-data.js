@@ -22,27 +22,15 @@ if (typeof firebase !== 'undefined' && !firebase.apps.length) {
 const videoList = [
     {
     "id": "kick_1787630786",
-    "title": "Stream via RTMP (OBS, Vmix, Zoom) with Restream",
+    "title": "VOD LIVE STREAMING BIOSKOP LIBURAN LUVIA STUDIO TV",
     "defaultViews": 0,
-    "thumb": "https://kick.com/favicon.ico",
+    "thumb": "Asset Foto/Thumbnimail  Banner YT.png",
     "sources": [],
     "driveEmbed": "https://drive.google.com/file/d/1CsSauvvlSRpI7bzjufUnl5Q-eLfehcAL/preview",
     "youtubeId": "",
     "rumbleEmbed": "",
     "downloadUrl": "https://drive.google.com/uc?export=download&id=1CsSauvvlSRpI7bzjufUnl5Q-eLfehcAL",
     "description": "VOD LS TV"
-},
-    {
-    "id": "video8",
-    "title": "VOD LIVE STREAMING BIOSKOP LIBURAN LUVIA STUDIO TV",
-    "defaultViews": 0,
-    "thumb": "Asset Foto/Thumbnimail  Banner YT.png",
-    "sources": [],
-    "driveEmbed": "https://drive.google.com/file/d/1r2X9KQ-X494IuIo87LPXtBIhNjlYY53Y/preview",
-    "youtubeId": "",
-    "rumbleEmbed": "",
-    "downloadUrl": "https://drive.google.com/uc?export=download&id=1r2X9KQ-X494IuIo87LPXtBIhNjlYY53Y",
-    "description": "VOD LSTV"
 },
     {
         id: "video1",
