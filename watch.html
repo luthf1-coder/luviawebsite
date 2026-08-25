@@ -40,6 +40,21 @@
                 <h2 id="info-title">...</h2>
                 <div id="info-desc">
                     <p id="desc-text">Memuat deskripsi...</p>
+                    
+                    <!-- MULAI: AREA KOMENTAR PERMANEN -->
+                    <div id="comments-section" class="comments-section">
+                        <h3>💬 Komentar</h3>
+                        <form id="comment-form">
+                            <input type="text" id="comment-name" placeholder="Nama Anda..." required>
+                            <textarea id="comment-text" placeholder="Tulis komentar Anda..." required></textarea>
+                            <button type="submit" class="btn-submit-comment">Kirim Komentar</button>
+                        </form>
+                        <div id="comments-list" class="comments-list">
+                            <p style="color:#bbb; font-size:0.9rem;">Memuat komentar...</p>
+                        </div>
+                    </div>
+                    <!-- SELESAI: AREA KOMENTAR PERMANEN -->
+
                     <div id="download-area"></div>
                     <div id="views-display-box" style="font-weight: bold; color: #ff914d; margin-top: 10px;">
                         👁️ Memuat jumlah ditonton...
@@ -135,6 +150,50 @@
         if (typeof renderGridRecommendations === 'function') {
             renderGridRecommendations('watch-recommendations-grid');
         }
+
+        // ==========================================
+        // 6. SISTEM KOMENTAR PERMANEN (FIREBASE)
+        // ==========================================
+        const commentsRef = firebase.database().ref('video_comments/' + currentVid.id);
+        const commentForm = document.getElementById('comment-form');
+        const commentsList = document.getElementById('comments-list');
+
+        // Ambil & Tampilkan Komentar Realtime
+        commentsRef.on('value', (snapshot) => {
+            commentsList.innerHTML = '';
+            const data = snapshot.val();
+            if (data) {
+                const keys = Object.keys(data);
+                // Urutkan dari yang terbaru ke terlama
+                keys.reverse().forEach(key => {
+                    const c = data[key];
+                    commentsList.innerHTML += `
+                        <div class="comment-item">
+                            <div class="comment-name">${c.name}</div>
+                            <div class="comment-text">${c.text}</div>
+                        </div>
+                    `;
+                });
+            } else {
+                commentsList.innerHTML = '<p style="color:#bbb; font-size:0.9rem;">Belum ada komentar. Jadilah yang pertama!</p>';
+            }
+        });
+
+        // Kirim Komentar Baru
+        commentForm.addEventListener('submit', (e) => {
+            e.preventDefault();
+            const nameInput = document.getElementById('comment-name');
+            const textInput = document.getElementById('comment-text');
+            
+            if (nameInput.value && textInput.value) {
+                commentsRef.push({
+                    name: nameInput.value,
+                    text: textInput.value,
+                    timestamp: firebase.database.ServerValue.TIMESTAMP
+                });
+                textInput.value = ''; // Hanya reset teks komentar setelah terkirim
+            }
+        });
     </script>
 </body>
 </html>
