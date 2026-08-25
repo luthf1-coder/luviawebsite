@@ -35,10 +35,9 @@
             object-fit: cover;
             opacity: 0.85;
         }
-        
     </style>
 
-<!-- SDK Firebase Realtime Database -->
+    <!-- SDK Firebase Realtime Database -->
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-database-compat.js"></script>
 </head>
@@ -77,6 +76,23 @@
                         👁️ Memuat status siaran...
                     </div>
                     <p>Selamat menyaksikan siaran langsung resmi LUVIA STUDIO TV. Nikmati tayangan kualitatif dengan pilihan resolusi terbaik.</p>
+                    
+                    <!-- MULAI: AREA LIVE CHAT -->
+                    <div id="live-chat-section" class="comments-section" style="display: none;">
+                        <h3 style="color: #ff4d4d;">🔴 Live Chat</h3>
+                        <div id="live-chat-list" class="comments-list live-chat-list">
+                            <!-- Chat muncul di sini -->
+                        </div>
+                        <form id="live-chat-form">
+                            <div style="display: flex; gap: 8px;">
+                                <input type="text" id="chat-name" placeholder="Nama..." required style="width: 30%;">
+                                <input type="text" id="chat-text" placeholder="Ketik pesan chat..." required style="flex-grow: 1;">
+                                <button type="submit" class="btn-submit-comment">Kirim</button>
+                            </div>
+                        </form>
+                    </div>
+                    <!-- SELESAI: AREA LIVE CHAT -->
+
                 </div>
             </div>
         </section>
@@ -136,14 +152,17 @@
         playerWrapper.style.paddingTop = "56.25%";
         playerWrapper.style.overflow = "hidden";
 
-        // Fungsi Deteksi Status Live Kick
+        // Fungsi Deteksi Status Live Kick & Sistem Live Chat
         async function checkAndRenderKickStream() {
+            const chatSection = document.getElementById('live-chat-section');
+            const chatRef = firebase.database().ref('live_chat_temporary');
+            
             try {
                 const res = await fetch(`https://kick.com/api/v2/channels/${kickUsername}`);
                 const data = await res.json();
 
                 if (data.livestream && data.livestream.is_live) {
-                    // JIKA SEDANG LIVE -> Tampilkan Player Kick
+                    // JIKA SEDANG LIVE -> Tampilkan Player & Tampilkan Live Chat
                     const viewers = data.livestream.viewer_count || 0;
                     
                     playerWrapper.innerHTML = `
@@ -158,12 +177,35 @@
                     if (viewersText) {
                         viewersText.innerHTML = `🔴 <span style="color: #ff4d4d; font-weight: bold;">SEDANG LIVE</span> • 👁️ ${viewers} Penonton Saat Ini`;
                     }
+                    
+                    // Aktifkan Tampilan Chat
+                    chatSection.style.display = 'block';
+                    
+                    // Listener Live Chat dari Firebase
+                    chatRef.off(); // Cegah double listener
+                    chatRef.on('child_added', (snapshot) => {
+                        const c = snapshot.val();
+                        const chatList = document.getElementById('live-chat-list');
+                        chatList.innerHTML += `
+                            <div class="comment-item">
+                                <span class="comment-name">${c.name}:</span>
+                                <span class="comment-text">${c.text}</span>
+                            </div>
+                        `;
+                        // Auto-scroll ke bawah saat chat baru masuk
+                        chatList.scrollTop = chatList.scrollHeight;
+                    });
+                    
                 } else {
-                    // JIKA OFFLINE -> Tampilkan Thumbnail Poster Offline
+                    // JIKA OFFLINE -> Sembunyikan Chat & Hapus Isi Chat dari Firebase
+                    chatSection.style.display = 'none';
+                    chatRef.remove(); // Hapus chat dari database
                     renderOfflineState();
                 }
             } catch (err) {
                 // Jika Koneksi API Kick Gagal -> Tampilkan Mode Offline
+                chatSection.style.display = 'none';
+                chatRef.remove();
                 renderOfflineState();
             }
         }
@@ -173,8 +215,6 @@
             playerWrapper.innerHTML = `
                 <div class="offline-banner-container">
                     <img src="${offlineImageSrc}" alt="Siaran Offline" class="offline-banner-img">
-                    
-                    </div>
                 </div>
             `;
 
@@ -182,6 +222,22 @@
                 viewersText.innerHTML = `⚪ <span style="color: #bbb;">STATUS: SIARAN OFFLINE</span>`;
             }
         }
+
+        // Form Submit Live Chat
+        document.getElementById('live-chat-form').addEventListener('submit', (e) => {
+            e.preventDefault();
+            const name = document.getElementById('chat-name').value;
+            const text = document.getElementById('chat-text').value;
+            
+            if(name && text) {
+                firebase.database().ref('live_chat_temporary').push({
+                    name: name,
+                    text: text,
+                    timestamp: firebase.database.ServerValue.TIMESTAMP
+                });
+                document.getElementById('chat-text').value = ''; // Reset chat form saja
+            }
+        });
 
         // Jalankan Fungsi
         checkAndRenderKickStream();
