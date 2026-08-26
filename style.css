@@ -234,33 +234,27 @@ nav a:hover {
 }
 
 /* Badges Status Live & Offline */
-.badge-live {
+.badge-live, .badge-offline {
     position: absolute;
     top: 10px;
     left: 10px;
-    background: #ff0000;
     color: #ffffff;
     font-size: 0.75rem;
     font-weight: bold;
     padding: 4px 10px;
     border-radius: 20px;
-    box-shadow: 0 2px 8px rgba(255, 0, 0, 0.5);
     z-index: 3;
+}
+
+.badge-live {
+    background: #ff0000;
+    box-shadow: 0 2px 8px rgba(255, 0, 0, 0.5);
     animation: pulse 1.8s infinite;
 }
 
 .badge-offline {
-    position: absolute;
-    top: 10px;
-    left: 10px;
     background: #666666;
-    color: #ffffff;
-    font-size: 0.75rem;
-    font-weight: bold;
-    padding: 4px 10px;
-    border-radius: 20px;
     box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
-    z-index: 3;
 }
 
 @keyframes pulse {
@@ -285,17 +279,7 @@ nav a:hover {
     margin-bottom: 0;
 }
 
-/* Highlight Kartu Live */
-.featured-live {
-    border: 2px solid #ff914d;
-    box-shadow: 0 0 15px rgba(255, 145, 77, 0.4);
-}
-
-.featured-live-card {
-    border: 2px solid #ff914d;
-}
-
-/* Program TV Cards */
+/* Projects / Program TV Cards */
 .projects {
     display: flex;
     flex-wrap: wrap;
@@ -336,76 +320,9 @@ nav a:hover {
     text-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
 }
 
-/* Program Detail Page Styling */
-.program-detail-card {
-    background: rgba(255, 255, 255, 0.18);
-    backdrop-filter: blur(12px);
-    -webkit-backdrop-filter: blur(12px);
-    border: 2px solid rgba(255, 255, 255, 0.4);
-    border-radius: 20px;
-    padding: 30px;
-    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
-    margin-bottom: 40px;
-}
-
-.program-banner {
-    height: 240px;
-    border-radius: 12px;
-    margin-bottom: 20px;
-}
-
-.program-description h2 {
-    font-size: 1.5rem;
-    margin-bottom: 10px;
-}
-
-.program-description p {
-    font-size: 1.05rem;
-    margin-bottom: 15px;
-}
-
-/* Live Streaming Section */
-.livestream-section {
-    scroll-margin-top: 80px;
-    margin-top: 30px;
-}
-
-.livestream-card-container {
-    background: linear-gradient(135deg, rgba(140, 82, 255, 0.45), rgba(255, 145, 77, 0.45));
-    backdrop-filter: blur(12px);
-    -webkit-backdrop-filter: blur(12px);
-    border: 2px solid rgba(255, 255, 255, 0.4);
-    padding: 30px;
-    border-radius: 16px;
-    text-align: center;
-    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.15);
-}
-
-.livestream-card-container p {
-    margin-bottom: 20px;
-    font-size: 1.1rem;
-}
-
-.btn-watch {
-    display: inline-block;
-    padding: 14px 36px;
-    background: linear-gradient(45deg, #8c52ff, #ff914d);
-    color: #ffffff;
-    text-decoration: none;
-    font-weight: bold;
-    font-size: 1.1rem;
-    border-radius: 30px;
-    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.25);
-    transition: all 0.3s ease;
-    border: 2px solid rgba(255, 255, 255, 0.4);
-}
-
-.btn-watch:hover {
-    transform: scale(1.05);
-    box-shadow: 0 10px 25px rgba(255, 145, 77, 0.5);
-}
-
-/* Plyr.io Player Styling & Pemutar Video */
+/* ==========================================
+   PERBAIKAN PEMUTAR VIDEO (PLYR & IFRAME)
+   ========================================== */
 .page-stream-container {
     margin-top: 90px;
 }
@@ -416,37 +333,38 @@ nav a:hover {
     text-transform: uppercase;
 }
 
-.video-container {
-    position: relative;
-    width: 100%;
-    padding-bottom: 56.25%;
-    height: 0;
-    border-radius: 16px;
-    overflow: hidden;
-    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.3);
-    border: 2px solid rgba(255, 255, 255, 0.4);
-    background: #000000;
-}
-
-.video-container iframe,
-.video-container video {
-    position: absolute;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    border: 0;
-}
-
+/* BINGKAI UTAMA UNTUK SEMUA PLAYER */
 .plyr-wrapper {
+    position: relative; /* Wajib ada */
     width: 100%;
+    aspect-ratio: 16 / 9; /* Membuat rasio pas tanpa spasi hitam atas/bawah */
     border-radius: 16px;
-    overflow: hidden;
+    overflow: hidden; /* Mencegah video keluar dari bingkai melengkung */
     box-shadow: 0 10px 25px rgba(0, 0, 0, 0.3);
     border: 2px solid rgba(255, 255, 255, 0.4);
     background: #000000;
+    display: block;
 }
 
+/* MEMAKSA SEMUA VIDEO MENGISI BINGKAI PENUH */
+.plyr-wrapper iframe,
+.plyr-wrapper .plyr,
+.plyr-wrapper video,
+.responsive-video-container {
+    position: absolute !important;
+    top: 0 !important;
+    left: 0 !important;
+    width: 100% !important;
+    height: 100% !important;
+    border: none !important;
+}
+
+/* Menjamin container plyr bawaan ikut full 100% */
+.plyr--video {
+    height: 100% !important;
+}
+
+/* Custom Warna Plyr */
 .plyr--full-ui input[type=range] {
     color: #ff914d;
 }
@@ -459,6 +377,7 @@ nav a:hover {
     background: #ff914d;
 }
 
+/* Video Info (Judul, Desc, Views) */
 .video-info {
     background: rgba(255, 255, 255, 0.18);
     backdrop-filter: blur(10px);
@@ -474,6 +393,7 @@ nav a:hover {
     margin-bottom: 8px;
 }
 
+/* Other Videos Section */
 .other-videos-section {
     margin-top: 40px;
     margin-bottom: 40px;
@@ -548,31 +468,6 @@ nav a:hover {
     box-shadow: 0 10px 25px rgba(255, 145, 77, 0.4);
 }
 
-/* Download CV Section */
-.section-cv {
-    padding: 40px 20px;
-    text-align: center;
-}
-
-.btn-cv {
-    display: inline-block;
-    padding: 14px 36px;
-    background: linear-gradient(45deg, #8c52ff, #ff914d);
-    color: #ffffff;
-    text-decoration: none;
-    font-weight: bold;
-    font-size: 1.1rem;
-    border-radius: 30px;
-    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.2);
-    transition: all 0.3s ease;
-    border: 2px solid rgba(255, 255, 255, 0.4);
-}
-
-.btn-cv:hover {
-    transform: scale(1.05);
-    box-shadow: 0 10px 25px rgba(255, 145, 77, 0.4);
-}
-
 /* Footer */
 footer {
     background: linear-gradient(135deg, rgba(140, 82, 255, 0.45), rgba(255, 145, 77, 0.45));
@@ -584,7 +479,6 @@ footer {
     border-top: 1px solid rgba(255, 255, 255, 0.3);
 }
 
-/* Responsive */
 /* ==========================================
    PERBAIKAN TAMPILAN MOBILE (RESPONSIF HP)
    ========================================== */
@@ -601,7 +495,6 @@ footer {
         flex-direction: column;
     }
 
-    /* Bikin spacing navigasi HP pas & gak nimbun judul */
     .nav-container {
         flex-direction: column;
         gap: 8px;
@@ -617,18 +510,15 @@ footer {
         font-size: 0.8rem;
     }
 
-    /* PERBAIKAN UTAMA: Tambah jarak atas di HP biar judul gak tertutup Nav */
     .page-stream-container {
         margin-top: 170px !important; 
     }
 
-    /* Mencegah Player Video / Gambar Melar Tinggi di HP */
-    .plyr-wrapper,
-    .video-container {
+    /* Mencegah Player Video Melar di HP dan Menjamin Rasio */
+    .plyr-wrapper {
         width: 100% !important;
-        height: auto !important;
+        height: auto !important; 
         aspect-ratio: 16 / 9 !important;
-        position: relative !important;
     }
 
     .contact-links {
@@ -675,23 +565,9 @@ footer {
     z-index: 2;
 }
 
-.offline-overlay h3 {
-    font-size: 1.8rem;
-    margin-bottom: 8px;
-    text-shadow: 0 2px 10px rgba(0, 0, 0, 0.8);
-    letter-spacing: 1px;
-}
-
-.offline-overlay p {
-    font-size: 1rem;
-    text-shadow: 0 2px 6px rgba(0, 0, 0, 0.7);
-}
-
 /* ==========================================
    STYLE KHUSUS AREA DOWNLOAD & RESOLUSI VIDEO
    ========================================== */
-
-/* Kontainer pembungkus opsi download */
 .download-container {
     margin: 16px 0;
     padding: 12px 16px;
@@ -710,7 +586,6 @@ footer {
     font-size: 0.95rem;
 }
 
-/* Dropdown Pemilih Resolusi */
 .download-select {
     padding: 8px 12px;
     border-radius: 6px;
@@ -724,13 +599,6 @@ footer {
     transition: all 0.3s ease;
 }
 
-.download-select:hover, 
-.download-select:focus {
-    background-color: #252525;
-    box-shadow: 0 0 8px rgba(255, 145, 77, 0.4);
-}
-
-/* Tombol Download */
 .btn-download-action {
     background-color: #ff914d;
     color: #ffffff;
@@ -743,27 +611,15 @@ footer {
     display: inline-flex;
     align-items: center;
     gap: 8px;
-    transition: transform 0.2s ease, background-color 0.2s ease;
     text-decoration: none;
 }
 
-.btn-download-action:hover {
-    background-color: #e07d3c;
-    transform: translateY(-2px);
-}
-
-.btn-download-action:active {
-    transform: translateY(0);
-}
-
-/* Responsif untuk Layar HP (Mobile) */
 @media screen and (max-width: 600px) {
     .download-container {
         flex-direction: column;
         align-items: stretch;
         gap: 10px;
     }
-
     .download-select, 
     .btn-download-action {
         width: 100%;
@@ -787,7 +643,6 @@ footer {
     color: #fff;
 }
 
-/* Area Input Komentar */
 .comment-input-area {
     display: flex;
     gap: 15px;
@@ -826,12 +681,6 @@ footer {
     font-size: 0.95rem;
     padding: 8px 0;
     outline: none;
-    transition: border-color 0.3s ease;
-}
-
-.comment-form textarea {
-    resize: vertical;
-    min-height: 25px;
 }
 
 .comment-form input:focus,
@@ -855,12 +704,6 @@ footer {
     padding: 8px 16px;
     border-radius: 20px;
     cursor: pointer;
-    font-size: 0.9rem;
-    transition: background 0.2s ease;
-}
-
-.btn-cancel:hover {
-    background: rgba(255, 255, 255, 0.15);
 }
 
 .btn-submit-comment {
@@ -868,11 +711,6 @@ footer {
     color: #000;
 }
 
-.btn-submit-comment:hover {
-    background: #ffa76f;
-}
-
-/* List Komentar */
 .yt-comment-wrapper {
     display: flex;
     gap: 15px;
@@ -903,14 +741,13 @@ footer {
 }
 
 .comment-text {
-    margin-top: 4px; /* Setengah paragraf jarak */
+    margin-top: 4px;
     font-size: 0.95rem;
     line-height: 1.5;
     color: #f1f1f1;
     word-wrap: break-word;
 }
 
-/* Ikon Like, Balas, Hapus */
 .comment-actions {
     display: flex;
     align-items: center;
@@ -930,7 +767,6 @@ footer {
     font-weight: 600;
     padding: 5px;
     border-radius: 15px;
-    transition: background 0.2s;
     opacity: 0.8;
 }
 
@@ -939,45 +775,14 @@ footer {
     opacity: 1;
 }
 
-.delete-btn {
-    color: #ff4d4d;
-}
-.delete-btn:hover {
-    background: rgba(255, 77, 77, 0.15);
-}
+.delete-btn { color: #ff4d4d; }
+.delete-btn:hover { background: rgba(255, 77, 77, 0.15); }
 
-/* Balasan */
-.replies-list {
-    margin-top: 10px;
-}
+.replies-list { margin-top: 10px; }
+.reply-form-container { display: flex; gap: 10px; margin-top: 10px; margin-bottom: 15px; }
+.reply-form-container input, .reply-form-container textarea { width: 100%; background: transparent; border: none; border-bottom: 1px solid rgba(255, 255, 255, 0.3); color: #fff; padding: 5px 0; outline: none; }
+.reply-form-container input:focus, .reply-form-container textarea:focus { border-bottom: 2px solid #fff; }
 
-.reply-form-container {
-    display: flex;
-    gap: 10px;
-    margin-top: 10px;
-    margin-bottom: 15px;
-}
-
-.reply-form-container input,
-.reply-form-container textarea {
-    width: 100%;
-    background: transparent;
-    border: none;
-    border-bottom: 1px solid rgba(255, 255, 255, 0.3);
-    color: #fff;
-    padding: 5px 0;
-    outline: none;
-}
-.reply-form-container input:focus,
-.reply-form-container textarea:focus {
-    border-bottom: 2px solid #fff;
-}
-
-/* Scroll Live Chat (Padat & Ringkas) */
-.live-chat-list {
-    max-height: 350px;
-    overflow-y: auto;
-    padding-right: 5px;
-}
+.live-chat-list { max-height: 350px; overflow-y: auto; padding-right: 5px; }
 .live-chat-list::-webkit-scrollbar { width: 6px; }
 .live-chat-list::-webkit-scrollbar-thumb { background: rgba(255, 145, 77, 0.6); border-radius: 10px; }
