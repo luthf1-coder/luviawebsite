@@ -438,6 +438,7 @@ nav a:hover {
     border: 0;
 }
 
+/* Kembalikan ke normal, hapus display: flex yang sebelumnya */
 .plyr-wrapper {
     position: relative;
     width: 100%;
@@ -449,8 +450,9 @@ nav a:hover {
     background: #000000;
 }
 
-/* Memastikan iframe pas menutupi kontainer tanpa keluar jalur */
-.plyr-wrapper iframe {
+/* Biarkan semua iframe memenuhi kontainer secara normal */
+.plyr-wrapper iframe,
+.plyr-wrapper video {
     position: absolute;
     top: 0;
     left: 0;
@@ -635,12 +637,24 @@ footer {
 
 /* --- PENGATURAN HP --- */
  /* 1. Kunci kotak luar di HP agar bentuknya persegi panjang video (16:9) */
-    .plyr-wrapper {
+  /* Mengunci ukuran rasio di HP */
+    .plyr-wrapper,
+    .video-container {
         width: 100% !important;
         aspect-ratio: 16 / 9 !important;
-        height: auto !important;
-        overflow: hidden !important;
         position: relative !important;
+        height: auto !important;
+        padding-bottom: 0 !important;
+    }
+
+  /* ==============================================
+       TRIK ILUSI GOOGLE DRIVE: JALAN TENGAH
+       ============================================== */
+    .plyr-wrapper iframe.drive-iframe {
+        width: 135% !important;  /* Tidak lagi 200%, diturunkan ke 135% */
+        height: 135% !important;
+        transform: scale(0.74);  /* Zoom out-nya hanya di angka 74%, tidak lagi 50% */
+        transform-origin: top left;
     }
 
     /* 2. Buat kontainer virtual seukuran laptop (misal lebar 900px) */
