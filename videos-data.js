@@ -22,7 +22,7 @@ if (typeof firebase !== 'undefined' && !firebase.apps.length) {
 const videoList = [
     {
     "id": "kick_vod_123490654",
-    "title": "VOD PLAY LIVE STREAMING LSTV",
+    "title": "VOD PLAY LIVE STREAMING LUVIA STUDIO TV",
     "defaultViews": 0,
     "thumb": "https://kick.com/favicon.ico",
     "sources": [],
