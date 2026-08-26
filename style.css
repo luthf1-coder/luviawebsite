@@ -438,30 +438,6 @@ nav a:hover {
     border: 0;
 }
 
-/* ==========================================
-   FIX KHUSUS PLAYER GOOGLE DRIVE DI HP
-   ------------------------------------------
-   Class ".gdrive-fix" dipakai di watch.html khusus untuk
-   membungkus iframe embed Google Drive. Karena iframe Drive
-   melakukan resize internal sendiri, ia tidak selalu patuh
-   pada properti "aspect-ratio" di beberapa browser HP.
-   Aturan di bawah ini memastikan iframe Drive selalu mengisi
-   penuh bingkai ".video-container" (posisi absolute, lebar &
-   tinggi 100%) tanpa scrollbar/potongan aneh, baik di HP
-   maupun laptop.
-   ========================================== */
-.video-container.gdrive-fix {
-    background: #000000;
-}
-
-.video-container.gdrive-fix iframe {
-    width: 100% !important;
-    height: 100% !important;
-    max-width: 100%;
-    max-height: 100%;
-    -webkit-overflow-scrolling: touch;
-}
-
 .plyr-wrapper {
     width: 100%;
     border-radius: 16px;
@@ -653,16 +629,6 @@ footer {
         height: auto !important;
         aspect-ratio: 16 / 9 !important;
         position: relative !important;
-    }
-
-    /* Pastikan iframe Google Drive tetap pas mengikuti bingkai
-       ".video-container" walau aspect-ratio dipaksa di atas */
-    .video-container.gdrive-fix iframe {
-        position: absolute !important;
-        top: 0;
-        left: 0;
-        width: 100% !important;
-        height: 100% !important;
     }
 
     .contact-links {
