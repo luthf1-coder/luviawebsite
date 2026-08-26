@@ -438,27 +438,27 @@ nav a:hover {
     border: 0;
 }
 
+/* Kembalikan ke normal, hapus display: flex yang sebelumnya */
 .plyr-wrapper {
+    position: relative;
     width: 100%;
-    aspect-ratio: 16 / 9; /* Kembali gunakan rasio bawaan */
+    aspect-ratio: 16 / 9;
     border-radius: 16px;
     overflow: hidden;
     box-shadow: 0 10px 25px rgba(0, 0, 0, 0.3);
     border: 2px solid rgba(255, 255, 255, 0.4);
     background: #000000;
-    display: flex; /* INI KUNCINYA: Memaksa isi wrapper menyesuaikan ukuran tanpa absolute positioning */
-    justify-content: center;
-    align-items: center;
 }
 
-/* Hilangkan position: absolute di sini */
+/* Biarkan semua iframe memenuhi kontainer secara normal */
 .plyr-wrapper iframe,
-.plyr-wrapper video,
-.plyr-wrapper .plyr {
-    width: 100% !important;
-    height: 100% !important;
+.plyr-wrapper video {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
     border: none;
-    display: block;
 }
 
 .plyr--full-ui input[type=range] {
@@ -637,12 +637,26 @@ footer {
     }
 
 /* Mencegah Player Video / Gambar Melar Tinggi di HP */
+  /* Mengunci ukuran rasio di HP */
     .plyr-wrapper,
     .video-container {
         width: 100% !important;
         aspect-ratio: 16 / 9 !important;
-        height: auto !important; 
-        padding-bottom: 0 !important; /* Reset padding-bottom jika sebelumnya terbaca */
+        position: relative !important;
+        height: auto !important;
+        padding-bottom: 0 !important;
+    }
+
+    /* ==============================================
+       TRIK ILUSI GOOGLE DRIVE: 
+       Bikin ukurannya 2x lipat (biar UI gak rusak), 
+       lalu Zoom Out jadi setengahnya (scale 0.5)
+       ============================================== */
+    .plyr-wrapper iframe.drive-iframe {
+        width: 200% !important;
+        height: 200% !important;
+        transform: scale(0.5);
+        transform-origin: top left;
     }
 
     .contact-links {
