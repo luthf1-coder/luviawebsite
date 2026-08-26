@@ -417,19 +417,22 @@ nav a:hover {
 }
 
 /* ==========================================
-   BINGKAI UTAMA UNTUK SEMUA PLAYER
+   BINGKAI UTAMA UNTUK SEMUA PLAYER (FIX ANTI MELAR)
+   Menggunakan teknik "Padding-Bottom" agar rasio 16:9
+   TIDAK BISA DIBANTAH oleh browser HP manapun.
    ========================================== */
 .video-container,
 .plyr-wrapper {
-    position: relative; 
-    width: 100%;
-    aspect-ratio: 16 / 9; /* Membuat rasio pas tanpa spasi hitam */
+    position: relative !important; 
+    width: 100% !important;
+    padding-bottom: 56.25% !important; /* 16:9 Aspect Ratio */
+    height: 0 !important;
     border-radius: 16px;
     overflow: hidden; 
     box-shadow: 0 10px 25px rgba(0, 0, 0, 0.3);
     border: 2px solid rgba(255, 255, 255, 0.4);
     background: #000000;
-    display: block;
+    display: block !important;
 }
 
 /* MEMAKSA SEMUA VIDEO MENGISI BINGKAI PENUH */
@@ -444,6 +447,8 @@ nav a:hover {
     width: 100% !important;
     height: 100% !important;
     border: none !important;
+    margin: 0 !important;
+    padding: 0 !important;
 }
 
 /* Menjamin container plyr ikut 100% */
@@ -621,17 +626,18 @@ footer {
         font-size: 0.8rem;
     }
 
-    /* PERBAIKAN UTAMA: Tambah jarak atas di HP biar judul gak tertutup Nav */
+    /* Tambah jarak atas di HP biar judul gak tertutup Nav */
     .page-stream-container {
         margin-top: 170px !important; 
     }
 
-    /* Mencegah Player Video / Gambar Melar Tinggi di HP */
+    /* PERBAIKAN: Pastikan di mode Mobile pembungkusnya tetap mempertahankan tinggi 16:9 
+       dan HAPUS semua properti yang bikin konflik. */
     .plyr-wrapper,
     .video-container {
         width: 100% !important;
-        height: auto !important;
-        aspect-ratio: 16 / 9 !important;
+        padding-bottom: 56.25% !important; 
+        height: 0 !important;
         position: relative !important;
     }
 
