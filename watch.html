@@ -11,6 +11,35 @@
     <!-- SDK Firebase Realtime Database -->
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-database-compat.js"></script>
+
+    <!-- TAMBAHAN CSS UNTUK PLAYER RESPONSIF (HP & LAPTOP) -->
+    <style>
+        .responsive-video-container {
+            position: relative;
+            width: 100%;
+            aspect-ratio: 16 / 9; /* Menjaga rasio video tetap proporsional */
+            background-color: #000;
+            overflow: hidden;
+            border-radius: 8px; /* Sudut melengkung yang lebih rapi */
+        }
+        
+        .responsive-video-container iframe,
+        .responsive-video-container video {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            border: none;
+        }
+
+        /* Memastikan wadah utama tidak membatasi ukuran */
+        .plyr-wrapper {
+            width: 100%;
+            max-width: 100%;
+            display: block;
+        }
+    </style>
 </head>
 <body>
 
@@ -46,7 +75,6 @@
                         <h3><span id="comment-count">0</span> Komentar</h3>
 
                         <div class="comment-input-area">
-                            <!-- UBAH LINK GAMBAR INI DENGAN LINK GITHUB KAMU -->
                             <img src="Asset Foto/Thumbnimail .png" class="comment-avatar" alt="Avatar">
                             <form id="comment-form" class="comment-form">
                                 <input type="text" id="comment-name" placeholder="Nama Anda..." required>
@@ -78,13 +106,13 @@
         </section>
     </main>
 
-    <footer><div class="container"><p>&copy 2026 LUVIA STUDIO TV All Right Reserved</p></div></footer>
+    <footer><div class="container"><p>&copy; 2026 LUVIA STUDIO TV All Right Reserved</p></div></footer>
 
     <script src="https://cdn.plyr.io/3.7.8/plyr.js"></script>
     <script src="videos-data.js"></script>
 
     <script>
-        // --- Inisialisasi Video Sama Seperti Sebelumnya ---
+        // --- Inisialisasi Video ---
         const urlParams = new URLSearchParams(window.location.search);
         const currentVideoId = urlParams.get('id') || 'video1';
         const currentVid = (typeof videoList !== 'undefined' && videoList.find(v => v.id === currentVideoId)) || {
@@ -111,21 +139,27 @@
         }
         document.getElementById('download-area').innerHTML = downloadAreaHTML;
 
+        // ==========================================
+        // PERUBAHAN UTAMA: INJEKSI PLAYER YANG RESPONSIF
+        // ==========================================
         const playerWrapper = document.getElementById('video-player-wrapper');
+        
         if (currentVid.driveEmbed) {
-            playerWrapper.innerHTML = `<iframe src="${currentVid.driveEmbed}" allowfullscreen="true" style="width:100%; aspect-ratio:16/9; border:none;"></iframe>`;
+            playerWrapper.innerHTML = `<div class="responsive-video-container"><iframe src="${currentVid.driveEmbed}" allowfullscreen="true" allow="autoplay; encrypted-media"></iframe></div>`;
         } else if (currentVid.rumbleEmbed) {
-            playerWrapper.innerHTML = `<iframe src="${currentVid.rumbleEmbed}" allowfullscreen="true" style="width:100%; aspect-ratio:16/9; border:none;"></iframe>`;
+            playerWrapper.innerHTML = `<div class="responsive-video-container"><iframe src="${currentVid.rumbleEmbed}" allowfullscreen="true" allow="autoplay; encrypted-media"></iframe></div>`;
         } else if (currentVid.customEmbed) {
-            playerWrapper.innerHTML = `<iframe src="${currentVid.customEmbed}" allowfullscreen="true" allow="autoplay; encrypted-media" style="width:100%; aspect-ratio:16/9; border:none;"></iframe>`;
+            playerWrapper.innerHTML = `<div class="responsive-video-container"><iframe src="${currentVid.customEmbed}" allowfullscreen="true" allow="autoplay; encrypted-media"></iframe></div>`;
         } else if (currentVid.youtubeId) {
-            playerWrapper.innerHTML = `<iframe src="https://www.youtube.com/embed/${currentVid.youtubeId}?enablejsapi=1" allowfullscreen="true" allow="accelerometer; autoplay; encrypted-media; picture-in-picture" style="width:100%; aspect-ratio:16/9; border:none;"></iframe>`;
+            playerWrapper.innerHTML = `<div class="responsive-video-container"><iframe src="https://www.youtube.com/embed/${currentVid.youtubeId}?enablejsapi=1" allowfullscreen="true" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"></iframe></div>`;
         } else {
+            // Pemutar bawaan Plyr untuk file HTML5 mp4
             playerWrapper.innerHTML = `<video id="plyr-player" controls playsinline poster="${currentVid.thumb || ''}"><source src="${currentVid.archiveSrc || ''}" type="video/mp4" /></video>`;
             if (document.getElementById('plyr-player') && typeof Plyr !== 'undefined') {
                 new Plyr('#plyr-player', { settings: ['quality', 'speed'] });
             }
         }
+        // ==========================================
 
         if (typeof incrementVideoViewsAsync === 'function') {
             incrementVideoViewsAsync(currentVid.id, currentVid.defaultViews || 0).then(totalViews => {
@@ -141,8 +175,8 @@
         // ==========================================
         const commentsRef = firebase.database().ref('video_comments_v2/' + currentVid.id);
         const commentsList = document.getElementById('comments-list');
-        const defaultAvatarURL = "Asset Foto/Thumbnimail .png"; // BISA DIGANTI LINK GITHUB
-        const adminPassword = "adminlstv"; // PASSWORD UNTUK HAPUS KOMENTAR
+        const defaultAvatarURL = "Asset Foto/Thumbnimail .png"; 
+        const adminPassword = "adminlstv"; 
 
         // Ikon SVG
         const iconThumbOutline = `<svg viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"><path d="M14 9V5a3 3 0 0 0-3-3l-4 9v11h11.28a2 2 0 0 0 2-1.7l1.38-9a2 2 0 0 0-2-2.3zM7 22H4a2 2 0 0 1-2-2v-7a2 2 0 0 1 2-2h3"></path></svg>`;
@@ -219,7 +253,7 @@
             let totalComments = 0;
 
             if (data) {
-                const keys = Object.keys(data).reverse(); // Terbaru di atas
+                const keys = Object.keys(data).reverse(); 
                 let finalHTML = '';
 
                 keys.forEach(key => {
@@ -235,11 +269,11 @@
                 keys.forEach(key => {
                     const c = data[key];
                     if (c.replies) {
-                        const replyKeys = Object.keys(c.replies); // Berurutan dari lama ke baru (di bawah)
+                        const replyKeys = Object.keys(c.replies); 
                         let repliesHTML = '';
                         replyKeys.forEach(rKey => {
                             const rData = c.replies[rKey];
-                            rData.parentId = key; // penanda parent
+                            rData.parentId = key; 
                             repliesHTML += buildCommentHTML(rKey, rData, true);
                         });
                         document.getElementById(`replies-list-${key}`).innerHTML = repliesHTML;
