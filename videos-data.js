@@ -22,7 +22,7 @@ if (typeof firebase !== 'undefined' && !firebase.apps.length) {
 const videoList = [
     {
     "id": "kick_vod_123490654",
-    "title": "Stream via RTMP (OBS, Vmix, Zoom) with Restream",
+    "title": "VOD PLAY LIVE STREAMING LSTV",
     "defaultViews": 0,
     "thumb": "https://kick.com/favicon.ico",
     "sources": [],
@@ -30,30 +30,6 @@ const videoList = [
     "youtubeId": "",
     "rumbleEmbed": "",
     "downloadUrl": "https://drive.google.com/uc?export=download&id=1GDOsTvewAmRzVIY1wyaZV2GdPk7-DMB4",
-    "description": "VOD LS TV"
-},
-    {
-    "id": "kick_1787680476",
-    "title": "Stream via RTMP (OBS, Vmix, Zoom) with Restream",
-    "defaultViews": 0,
-    "thumb": "https://kick.com/favicon.ico",
-    "sources": [],
-    "driveEmbed": "https://drive.google.com/file/d/10E2ZDrFTyi8r-QIOTiHf5BWO1eenJB6B/preview",
-    "youtubeId": "",
-    "rumbleEmbed": "",
-    "downloadUrl": "https://drive.google.com/uc?export=download&id=10E2ZDrFTyi8r-QIOTiHf5BWO1eenJB6B",
-    "description": "VOD LS TV"
-},
-    {
-    "id": "kick_1787630786",
-    "title": "VOD LIVE STREAMING BIOSKOP LIBURAN LUVIA STUDIO TV",
-    "defaultViews": 0,
-    "thumb": "Asset Foto/Thumbnimail  Banner YT.png",
-    "sources": [],
-    "driveEmbed": "https://drive.google.com/file/d/1CsSauvvlSRpI7bzjufUnl5Q-eLfehcAL/preview",
-    "youtubeId": "",
-    "rumbleEmbed": "",
-    "downloadUrl": "https://drive.google.com/uc?export=download&id=1CsSauvvlSRpI7bzjufUnl5Q-eLfehcAL",
     "description": "VOD LS TV"
 },
     {
