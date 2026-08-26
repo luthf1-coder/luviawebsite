@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>PEMUTAR VIDEO - LUVIA STUDIO OFFICIAL TV</title>
     <link rel="stylesheet" href="https://cdn.plyr.io/3.7.8/plyr.css" />
-    <link rel="stylesheet" href="style.css?v=5" />
+    <link rel="stylesheet" href="style.css?v=6" />
     <link rel="icon" type="image/png" href="Asset Foto/Thumbnimail .png">
 
     <!-- SDK Firebase Realtime Database -->
@@ -111,17 +111,21 @@
         }
         document.getElementById('download-area').innerHTML = downloadAreaHTML;
 
-   const playerWrapper = document.getElementById('video-player-wrapper');
+const playerWrapper = document.getElementById('video-player-wrapper');
         
+        // Bersihkan class tiap kali memuat video baru
+        playerWrapper.className = 'plyr-wrapper';
+
         if (currentVid.driveEmbed) {
-            // Tambahkan class="drive-iframe" untuk menjalankan trik ilusi
-            playerWrapper.innerHTML = `<iframe class="drive-iframe" src="${currentVid.driveEmbed}" allowfullscreen="true" style="border:none;"></iframe>`;
+            // Tambahkan class khusus Google Drive
+            playerWrapper.classList.add('drive-container'); 
+            playerWrapper.innerHTML = `<iframe src="${currentVid.driveEmbed}" allowfullscreen="true"></iframe>`;
         } else if (currentVid.rumbleEmbed) {
-            playerWrapper.innerHTML = `<iframe src="${currentVid.rumbleEmbed}" allowfullscreen="true" style="border:none;"></iframe>`;
+            playerWrapper.innerHTML = `<iframe src="${currentVid.rumbleEmbed}" allowfullscreen="true"></iframe>`;
         } else if (currentVid.customEmbed) {
-            playerWrapper.innerHTML = `<iframe src="${currentVid.customEmbed}" allowfullscreen="true" allow="autoplay; encrypted-media" style="border:none;"></iframe>`;
+            playerWrapper.innerHTML = `<iframe src="${currentVid.customEmbed}" allowfullscreen="true" allow="autoplay; encrypted-media"></iframe>`;
         } else if (currentVid.youtubeId) {
-            playerWrapper.innerHTML = `<iframe src="https://www.youtube.com/embed/${currentVid.youtubeId}?enablejsapi=1" allowfullscreen="true" allow="accelerometer; autoplay; encrypted-media; picture-in-picture" style="border:none;"></iframe>`;
+            playerWrapper.innerHTML = `<iframe src="https://www.youtube.com/embed/${currentVid.youtubeId}?enablejsapi=1" allowfullscreen="true" allow="accelerometer; autoplay; encrypted-media; picture-in-picture"></iframe>`;
         } else {
             playerWrapper.innerHTML = `<video id="plyr-player" controls playsinline poster="${currentVid.thumb || ''}"><source src="${currentVid.archiveSrc || ''}" type="video/mp4" /></video>`;
             if (document.getElementById('plyr-player') && typeof Plyr !== 'undefined') {
