@@ -991,3 +991,29 @@ footer {
 }
 .live-chat-list::-webkit-scrollbar { width: 6px; }
 .live-chat-list::-webkit-scrollbar-thumb { background: rgba(255, 145, 77, 0.6); border-radius: 10px; }
+
+/* ==========================================
+   PERBAIKAN KHUSUS GOOGLE DRIVE EMBED DI HP
+   ========================================== */
+.plyr-wrapper iframe[src*="drive.google.com"],
+.video-container iframe[src*="drive.google.com"] {
+    width: 100% !important;
+    height: 100% !important;
+    position: absolute !important;
+    top: 0 !important;
+    left: 0 !important;
+    border: none !important;
+    /* Memaksa elemen video di dalam iframe Drive agar tidak melar di layar kecil */
+    object-fit: contain !important; 
+}
+
+/* Mengatasi pembungkus khusus HP agar rasionya tidak rusak */
+@media (max-width: 768px) {
+    .plyr-wrapper,
+    .video-container {
+        width: 100% !important;
+        height: 0 !important;
+        padding-bottom: 56.25% !important; /* Standar rasio 16:9 yang aman untuk iframe Google Drive di mobile */
+        aspect-ratio: auto !important; /* Nonaktifkan aspect-ratio sementara untuk HP agar tidak bentrok dengan iframe Drive */
+    }
+}
