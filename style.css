@@ -634,18 +634,33 @@ footer {
     }
 
 /* --- PENGATURAN HP --- */
-    .plyr-wrapper,
-    .video-container {
+ /* 1. Kunci kotak luar di HP agar bentuknya persegi panjang video (16:9) */
+    .plyr-wrapper {
         width: 100% !important;
-        height: auto !important;
         aspect-ratio: 16 / 9 !important;
+        height: auto !important;
+        overflow: hidden !important;
+        position: relative !important;
     }
 
-    /* KUNCI MASALAH: Kasih ruang ekstra ke bawah KHUSUS Google Drive di HP */
-    .plyr-wrapper.drive-container {
-        padding-top: 65% !important; /* Ruang tambahan biar tombolnya gak terpotong */
+    /* 2. Buat kontainer virtual seukuran laptop (misal lebar 900px) */
+    .desktop-scale-container {
+        width: 900px !important;
+        height: 506px !important; /* Tinggi standar 16:9 dari lebar 900px */
+        position: absolute !important;
+        top: 0 !important;
+        left: 0 !important;
+        transform-origin: top left !important;
+        /* Hitung skala otomatis agar 900px muat sempurna ke layar HP kamu */
+        transform: scale(calc(100vw / 900)) !important; 
     }
 
+    /* 3. Paksa iframe Google Drive mengisi penuh kotak virtual tersebut */
+    .desktop-scale-container iframe {
+        width: 100% !important;
+        height: 100% !important;
+        border: none !important;
+    }
     .contact-links {
         flex-direction: column;
         width: 100%;
