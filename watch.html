@@ -17,8 +17,8 @@
     <nav>
         <div class="container nav-container">
             <div class="nav-history-controls">
-                <button onclick="history.back()" class="btn-nav-history" title="Kembali">â†</button>
-                <button onclick="history.forward()" class="btn-nav-history" title="Maju">â†’</button>
+                <button onclick="history.back()" class="btn-nav-history" title="Kembali">←</button>
+                <button onclick="history.forward()" class="btn-nav-history" title="Maju">→</button>
             </div>
             <div class="nav-links">
                 <a href="index.html">Beranda</a>
@@ -26,7 +26,7 @@
             </div>
             <form class="nav-search" onsubmit="return false;">
                 <input type="text" placeholder="Cari video..." aria-label="Cari">
-                <button type="submit">ðŸ”</button>
+                <button type="submit">🔍</button>
             </form>
         </div>
     </nav>
@@ -66,7 +66,7 @@
 
                     <div id="download-area"></div>
                     <div id="views-display-box" style="font-weight: bold; color: #ff914d; margin-top: 10px;">
-                        ðŸ‘ï¸ Memuat jumlah ditonton...
+                        👁️ Memuat jumlah ditonton...
                     </div>
                 </div>
             </div>
@@ -101,45 +101,19 @@
             const optionsHTML = currentVid.sources.map(s => `<option value="${s.src}">${s.size || 'HD'}p</option>`).join('');
             downloadAreaHTML = `
                 <div class="download-container">
-                    <span class="download-label">ðŸ“¥ Pilih Resolusi:</span>
+                    <span class="download-label">📥 Pilih Resolusi:</span>
                     <select id="download-quality-select" class="download-select">${optionsHTML}</select>
                     <button onclick="downloadVideoFile(document.getElementById('download-quality-select').value, '${safeTitle}.mp4')" class="btn-download-action">Download</button>
                 </div>`;
         } else if (currentVid.downloadUrl || currentVid.archiveSrc) {
             const url = currentVid.downloadUrl || currentVid.archiveSrc;
-            downloadAreaHTML = `<div class="download-container"><button onclick="downloadVideoFile('${url}', '${safeTitle}.mp4')" class="btn-download-action">ðŸ“¥ Download Video</button></div>`;
+            downloadAreaHTML = `<div class="download-container"><button onclick="downloadVideoFile('${url}', '${safeTitle}.mp4')" class="btn-download-action">📥 Download Video</button></div>`;
         }
         document.getElementById('download-area').innerHTML = downloadAreaHTML;
 
         const playerWrapper = document.getElementById('video-player-wrapper');
         if (currentVid.driveEmbed) {
-            // =====================================================================
-            // PERBAIKAN KHUSUS PLAYER GOOGLE DRIVE (BERMASALAH DI HP)
-            // -----------------------------------------------------------------------
-            // Sebelumnya iframe Drive memakai style inline "aspect-ratio:16/9" saja
-            // (sama seperti player lain). Tapi iframe bawaan Google Drive punya
-            // perilaku resize internal sendiri yang suka bentrok dengan properti
-            // CSS "aspect-ratio" di banyak browser HP (terutama WebView Android
-            // & Safari versi lama), sehingga bingkainya jadi melar/kepotong.
-            // Player lain (Plyr, YouTube, Rumble, custom) aman karena iframe-nya
-            // tidak melakukan resize internal seperti itu.
-            //
-            // Solusinya: bungkus iframe Drive dengan class "video-container"
-            // yang sudah ada di style.css (teknik padding-bottom 56.25% +
-            // iframe position:absolute). Teknik ini memaksa tinggi bingkai
-            // dengan satuan piksel yang pasti, bukan bergantung ke aspect-ratio,
-            // jadi lebih konsisten di semua HP.
-            // =====================================================================
-            playerWrapper.innerHTML = `
-                <div class="video-container gdrive-fix">
-                    <iframe
-                        src="${currentVid.driveEmbed}"
-                        allow="autoplay"
-                        allowfullscreen="true"
-                        frameborder="0"
-                        scrolling="no"
-                    ></iframe>
-                </div>`;
+            playerWrapper.innerHTML = `<iframe src="${currentVid.driveEmbed}" allowfullscreen="true" style="width:100%; aspect-ratio:16/9; border:none;"></iframe>`;
         } else if (currentVid.rumbleEmbed) {
             playerWrapper.innerHTML = `<iframe src="${currentVid.rumbleEmbed}" allowfullscreen="true" style="width:100%; aspect-ratio:16/9; border:none;"></iframe>`;
         } else if (currentVid.customEmbed) {
@@ -155,9 +129,9 @@
 
         if (typeof incrementVideoViewsAsync === 'function') {
             incrementVideoViewsAsync(currentVid.id, currentVid.defaultViews || 0).then(totalViews => {
-                document.getElementById('views-display-box').innerText = `ðŸ‘ï¸ ${formatViews(totalViews)}`;
+                document.getElementById('views-display-box').innerText = `👁️ ${formatViews(totalViews)}`;
             }).catch(() => {
-                document.getElementById('views-display-box').innerText = `ðŸ‘ï¸ ${currentVid.defaultViews || 0} Ditonton`;
+                document.getElementById('views-display-box').innerText = `👁️ ${currentVid.defaultViews || 0} Ditonton`;
             });
         }
         if (typeof renderGridRecommendations === 'function') renderGridRecommendations('watch-recommendations-grid');
