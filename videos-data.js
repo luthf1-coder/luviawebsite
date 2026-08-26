@@ -25,7 +25,7 @@ const videoList = [
     "title": "VOD PLAY LIVE STREAMING LUVIA STUDIO TV",
     "defaultViews": 0,
     "thumb": "https://kick.com/favicon.ico",
-    "sources": [src= "", type: "video/mp4"],
+    "sources": [],
     "driveEmbed": "https://drive.google.com/file/d/1GDOsTvewAmRzVIY1wyaZV2GdPk7-DMB4/preview",
     "youtubeId": "",
     "rumbleEmbed": "",
