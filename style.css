@@ -416,44 +416,59 @@ nav a:hover {
     text-transform: uppercase;
 }
 
-/* ==========================================
-   BINGKAI UTAMA UNTUK SEMUA PLAYER (FIX ANTI MELAR)
-   Menggunakan teknik "Padding-Bottom" agar rasio 16:9
-   TIDAK BISA DIBANTAH oleh browser HP manapun.
-   ========================================== */
-.video-container,
-.plyr-wrapper {
-    position: relative !important; 
-    width: 100% !important;
-    padding-bottom: 56.25% !important; /* 16:9 Aspect Ratio */
-    height: 0 !important;
+.video-container {
+    position: relative;
+    width: 100%;
+    padding-bottom: 56.25%;
+    height: 0;
     border-radius: 16px;
-    overflow: hidden; 
+    overflow: hidden;
     box-shadow: 0 10px 25px rgba(0, 0, 0, 0.3);
     border: 2px solid rgba(255, 255, 255, 0.4);
     background: #000000;
-    display: block !important;
 }
 
-/* MEMAKSA SEMUA VIDEO MENGISI BINGKAI PENUH */
 .video-container iframe,
-.video-container video,
-.plyr-wrapper iframe,
-.plyr-wrapper .plyr,
-.plyr-wrapper video {
-    position: absolute !important;
-    top: 0 !important;
-    left: 0 !important;
+.video-container video {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    border: 0;
+}
+
+/* ==========================================
+   FIX KHUSUS PLAYER GOOGLE DRIVE DI HP
+   ------------------------------------------
+   Class ".gdrive-fix" dipakai di watch.html khusus untuk
+   membungkus iframe embed Google Drive. Karena iframe Drive
+   melakukan resize internal sendiri, ia tidak selalu patuh
+   pada properti "aspect-ratio" di beberapa browser HP.
+   Aturan di bawah ini memastikan iframe Drive selalu mengisi
+   penuh bingkai ".video-container" (posisi absolute, lebar &
+   tinggi 100%) tanpa scrollbar/potongan aneh, baik di HP
+   maupun laptop.
+   ========================================== */
+.video-container.gdrive-fix {
+    background: #000000;
+}
+
+.video-container.gdrive-fix iframe {
     width: 100% !important;
     height: 100% !important;
-    border: none !important;
-    margin: 0 !important;
-    padding: 0 !important;
+    max-width: 100%;
+    max-height: 100%;
+    -webkit-overflow-scrolling: touch;
 }
 
-/* Menjamin container plyr ikut 100% */
-.plyr--video {
-    height: 100% !important;
+.plyr-wrapper {
+    width: 100%;
+    border-radius: 16px;
+    overflow: hidden;
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.3);
+    border: 2px solid rgba(255, 255, 255, 0.4);
+    background: #000000;
 }
 
 .plyr--full-ui input[type=range] {
@@ -626,19 +641,28 @@ footer {
         font-size: 0.8rem;
     }
 
-    /* Tambah jarak atas di HP biar judul gak tertutup Nav */
+    /* PERBAIKAN UTAMA: Tambah jarak atas di HP biar judul gak tertutup Nav */
     .page-stream-container {
         margin-top: 170px !important; 
     }
 
-    /* PERBAIKAN: Pastikan di mode Mobile pembungkusnya tetap mempertahankan tinggi 16:9 
-       dan HAPUS semua properti yang bikin konflik. */
+    /* Mencegah Player Video / Gambar Melar Tinggi di HP */
     .plyr-wrapper,
     .video-container {
         width: 100% !important;
-        padding-bottom: 56.25% !important; 
-        height: 0 !important;
+        height: auto !important;
+        aspect-ratio: 16 / 9 !important;
         position: relative !important;
+    }
+
+    /* Pastikan iframe Google Drive tetap pas mengikuti bingkai
+       ".video-container" walau aspect-ratio dipaksa di atas */
+    .video-container.gdrive-fix iframe {
+        position: absolute !important;
+        top: 0;
+        left: 0;
+        width: 100% !important;
+        height: 100% !important;
     }
 
     .contact-links {
@@ -991,29 +1015,3 @@ footer {
 }
 .live-chat-list::-webkit-scrollbar { width: 6px; }
 .live-chat-list::-webkit-scrollbar-thumb { background: rgba(255, 145, 77, 0.6); border-radius: 10px; }
-
-/* ==========================================
-   PERBAIKAN KHUSUS GOOGLE DRIVE EMBED DI HP
-   ========================================== */
-.plyr-wrapper iframe[src*="drive.google.com"],
-.video-container iframe[src*="drive.google.com"] {
-    width: 100% !important;
-    height: 100% !important;
-    position: absolute !important;
-    top: 0 !important;
-    left: 0 !important;
-    border: none !important;
-    /* Memaksa elemen video di dalam iframe Drive agar tidak melar di layar kecil */
-    object-fit: contain !important; 
-}
-
-/* Mengatasi pembungkus khusus HP agar rasionya tidak rusak */
-@media (max-width: 768px) {
-    .plyr-wrapper,
-    .video-container {
-        width: 100% !important;
-        height: 0 !important;
-        padding-bottom: 56.25% !important; /* Standar rasio 16:9 yang aman untuk iframe Google Drive di mobile */
-        aspect-ratio: auto !important; /* Nonaktifkan aspect-ratio sementara untuk HP agar tidak bentrok dengan iframe Drive */
-    }
-}
