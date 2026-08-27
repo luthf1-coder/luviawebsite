@@ -450,16 +450,6 @@ nav a:hover {
     background: #000000;
 }
 
-/* Biarkan semua iframe memenuhi kontainer secara normal */
-.plyr-wrapper iframe,
-.plyr-wrapper video {
-    position: absolute;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    border: none;
-}
 
 .plyr--full-ui input[type=range] {
     color: #ff914d;
