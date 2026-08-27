@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>PEMUTAR VIDEO - LUVIA STUDIO OFFICIAL TV</title>
     <link rel="stylesheet" href="https://cdn.plyr.io/3.7.8/plyr.css" />
-    <link rel="stylesheet" href="style.css?v=8" />
+    <link rel="stylesheet" href="style.css?v=10" />
     <link rel="icon" type="image/png" href="Asset Foto/Thumbnimail .png">
 
     <!-- SDK Firebase Realtime Database -->
@@ -46,6 +46,7 @@
                         <h3><span id="comment-count">0</span> Komentar</h3>
 
                         <div class="comment-input-area">
+                            <!-- UBAH LINK GAMBAR INI DENGAN LINK GITHUB KAMU -->
                             <img src="Asset Foto/Thumbnimail .png" class="comment-avatar" alt="Avatar">
                             <form id="comment-form" class="comment-form">
                                 <input type="text" id="comment-name" placeholder="Nama Anda..." required>
@@ -110,11 +111,11 @@
         }
         document.getElementById('download-area').innerHTML = downloadAreaHTML;
 
-        // --- SISTEM PEMUTAR VIDEO (SUDAH DIPERBAIKI SCROLLING="NO") ---
+        // --- BAGIAN INI YANG KITA PERBAIKI ---
         const playerWrapper = document.getElementById('video-player-wrapper');
-
+        
         if (currentVid.driveEmbed) {
-            playerWrapper.innerHTML = `<iframe src="${currentVid.driveEmbed}" allowfullscreen="true" scrolling="no" style="border:none;"></iframe>`;
+            playerWrapper.innerHTML = `<iframe class="drive-iframe" src="${currentVid.driveEmbed}" allowfullscreen="true" scrolling="no" style="border:none;"></iframe>`;
         } else if (currentVid.rumbleEmbed) {
             playerWrapper.innerHTML = `<iframe src="${currentVid.rumbleEmbed}" allowfullscreen="true" scrolling="no" style="border:none;"></iframe>`;
         } else if (currentVid.customEmbed) {
@@ -192,6 +193,7 @@
                         </div>
             `;
 
+            // Form Balasan tersembunyi
             if (!isReply) {
                 html += `
                         <div class="reply-form-container" id="reply-form-${id}" style="display: none;">
@@ -213,12 +215,13 @@
             return html;
         }
 
+        // Ambil Data Realtime
         commentsRef.on('value', (snapshot) => {
             const data = snapshot.val();
             let totalComments = 0;
 
             if (data) {
-                const keys = Object.keys(data).reverse(); 
+                const keys = Object.keys(data).reverse(); // Terbaru di atas
                 let finalHTML = '';
 
                 keys.forEach(key => {
@@ -230,14 +233,15 @@
                 commentsList.innerHTML = finalHTML;
                 document.getElementById('comment-count').innerText = totalComments;
 
+                // Render Balasan (Replies)
                 keys.forEach(key => {
                     const c = data[key];
                     if (c.replies) {
-                        const replyKeys = Object.keys(c.replies); 
+                        const replyKeys = Object.keys(c.replies); // Berurutan dari lama ke baru (di bawah)
                         let repliesHTML = '';
                         replyKeys.forEach(rKey => {
                             const rData = c.replies[rKey];
-                            rData.parentId = key; 
+                            rData.parentId = key; // penanda parent
                             repliesHTML += buildCommentHTML(rKey, rData, true);
                         });
                         document.getElementById(`replies-list-${key}`).innerHTML = repliesHTML;
@@ -250,6 +254,7 @@
             }
         });
 
+        // Kirim Komentar Induk
         document.getElementById('comment-form').addEventListener('submit', (e) => {
             e.preventDefault();
             const nameInput = document.getElementById('comment-name');
@@ -265,6 +270,7 @@
             }
         });
 
+        // Kirim Balasan (Reply)
         window.submitReply = function(parentId) {
             const nameVal = document.getElementById(`reply-name-${parentId}`).value;
             const textVal = document.getElementById(`reply-text-${parentId}`).value;
@@ -280,11 +286,13 @@
             }
         };
 
+        // Buka/Tutup Form Balasan
         window.toggleReplyForm = function(id) {
             const form = document.getElementById(`reply-form-${id}`);
             form.style.display = form.style.display === 'none' ? 'flex' : 'none';
         };
 
+        // Sistem Like (Tombol Mantap)
         window.toggleLike = function(commentId, parentId, isReply) {
             const hasLiked = localStorage.getItem(`liked_${commentId}`);
             let targetRef = isReply 
@@ -302,6 +310,7 @@
             });
         };
 
+        // Sistem Hapus (Dengan Password)
         window.deleteComment = function(commentId, parentId, isReply) {
             const pw = prompt("Masukkan password tersebut jika anda adalah admin!");
             if (pw === adminPassword) {
