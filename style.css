@@ -627,13 +627,26 @@ footer {
         margin-top: 170px !important; 
     }
 
-    /* Mencegah Player Video / Gambar Melar Tinggi di HP */
+    /* Mengunci ukuran rasio di HP */
     .plyr-wrapper,
     .video-container {
         width: 100% !important;
-        height: auto !important;
         aspect-ratio: 16 / 9 !important;
         position: relative !important;
+        height: auto !important;
+        padding-bottom: 0 !important;
+    }
+
+    /* ==============================================
+       TRIK ILUSI GOOGLE DRIVE: 
+       Bikin ukurannya 2x lipat (biar UI gak rusak), 
+       lalu Zoom Out jadi setengahnya (scale 0.5)
+       ============================================== */
+    .plyr-wrapper iframe.drive-iframe {
+        width: 200% !important;
+        height: 200% !important;
+        transform: scale(0.5);
+        transform-origin: top left;
     }
 
     .contact-links {
