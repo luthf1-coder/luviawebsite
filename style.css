@@ -636,7 +636,7 @@ footer {
         margin-top: 170px !important; 
     }
 
-    /* Mengunci ukuran rasio di HP */
+/* Mengunci ukuran rasio di HP */
     .plyr-wrapper,
     .video-container {
         width: 100% !important;
