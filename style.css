@@ -438,13 +438,27 @@ nav a:hover {
     border: 0;
 }
 
+/* Kembalikan ke normal, hapus display: flex yang sebelumnya */
 .plyr-wrapper {
+    position: relative;
     width: 100%;
+    aspect-ratio: 16 / 9;
     border-radius: 16px;
     overflow: hidden;
     box-shadow: 0 10px 25px rgba(0, 0, 0, 0.3);
     border: 2px solid rgba(255, 255, 255, 0.4);
     background: #000000;
+}
+
+/* Biarkan semua iframe memenuhi kontainer secara normal */
+.plyr-wrapper iframe,
+.plyr-wrapper video {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    border: none;
 }
 
 .plyr--full-ui input[type=range] {
