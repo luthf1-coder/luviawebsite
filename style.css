@@ -416,31 +416,49 @@ nav a:hover {
     text-transform: uppercase;
 }
 
-/* --- KODE MURNI 16:9 ABSOLUT UNTUK MENCEGAH MELUBER --- */
-.video-container,
+.video-container {
+    position: relative;
+    width: 100%;
+    padding-bottom: 56.25%;
+    height: 0;
+    border-radius: 16px;
+    overflow: hidden;
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.3);
+    border: 2px solid rgba(255, 255, 255, 0.4);
+    background: #000000;
+}
+
+.video-container iframe,
+.video-container video {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    border: 0;
+}
+
+/* --- BAGIAN INI KITA PERBAIKI DENGAN PADDING-BOTTOM MUTLAK --- */
 .plyr-wrapper {
     position: relative;
     width: 100%;
     padding-bottom: 56.25%; /* Memaksa bentuk kotak 16:9 secara mutlak */
     height: 0;
     border-radius: 16px;
-    overflow: hidden !important; /* Mencegah item meluber ke bawah & menghilangkan scroll */
+    overflow: hidden; /* Mencegah meluber */
     box-shadow: 0 10px 25px rgba(0, 0, 0, 0.3);
     border: 2px solid rgba(255, 255, 255, 0.4);
     background: #000000;
 }
 
-/* Memaksa isi (iframe) pas persis dengan bingkai */
-.video-container iframe,
-.video-container video,
 .plyr-wrapper iframe,
 .plyr-wrapper video {
-    position: absolute !important;
-    top: 0 !important;
-    left: 0 !important;
-    width: 100% !important;
-    height: 100% !important;
-    border: none !important;
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    border: none;
 }
 
 .plyr--full-ui input[type=range] {
@@ -612,10 +630,30 @@ footer {
         font-size: 0.8rem;
     }
 
+    /* PERBAIKAN UTAMA: Tambah jarak atas di HP biar judul gak tertutup Nav */
     .page-stream-container {
         margin-top: 170px !important; 
     }
 
+    /* --- BAGIAN INI KITA PERBAIKI UNTUK HP --- */
+    /* Mencegah Player Video / Gambar Melar Tinggi di HP */
+    .plyr-wrapper,
+    .video-container {
+        width: 100% !important;
+        padding-bottom: 56.25% !important;
+        height: 0 !important;
+        position: relative !important;
+    }
+
+    /* TRIK ILUSI GOOGLE DRIVE DI HP */
+    /* Membuat player 2x lipat agar UI tidak rusak, lalu diperkecil 50% agar pas persis */
+    .plyr-wrapper iframe.drive-iframe {
+        width: 200% !important;
+        height: 200% !important;
+        transform: scale(0.5) !important;
+        transform-origin: top left !important;
+    }
+    
     .contact-links {
         flex-direction: column;
         width: 100%;
@@ -676,6 +714,7 @@ footer {
    STYLE KHUSUS AREA DOWNLOAD & RESOLUSI VIDEO
    ========================================== */
 
+/* Kontainer pembungkus opsi download */
 .download-container {
     margin: 16px 0;
     padding: 12px 16px;
@@ -694,6 +733,7 @@ footer {
     font-size: 0.95rem;
 }
 
+/* Dropdown Pemilih Resolusi */
 .download-select {
     padding: 8px 12px;
     border-radius: 6px;
@@ -713,6 +753,7 @@ footer {
     box-shadow: 0 0 8px rgba(255, 145, 77, 0.4);
 }
 
+/* Tombol Download */
 .btn-download-action {
     background-color: #ff914d;
     color: #ffffff;
@@ -738,6 +779,7 @@ footer {
     transform: translateY(0);
 }
 
+/* Responsif untuk Layar HP (Mobile) */
 @media screen and (max-width: 600px) {
     .download-container {
         flex-direction: column;
@@ -768,6 +810,7 @@ footer {
     color: #fff;
 }
 
+/* Area Input Komentar */
 .comment-input-area {
     display: flex;
     gap: 15px;
@@ -852,6 +895,7 @@ footer {
     background: #ffa76f;
 }
 
+/* List Komentar */
 .yt-comment-wrapper {
     display: flex;
     gap: 15px;
@@ -882,13 +926,14 @@ footer {
 }
 
 .comment-text {
-    margin-top: 4px;
+    margin-top: 4px; /* Setengah paragraf jarak */
     font-size: 0.95rem;
     line-height: 1.5;
     color: #f1f1f1;
     word-wrap: break-word;
 }
 
+/* Ikon Like, Balas, Hapus */
 .comment-actions {
     display: flex;
     align-items: center;
@@ -924,6 +969,7 @@ footer {
     background: rgba(255, 77, 77, 0.15);
 }
 
+/* Balasan */
 .replies-list {
     margin-top: 10px;
 }
@@ -950,6 +996,7 @@ footer {
     border-bottom: 2px solid #fff;
 }
 
+/* Scroll Live Chat (Padat & Ringkas) */
 .live-chat-list {
     max-height: 350px;
     overflow-y: auto;
