@@ -437,10 +437,10 @@ nav a:hover {
     height: 100%;
     border: 0;
 }
+
 
 /* Kembalikan ke normal, hapus display: flex yang sebelumnya */
 .plyr-wrapper {
-    position: relative;
     width: 100%;
     aspect-ratio: 16 / 9;
     border-radius: 16px;
