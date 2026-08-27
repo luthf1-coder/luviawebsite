@@ -99,7 +99,7 @@ const videoList = [
         id: "video6",
         title: "Detective Conan: Episode One - The Great Detective Turned Small Dubbing Indonesia",
         defaultViews: 10,
-        thumb: "Asset Foto/Thumbnimail  Banner YT.png",
+        thumb: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTfr_mYXblDP9MuGL50PNh-UmHI55f5G0lsmSXRfxTEA-lCf_Vr3Otg2_t0&s=10",
         archiveSrc: "https://cdn.dubbindo.site/driveduo/uploads/34eeded7-a628-47a1-90ff-13fb45a4ad83/34eeded7-a628-47a1-90ff-13fb45a4ad83",
         driveEmbed: "",
         youtubeId: "",
