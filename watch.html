@@ -112,14 +112,16 @@
         document.getElementById('download-area').innerHTML = downloadAreaHTML;
 
         const playerWrapper = document.getElementById('video-player-wrapper');
+        
         if (currentVid.driveEmbed) {
-            playerWrapper.innerHTML = `<iframe src="${currentVid.driveEmbed}" allowfullscreen="true" style="width:100%; aspect-ratio:16/9; border:none;"></iframe>`;
+            // Tambahkan class="drive-iframe" untuk menjalankan trik ilusi
+            playerWrapper.innerHTML = `<iframe class="drive-iframe" src="${currentVid.driveEmbed}" allowfullscreen="true" style="border:none;"></iframe>`;
         } else if (currentVid.rumbleEmbed) {
-            playerWrapper.innerHTML = `<iframe src="${currentVid.rumbleEmbed}" allowfullscreen="true" style="width:100%; aspect-ratio:16/9; border:none;"></iframe>`;
+            playerWrapper.innerHTML = `<iframe src="${currentVid.rumbleEmbed}" allowfullscreen="true" style="border:none;"></iframe>`;
         } else if (currentVid.customEmbed) {
-            playerWrapper.innerHTML = `<iframe src="${currentVid.customEmbed}" allowfullscreen="true" allow="autoplay; encrypted-media" style="width:100%; aspect-ratio:16/9; border:none;"></iframe>`;
+            playerWrapper.innerHTML = `<iframe src="${currentVid.customEmbed}" allowfullscreen="true" allow="autoplay; encrypted-media" style="border:none;"></iframe>`;
         } else if (currentVid.youtubeId) {
-            playerWrapper.innerHTML = `<iframe src="https://www.youtube.com/embed/${currentVid.youtubeId}?enablejsapi=1" allowfullscreen="true" allow="accelerometer; autoplay; encrypted-media; picture-in-picture" style="width:100%; aspect-ratio:16/9; border:none;"></iframe>`;
+            playerWrapper.innerHTML = `<iframe src="https://www.youtube.com/embed/${currentVid.youtubeId}?enablejsapi=1" allowfullscreen="true" allow="accelerometer; autoplay; encrypted-media; picture-in-picture" style="border:none;"></iframe>`;
         } else {
             playerWrapper.innerHTML = `<video id="plyr-player" controls playsinline poster="${currentVid.thumb || ''}"><source src="${currentVid.archiveSrc || ''}" type="video/mp4" /></video>`;
             if (document.getElementById('plyr-player') && typeof Plyr !== 'undefined') {
