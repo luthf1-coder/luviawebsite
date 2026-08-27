@@ -24,13 +24,13 @@ const videoList = [
     "id": "kick_vod_123490654",
     "title": "VOD PLAY LIVE STREAMING LUVIA STUDIO TV",
     "defaultViews": 0,
-    "thumb": "https://kick.com/favicon.ico",
+    "thumb": "Asset Foto/Thumbnimail_VOD_LIVE.png",
     "sources": [],
     "driveEmbed": "https://drive.google.com/file/d/1GDOsTvewAmRzVIY1wyaZV2GdPk7-DMB4/preview",
     "youtubeId": "",
     "rumbleEmbed": "",
     "downloadUrl": "https://drive.google.com/uc?export=download&id=1GDOsTvewAmRzVIY1wyaZV2GdPk7-DMB4",
-    "description": "VOD LS TV"
+    "description": "VOD LS TV. Disarakan saat memutar video ini dalam mode fullscreen!"
 },
     {
         id: "video1",
@@ -82,19 +82,19 @@ const videoList = [
     //     downloadUrl: "https://ak.rumble.com/vID unik/kode identitas video milikmu.mp4", 
     //     description: "Hasil rekaman siaran langsung dari platform Rumble."
     // },
-    {
-        id: "video5",
-        title: "Contoh Video Google Drive",
-        defaultViews: 10,
-        thumb: "Asset Foto/Thumbnimail  Banner YT.png",
-        archiveSrc: "https://drive.google.com/file/d/1GDOsTvewAmRzVIY1wyaZV2GdPk7-DMB4/preview",
-        driveEmbed: "",
-        youtubeId: "",
-        rumbleEmbed: "",
-        // Solusi Direct Download Google Drive (Format export=download)
-        downloadUrl: "https://drive.google.com/uc?export=download&id=ID_FILE_GDRIVE",
-        description: "Video sampel yang tersimpan di Google Drive."
-    },
+    // {
+    //     id: "video5",
+    //     title: "Contoh Video Google Drive",
+    //     defaultViews: 10,
+    //     thumb: "Asset Foto/Thumbnimail  Banner YT.png",
+    //     archiveSrc: "",
+    //     driveEmbed: "https://drive.google.com/file/d/ID_FILE_GDRIVE/preview",
+    //     youtubeId: "",
+    //     rumbleEmbed: "",
+    //     // Solusi Direct Download Google Drive (Format export=download)
+    //     downloadUrl: "https://drive.google.com/uc?export=download&id=ID_FILE_GDRIVE",
+    //     description: "Video sampel yang tersimpan di Google Drive."
+    // },
     {
         id: "video6",
         title: "Detective Conan: Episode One - The Great Detective Turned Small Dubbing Indonesia",
@@ -106,7 +106,7 @@ const videoList = [
         rumbleEmbed: "",
         customEmbed: "",
         downloadUrl: "https://cdn.dubbindo.site/driveduo/uploads/34eeded7-a628-47a1-90ff-13fb45a4ad83/34eeded7-a628-47a1-90ff-13fb45a4ad83",
-        description: "https://drive.google.com/file/d/ID_FILE_GDRIVE/preview"
+        description: "Detective Conan Spesial"
     }
 ];
 
