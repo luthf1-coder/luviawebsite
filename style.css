@@ -451,6 +451,23 @@ nav a:hover {
     background: #000000;
 }
 
+/* ========================================================
+   TAMBAHKAN KODE INI UNTUK MEMPERBAIKI TAMPILAN DI LAPTOP 
+   ======================================================== */
+.plyr-wrapper iframe {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    border: 0;
+}
+/* ======================================================== */
+
+.plyr--full-ui input[type=range] {
+    color: #ff914d;
+}
+
 
 .plyr--full-ui input[type=range] {
     color: #ff914d;
