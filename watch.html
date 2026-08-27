@@ -1,117 +1,117 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>PEMUTAR VIDEO - LUVIA STUDIO OFFICIAL TV</title>
-    <link rel="stylesheet" href="https://cdn.plyr.io/3.7.8/plyr.css" />
-    <link rel="stylesheet" href="style.css" />
-    <link rel="icon" type="image/png" href="Asset Foto/Thumbnimail .png">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PEMUTAR VIDEO - LUVIA STUDIO OFFICIAL TV</title>
+    <link rel="stylesheet" href="https://cdn.plyr.io/3.7.8/plyr.css" />
+    <link rel="stylesheet" href="style.css" />
+    <link rel="icon" type="image/png" href="Asset Foto/Thumbnimail .png">
 
-    <!-- SDK Firebase Realtime Database -->
-    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-database-compat.js"></script>
+    <!-- SDK Firebase Realtime Database -->
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-database-compat.js"></script>
 </head>
 <body>
 
-    <nav>
-        <div class="container nav-container">
-            <div class="nav-history-controls">
-                <button onclick="history.back()" class="btn-nav-history" title="Kembali">←</button>
-                <button onclick="history.forward()" class="btn-nav-history" title="Maju">→</button>
-            </div>
-            <div class="nav-links">
-                <a href="index.html">Beranda</a>
-                <a href="#contact">Social Media</a>
-            </div>
-            <form class="nav-search" onsubmit="return false;">
-                <input type="text" placeholder="Cari video..." aria-label="Cari">
-                <button type="submit">🔍</button>
-            </form>
-        </div>
-    </nav>
+    <nav>
+        <div class="container nav-container">
+            <div class="nav-history-controls">
+                <button onclick="history.back()" class="btn-nav-history" title="Kembali">←</button>
+                <button onclick="history.forward()" class="btn-nav-history" title="Maju">→</button>
+            </div>
+            <div class="nav-links">
+                <a href="index.html">Beranda</a>
+                <a href="#contact">Social Media</a>
+            </div>
+            <form class="nav-search" onsubmit="return false;">
+                <input type="text" placeholder="Cari video..." aria-label="Cari">
+                <button type="submit">🔍</button>
+            </form>
+        </div>
+    </nav>
 
-    <main class="container page-stream-container">
-        <section class="main-video-section">
-            <h1 id="player-title" class="stream-title">Memuat Video...</h1>
-            <div class="plyr-wrapper" id="video-player-wrapper"></div>
+    <main class="container page-stream-container">
+        <section class="main-video-section">
+            <h1 id="player-title" class="stream-title">Memuat Video...</h1>
+            <div class="plyr-wrapper" id="video-player-wrapper"></div>
 
-            <div class="video-info">
-                <h2 id="info-title">...</h2>
-                <div id="info-desc">
-                    <p id="desc-text">Memuat deskripsi...</p>
+            <div class="video-info">
+                <h2 id="info-title">...</h2>
+                <div id="info-desc">
+                    <p id="desc-text">Memuat deskripsi...</p>
 
-                    <!-- MULAI: AREA KOMENTAR ALA YOUTUBE -->
-                    <div id="comments-section" class="comments-section">
-                        <h3><span id="comment-count">0</span> Komentar</h3>
+                    <!-- MULAI: AREA KOMENTAR ALA YOUTUBE -->
+                    <div id="comments-section" class="comments-section">
+                        <h3><span id="comment-count">0</span> Komentar</h3>
 
-                        <div class="comment-input-area">
-                            <!-- UBAH LINK GAMBAR INI DENGAN LINK GITHUB KAMU -->
-                            <img src="Asset Foto/Thumbnimail .png" class="comment-avatar" alt="Avatar">
-                            <form id="comment-form" class="comment-form">
-                                <input type="text" id="comment-name" placeholder="Nama Anda..." required>
-                                <textarea id="comment-text" placeholder="Tambahkan komentar..." required></textarea>
-                                <div class="form-actions">
-                                    <button type="button" class="btn-cancel" onclick="document.getElementById('comment-text').value=''">Batal</button>
-                                    <button type="submit" class="btn-submit-comment">Komentar</button>
-                                </div>
-                            </form>
-                        </div>
+                        <div class="comment-input-area">
+                            <!-- UBAH LINK GAMBAR INI DENGAN LINK GITHUB KAMU -->
+                            <img src="Asset Foto/Thumbnimail .png" class="comment-avatar" alt="Avatar">
+                            <form id="comment-form" class="comment-form">
+                                <input type="text" id="comment-name" placeholder="Nama Anda..." required>
+                                <textarea id="comment-text" placeholder="Tambahkan komentar..." required></textarea>
+                                <div class="form-actions">
+                                    <button type="button" class="btn-cancel" onclick="document.getElementById('comment-text').value=''">Batal</button>
+                                    <button type="submit" class="btn-submit-comment">Komentar</button>
+                                </div>
+                            </form>
+                        </div>
 
-                        <div id="comments-list" class="comments-list">
-                            <p style="color:#bbb; font-size:0.9rem; text-align:center;">Memuat komentar...</p>
-                        </div>
-                    </div>
-                    <!-- SELESAI: AREA KOMENTAR ALA YOUTUBE -->
+                        <div id="comments-list" class="comments-list">
+                            <p style="color:#bbb; font-size:0.9rem; text-align:center;">Memuat komentar...</p>
+                        </div>
+                    </div>
+                    <!-- SELESAI: AREA KOMENTAR ALA YOUTUBE -->
 
-                    <div id="download-area"></div>
-                    <div id="views-display-box" style="font-weight: bold; color: #ff914d; margin-top: 10px;">
-                        👁️ Memuat jumlah ditonton...
-                    </div>
-                </div>
-            </div>
-        </section>
+                    <div id="download-area"></div>
+                    <div id="views-display-box" style="font-weight: bold; color: #ff914d; margin-top: 10px;">
+                        👁️ Memuat jumlah ditonton...
+                    </div>
+                </div>
+            </div>
+        </section>
 
-        <section class="other-videos-section">
-            <h2>Video Lainnya</h2>
-            <div class="video-grid" id="watch-recommendations-grid"></div>
-        </section>
-    </main>
+        <section class="other-videos-section">
+            <h2>Video Lainnya</h2>
+            <div class="video-grid" id="watch-recommendations-grid"></div>
+        </section>
+    </main>
 
-    <footer><div class="container"><p>&copy 2026 LUVIA STUDIO TV All Right Reserved</p></div></footer>
+    <footer><div class="container"><p>&copy 2026 LUVIA STUDIO TV All Right Reserved</p></div></footer>
 
-    <script src="https://cdn.plyr.io/3.7.8/plyr.js"></script>
-    <script src="videos-data.js"></script>
+    <script src="https://cdn.plyr.io/3.7.8/plyr.js"></script>
+    <script src="videos-data.js"></script>
 
-    <script>
-        // --- Inisialisasi Video Sama Seperti Sebelumnya ---
-        const urlParams = new URLSearchParams(window.location.search);
-        const currentVideoId = urlParams.get('id') || 'video1';
-        const currentVid = (typeof videoList !== 'undefined' && videoList.find(v => v.id === currentVideoId)) || {
-            id: currentVideoId, title: 'Video Tidak Ditemukan', description: 'Maaf, video ini tidak tersedia.', defaultViews: 0
-        };
+    <script>
+        // --- Inisialisasi Video Sama Seperti Sebelumnya ---
+        const urlParams = new URLSearchParams(window.location.search);
+        const currentVideoId = urlParams.get('id') || 'video1';
+        const currentVid = (typeof videoList !== 'undefined' && videoList.find(v => v.id === currentVideoId)) || {
+            id: currentVideoId, title: 'Video Tidak Ditemukan', description: 'Maaf, video ini tidak tersedia.', defaultViews: 0
+        };
 
-        document.getElementById('player-title').innerText = currentVid.title;
-        document.getElementById('info-title').innerText = currentVid.title;
-        document.getElementById('desc-text').innerText = currentVid.description || 'Tidak ada deskripsi.';
+        document.getElementById('player-title').innerText = currentVid.title;
+        document.getElementById('info-title').innerText = currentVid.title;
+        document.getElementById('desc-text').innerText = currentVid.description || 'Tidak ada deskripsi.';
 
-        let downloadAreaHTML = '';
-        const safeTitle = (currentVid.title || 'video').replace(/'/g, "\\'");
-        if (currentVid.sources && currentVid.sources.length > 0) {
-            const optionsHTML = currentVid.sources.map(s => `<option value="${s.src}">${s.size || 'HD'}p</option>`).join('');
-            downloadAreaHTML = `
-                <div class="download-container">
-                    <span class="download-label">📥 Pilih Resolusi:</span>
-                    <select id="download-quality-select" class="download-select">${optionsHTML}</select>
-                    <button onclick="downloadVideoFile(document.getElementById('download-quality-select').value, '${safeTitle}.mp4')" class="btn-download-action">Download</button>
-                </div>`;
-        } else if (currentVid.downloadUrl || currentVid.archiveSrc) {
-            const url = currentVid.downloadUrl || currentVid.archiveSrc;
-            downloadAreaHTML = `<div class="download-container"><button onclick="downloadVideoFile('${url}', '${safeTitle}.mp4')" class="btn-download-action">📥 Download Video</button></div>`;
-        }
-        document.getElementById('download-area').innerHTML = downloadAreaHTML;
+        let downloadAreaHTML = '';
+        const safeTitle = (currentVid.title || 'video').replace(/'/g, "\\'");
+        if (currentVid.sources && currentVid.sources.length > 0) {
+            const optionsHTML = currentVid.sources.map(s => `<option value="${s.src}">${s.size || 'HD'}p</option>`).join('');
+            downloadAreaHTML = `
+                <div class="download-container">
+                    <span class="download-label">📥 Pilih Resolusi:</span>
+                    <select id="download-quality-select" class="download-select">${optionsHTML}</select>
+                    <button onclick="downloadVideoFile(document.getElementById('download-quality-select').value, '${safeTitle}.mp4')" class="btn-download-action">Download</button>
+                </div>`;
+        } else if (currentVid.downloadUrl || currentVid.archiveSrc) {
+            const url = currentVid.downloadUrl || currentVid.archiveSrc;
+            downloadAreaHTML = `<div class="download-container"><button onclick="downloadVideoFile('${url}', '${safeTitle}.mp4')" class="btn-download-action">📥 Download Video</button></div>`;
+        }
+        document.getElementById('download-area').innerHTML = downloadAreaHTML;
 
-                const playerWrapper = document.getElementById('video-player-wrapper');
+        const playerWrapper = document.getElementById('video-player-wrapper');
         
         if (currentVid.driveEmbed) {
             // Tambahkan class="drive-iframe" untuk menjalankan trik ilusi
@@ -129,200 +129,200 @@
             }
         }
 
-        if (typeof incrementVideoViewsAsync === 'function') {
-            incrementVideoViewsAsync(currentVid.id, currentVid.defaultViews || 0).then(totalViews => {
-                document.getElementById('views-display-box').innerText = `👁️ ${formatViews(totalViews)}`;
-            }).catch(() => {
-                document.getElementById('views-display-box').innerText = `👁️ ${currentVid.defaultViews || 0} Ditonton`;
-            });
-        }
-        if (typeof renderGridRecommendations === 'function') renderGridRecommendations('watch-recommendations-grid');
+        if (typeof incrementVideoViewsAsync === 'function') {
+            incrementVideoViewsAsync(currentVid.id, currentVid.defaultViews || 0).then(totalViews => {
+                document.getElementById('views-display-box').innerText = `👁️ ${formatViews(totalViews)}`;
+            }).catch(() => {
+                document.getElementById('views-display-box').innerText = `👁️ ${currentVid.defaultViews || 0} Ditonton`;
+            });
+        }
+        if (typeof renderGridRecommendations === 'function') renderGridRecommendations('watch-recommendations-grid');
 
-        // ==========================================
-        // FITUR KOMENTAR ALA YOUTUBE
-        // ==========================================
-        const commentsRef = firebase.database().ref('video_comments_v2/' + currentVid.id);
-        const commentsList = document.getElementById('comments-list');
-        const defaultAvatarURL = "Asset Foto/Thumbnimail .png"; // BISA DIGANTI LINK GITHUB
-        const adminPassword = "adminlstv"; // PASSWORD UNTUK HAPUS KOMENTAR
+        // ==========================================
+        // FITUR KOMENTAR ALA YOUTUBE
+        // ==========================================
+        const commentsRef = firebase.database().ref('video_comments_v2/' + currentVid.id);
+        const commentsList = document.getElementById('comments-list');
+        const defaultAvatarURL = "Asset Foto/Thumbnimail .png"; // BISA DIGANTI LINK GITHUB
+        const adminPassword = "adminlstv"; // PASSWORD UNTUK HAPUS KOMENTAR
 
-        // Ikon SVG
-        const iconThumbOutline = `<svg viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"><path d="M14 9V5a3 3 0 0 0-3-3l-4 9v11h11.28a2 2 0 0 0 2-1.7l1.38-9a2 2 0 0 0-2-2.3zM7 22H4a2 2 0 0 1-2-2v-7a2 2 0 0 1 2-2h3"></path></svg>`;
-        const iconThumbSolid = `<svg viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" stroke-width="2" fill="white" stroke-linecap="round" stroke-linejoin="round"><path d="M14 9V5a3 3 0 0 0-3-3l-4 9v11h11.28a2 2 0 0 0 2-1.7l1.38-9a2 2 0 0 0-2-2.3zM7 22H4a2 2 0 0 1-2-2v-7a2 2 0 0 1 2-2h3"></path></svg>`;
-        const iconTrash = `<svg viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>`;
+        // Ikon SVG
+        const iconThumbOutline = `<svg viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"><path d="M14 9V5a3 3 0 0 0-3-3l-4 9v11h11.28a2 2 0 0 0 2-1.7l1.38-9a2 2 0 0 0-2-2.3zM7 22H4a2 2 0 0 1-2-2v-7a2 2 0 0 1 2-2h3"></path></svg>`;
+        const iconThumbSolid = `<svg viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" stroke-width="2" fill="white" stroke-linecap="round" stroke-linejoin="round"><path d="M14 9V5a3 3 0 0 0-3-3l-4 9v11h11.28a2 2 0 0 0 2-1.7l1.38-9a2 2 0 0 0-2-2.3zM7 22H4a2 2 0 0 1-2-2v-7a2 2 0 0 1 2-2h3"></path></svg>`;
+        const iconTrash = `<svg viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>`;
 
-        // Format Tanggal
-        function timeAgo(ts) {
-            if(!ts) return "Baru saja";
-            const diff = Date.now() - ts;
-            const minutes = Math.floor(diff / 60000);
-            if(minutes < 1) return "Baru saja";
-            if(minutes < 60) return `${minutes} menit yang lalu`;
-            const hours = Math.floor(minutes / 60);
-            if(hours < 24) return `${hours} jam yang lalu`;
-            return `${Math.floor(hours / 24)} hari yang lalu`;
-        }
+        // Format Tanggal
+        function timeAgo(ts) {
+            if(!ts) return "Baru saja";
+            const diff = Date.now() - ts;
+            const minutes = Math.floor(diff / 60000);
+            if(minutes < 1) return "Baru saja";
+            if(minutes < 60) return `${minutes} menit yang lalu`;
+            const hours = Math.floor(minutes / 60);
+            if(hours < 24) return `${hours} jam yang lalu`;
+            return `${Math.floor(hours / 24)} hari yang lalu`;
+        }
 
-        // Render HTML Komentar
-        function buildCommentHTML(id, c, isReply = false) {
-            const hasLiked = localStorage.getItem(`liked_${id}`);
-            const likesCount = c.likes || 0;
-            const thumbIcon = hasLiked ? iconThumbSolid : iconThumbOutline;
+        // Render HTML Komentar
+        function buildCommentHTML(id, c, isReply = false) {
+            const hasLiked = localStorage.getItem(`liked_${id}`);
+            const likesCount = c.likes || 0;
+            const thumbIcon = hasLiked ? iconThumbSolid : iconThumbOutline;
 
-            let html = `
-                <div class="yt-comment-wrapper" id="comment-${id}">
-                    <img src="${defaultAvatarURL}" class="comment-avatar ${isReply ? 'avatar-sm' : ''}" alt="Avatar">
-                    <div class="comment-content">
-                        <div class="comment-header">
-                            <span class="comment-name">@${c.name}</span>
-                            <span class="comment-time">${timeAgo(c.timestamp)}</span>
-                        </div>
-                        <div class="comment-text">${c.text}</div>
-                        <div class="comment-actions">
-                            <button class="action-btn" onclick="toggleLike('${id}', '${isReply ? c.parentId : id}', ${isReply})">
-                                ${thumbIcon} <span id="like-count-${id}">${likesCount > 0 ? likesCount : ''}</span>
-                            </button>
-            `;
+            let html = `
+                <div class="yt-comment-wrapper" id="comment-${id}">
+                    <img src="${defaultAvatarURL}" class="comment-avatar ${isReply ? 'avatar-sm' : ''}" alt="Avatar">
+                    <div class="comment-content">
+                        <div class="comment-header">
+                            <span class="comment-name">@${c.name}</span>
+                            <span class="comment-time">${timeAgo(c.timestamp)}</span>
+                        </div>
+                        <div class="comment-text">${c.text}</div>
+                        <div class="comment-actions">
+                            <button class="action-btn" onclick="toggleLike('${id}', '${isReply ? c.parentId : id}', ${isReply})">
+                                ${thumbIcon} <span id="like-count-${id}">${likesCount > 0 ? likesCount : ''}</span>
+                            </button>
+            `;
 
-            if (!isReply) {
-                html += `<button class="action-btn" onclick="toggleReplyForm('${id}')">Balas</button>`;
-            }
+            if (!isReply) {
+                html += `<button class="action-btn" onclick="toggleReplyForm('${id}')">Balas</button>`;
+            }
 
-            html += `
-                            <button class="action-btn delete-btn" onclick="deleteComment('${id}', '${isReply ? c.parentId : id}', ${isReply})">${iconTrash}</button>
-                        </div>
-            `;
+            html += `
+                            <button class="action-btn delete-btn" onclick="deleteComment('${id}', '${isReply ? c.parentId : id}', ${isReply})">${iconTrash}</button>
+                        </div>
+            `;
 
-            // Form Balasan tersembunyi
-            if (!isReply) {
-                html += `
-                        <div class="reply-form-container" id="reply-form-${id}" style="display: none;">
-                            <img src="${defaultAvatarURL}" class="comment-avatar avatar-sm" alt="Avatar">
-                            <div style="flex:1;">
-                                <input type="text" id="reply-name-${id}" placeholder="Nama..." required class="reply-input-name">
-                                <textarea id="reply-text-${id}" placeholder="Balas komentar..." required></textarea>
-                                <div class="form-actions" style="margin-top:5px;">
-                                    <button class="btn-cancel" onclick="toggleReplyForm('${id}')">Batal</button>
-                                    <button class="btn-submit-comment" onclick="submitReply('${id}')">Balas</button>
-                                </div>
-                            </div>
-                        </div>
-                        <div id="replies-list-${id}" class="replies-list"></div>
-                `;
-            }
+            // Form Balasan tersembunyi
+            if (!isReply) {
+                html += `
+                        <div class="reply-form-container" id="reply-form-${id}" style="display: none;">
+                            <img src="${defaultAvatarURL}" class="comment-avatar avatar-sm" alt="Avatar">
+                            <div style="flex:1;">
+                                <input type="text" id="reply-name-${id}" placeholder="Nama..." required class="reply-input-name">
+                                <textarea id="reply-text-${id}" placeholder="Balas komentar..." required></textarea>
+                                <div class="form-actions" style="margin-top:5px;">
+                                    <button class="btn-cancel" onclick="toggleReplyForm('${id}')">Batal</button>
+                                    <button class="btn-submit-comment" onclick="submitReply('${id}')">Balas</button>
+                                </div>
+                            </div>
+                        </div>
+                        <div id="replies-list-${id}" class="replies-list"></div>
+                `;
+            }
 
-            html += `</div></div>`;
-            return html;
-        }
+            html += `</div></div>`;
+            return html;
+        }
 
-        // Ambil Data Realtime
-        commentsRef.on('value', (snapshot) => {
-            const data = snapshot.val();
-            let totalComments = 0;
+        // Ambil Data Realtime
+        commentsRef.on('value', (snapshot) => {
+            const data = snapshot.val();
+            let totalComments = 0;
 
-            if (data) {
-                const keys = Object.keys(data).reverse(); // Terbaru di atas
-                let finalHTML = '';
+            if (data) {
+                const keys = Object.keys(data).reverse(); // Terbaru di atas
+                let finalHTML = '';
 
-                keys.forEach(key => {
-                    const c = data[key];
-                    totalComments++;
-                    finalHTML += buildCommentHTML(key, c, false);
-                });
+                keys.forEach(key => {
+                    const c = data[key];
+                    totalComments++;
+                    finalHTML += buildCommentHTML(key, c, false);
+                });
 
-                commentsList.innerHTML = finalHTML;
-                document.getElementById('comment-count').innerText = totalComments;
+                commentsList.innerHTML = finalHTML;
+                document.getElementById('comment-count').innerText = totalComments;
 
-                // Render Balasan (Replies)
-                keys.forEach(key => {
-                    const c = data[key];
-                    if (c.replies) {
-                        const replyKeys = Object.keys(c.replies); // Berurutan dari lama ke baru (di bawah)
-                        let repliesHTML = '';
-                        replyKeys.forEach(rKey => {
-                            const rData = c.replies[rKey];
-                            rData.parentId = key; // penanda parent
-                            repliesHTML += buildCommentHTML(rKey, rData, true);
-                        });
-                        document.getElementById(`replies-list-${key}`).innerHTML = repliesHTML;
-                    }
-                });
+                // Render Balasan (Replies)
+                keys.forEach(key => {
+                    const c = data[key];
+                    if (c.replies) {
+                        const replyKeys = Object.keys(c.replies); // Berurutan dari lama ke baru (di bawah)
+                        let repliesHTML = '';
+                        replyKeys.forEach(rKey => {
+                            const rData = c.replies[rKey];
+                            rData.parentId = key; // penanda parent
+                            repliesHTML += buildCommentHTML(rKey, rData, true);
+                        });
+                        document.getElementById(`replies-list-${key}`).innerHTML = repliesHTML;
+                    }
+                });
 
-            } else {
-                commentsList.innerHTML = '<p style="color:#bbb; font-size:1rem; text-align:center; padding: 20px;">Belum ada komentar. Jadilah yang pertama!</p>';
-                document.getElementById('comment-count').innerText = 0;
-            }
-        });
+            } else {
+                commentsList.innerHTML = '<p style="color:#bbb; font-size:1rem; text-align:center; padding: 20px;">Belum ada komentar. Jadilah yang pertama!</p>';
+                document.getElementById('comment-count').innerText = 0;
+            }
+        });
 
-        // Kirim Komentar Induk
-        document.getElementById('comment-form').addEventListener('submit', (e) => {
-            e.preventDefault();
-            const nameInput = document.getElementById('comment-name');
-            const textInput = document.getElementById('comment-text');
-            if (nameInput.value && textInput.value) {
-                commentsRef.push({
-                    name: nameInput.value,
-                    text: textInput.value,
-                    timestamp: firebase.database.ServerValue.TIMESTAMP,
-                    likes: 0
-                });
-                textInput.value = '';
-            }
-        });
+        // Kirim Komentar Induk
+        document.getElementById('comment-form').addEventListener('submit', (e) => {
+            e.preventDefault();
+            const nameInput = document.getElementById('comment-name');
+            const textInput = document.getElementById('comment-text');
+            if (nameInput.value && textInput.value) {
+                commentsRef.push({
+                    name: nameInput.value,
+                    text: textInput.value,
+                    timestamp: firebase.database.ServerValue.TIMESTAMP,
+                    likes: 0
+                });
+                textInput.value = '';
+            }
+        });
 
-        // Kirim Balasan (Reply)
-        window.submitReply = function(parentId) {
-            const nameVal = document.getElementById(`reply-name-${parentId}`).value;
-            const textVal = document.getElementById(`reply-text-${parentId}`).value;
-            if(nameVal && textVal) {
-                commentsRef.child(parentId).child('replies').push({
-                    name: nameVal,
-                    text: textVal,
-                    timestamp: firebase.database.ServerValue.TIMESTAMP,
-                    likes: 0
-                });
-                document.getElementById(`reply-text-${parentId}`).value = '';
-                toggleReplyForm(parentId);
-            }
-        };
+        // Kirim Balasan (Reply)
+        window.submitReply = function(parentId) {
+            const nameVal = document.getElementById(`reply-name-${parentId}`).value;
+            const textVal = document.getElementById(`reply-text-${parentId}`).value;
+            if(nameVal && textVal) {
+                commentsRef.child(parentId).child('replies').push({
+                    name: nameVal,
+                    text: textVal,
+                    timestamp: firebase.database.ServerValue.TIMESTAMP,
+                    likes: 0
+                });
+                document.getElementById(`reply-text-${parentId}`).value = '';
+                toggleReplyForm(parentId);
+            }
+        };
 
-        // Buka/Tutup Form Balasan
-        window.toggleReplyForm = function(id) {
-            const form = document.getElementById(`reply-form-${id}`);
-            form.style.display = form.style.display === 'none' ? 'flex' : 'none';
-        };
+        // Buka/Tutup Form Balasan
+        window.toggleReplyForm = function(id) {
+            const form = document.getElementById(`reply-form-${id}`);
+            form.style.display = form.style.display === 'none' ? 'flex' : 'none';
+        };
 
-        // Sistem Like (Tombol Mantap)
-        window.toggleLike = function(commentId, parentId, isReply) {
-            const hasLiked = localStorage.getItem(`liked_${commentId}`);
-            let targetRef = isReply 
-                ? commentsRef.child(parentId).child('replies').child(commentId).child('likes')
-                : commentsRef.child(commentId).child('likes');
+        // Sistem Like (Tombol Mantap)
+        window.toggleLike = function(commentId, parentId, isReply) {
+            const hasLiked = localStorage.getItem(`liked_${commentId}`);
+            let targetRef = isReply 
+                ? commentsRef.child(parentId).child('replies').child(commentId).child('likes')
+                : commentsRef.child(commentId).child('likes');
 
-            targetRef.transaction((currentLikes) => {
-                if (hasLiked) {
-                    localStorage.removeItem(`liked_${commentId}`);
-                    return (currentLikes || 1) - 1;
-                } else {
-                    localStorage.setItem(`liked_${commentId}`, 'true');
-                    return (currentLikes || 0) + 1;
-                }
-            });
-        };
+            targetRef.transaction((currentLikes) => {
+                if (hasLiked) {
+                    localStorage.removeItem(`liked_${commentId}`);
+                    return (currentLikes || 1) - 1;
+                } else {
+                    localStorage.setItem(`liked_${commentId}`, 'true');
+                    return (currentLikes || 0) + 1;
+                }
+            });
+        };
 
-        // Sistem Hapus (Dengan Password)
-        window.deleteComment = function(commentId, parentId, isReply) {
-            const pw = prompt("Masukkan password tersebut jika anda adalah admin!");
-            if (pw === adminPassword) {
-                let targetRef = isReply 
-                    ? commentsRef.child(parentId).child('replies').child(commentId)
-                    : commentsRef.child(commentId);
+        // Sistem Hapus (Dengan Password)
+        window.deleteComment = function(commentId, parentId, isReply) {
+            const pw = prompt("Masukkan password tersebut jika anda adalah admin!");
+            if (pw === adminPassword) {
+                let targetRef = isReply 
+                    ? commentsRef.child(parentId).child('replies').child(commentId)
+                    : commentsRef.child(commentId);
 
-                targetRef.remove().then(() => alert("Komentar berhasil dihapus."));
-            } else if (pw !== null) {
-                alert("Password Salah! Anda tidak memiliki izin.");
-            }
-        };
-    </script>
+                targetRef.remove().then(() => alert("Komentar berhasil dihapus."));
+            } else if (pw !== null) {
+                alert("Password Salah! Anda tidak memiliki izin.");
+            }
+        };
+    </script>
 </body>
 </html>
