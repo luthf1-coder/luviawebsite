@@ -716,7 +716,6 @@ footer {
     border-top: 1px solid rgba(255, 255, 255, 0.3);
 }
 
-/* Responsive */
 /* ==========================================
    PERBAIKAN TAMPILAN MOBILE (RESPONSIF HP)
    ========================================== */
@@ -733,21 +732,41 @@ footer {
         flex-direction: column;
     }
 
-    /* Penyesuaian layout Nav di Mobile agar rapi dengan Sidebar */
+    /* --- PERBAIKAN NAVIGASI KHUSUS HP --- */
     .nav-container {
-        flex-direction: row; 
-        justify-content: space-between;
+        flex-direction: row;
+        flex-wrap: wrap; /* Biarkan elemen turun ke baris bawah jika tidak muat */
+        justify-content: center; /* Posisikan ke tengah */
+        gap: 8px;
+    }
+
+    .nav-history-controls {
+        margin: 0; /* Hapus margin auto supaya rapi saat wrap */
+    }
+
+    /* Perkecil ukuran tombol tulisan (Beranda, dll) */
+    .nav-links {
+        display: flex;
+        flex-wrap: wrap;
+        justify-content: center;
+    }
+
+    .nav-links a {
+        margin: 2px 4px;
+        padding: 4px 8px;
+        font-size: 0.75rem; /* Font diperkecil untuk layar HP */
     }
 
     .nav-search {
         display: flex;
-        flex: 1;
-        justify-content: flex-end;
+        justify-content: center;
     }
 
     .nav-search input {
-        width: 100px;
+        width: 110px; /* Lebar pencarian disesuaikan */
+        font-size: 0.75rem;
     }
+    /* ------------------------------------ */
 
     .page-stream-container {
         margin-top: 170px !important; 
