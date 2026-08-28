@@ -14,25 +14,43 @@
 </head>
 <body>
     
+    <!-- NAVIGATION BAR -->
     <nav>
         <div class="container nav-container">
+            <!-- Tombol Garis Tiga (Hamburger Menu) -->
+            <button class="hamburger-menu" onclick="toggleSidebar()" title="Menu">☰</button>
+            
             <div class="nav-history-controls">
                 <button onclick="history.back()" class="btn-nav-history" title="Kembali">←</button>
                 <button onclick="history.forward()" class="btn-nav-history" title="Maju">→</button>
             </div>
-            <div class="nav-links">
-                <a href="#about">Tentang</a>
-                <a href="#recommendations">Rekomendasi</a>
-                <a href="#projects">Program TV</a>
-                <a href="#livestreaming">Live Streaming</a>
-                <a href="#contact">Social Media</a>
-            </div>
+            
             <form class="nav-search" onsubmit="return false;">
                 <input type="text" placeholder="Cari video..." aria-label="Cari">
                 <button type="submit">🔍</button>
             </form>
         </div>
     </nav>
+
+    <!-- SIDEBAR POP-UP MENU -->
+    <div class="sidebar-overlay" id="sidebarOverlay" onclick="toggleSidebar()"></div>
+    <div class="sidebar" id="sidebar">
+        <div class="sidebar-header">
+            <h2>MENU</h2>
+            <button class="close-btn" onclick="toggleSidebar()">×</button>
+        </div>
+        <div class="sidebar-links">
+            <a href="#" onclick="toggleSidebar()">Beranda</a>
+            <a href="#about" onclick="toggleSidebar()">Tentang</a>
+            <a href="#recommendations" onclick="toggleSidebar()">Rekomendasi</a>
+            <a href="#projects" onclick="toggleSidebar()">Program TV</a>
+            <a href="#livestreaming" onclick="toggleSidebar()">Live Streaming</a>
+            <a href="#contact" onclick="toggleSidebar()">Social Media</a>
+        </div>
+        <div class="sidebar-footer">
+            <p>&copy 2026 LUVIA STUDIO TV All Right Reserved</p>
+        </div>
+    </div>
 
     <header class="header-banner"></header>
 
@@ -124,6 +142,13 @@
 
     <script src="videos-data.js"></script>
     <script>
+        // FUNGSI UNTUK MEMBUKA & MENUTUP SIDEBAR
+        function toggleSidebar() {
+            document.getElementById('sidebar').classList.toggle('active');
+            document.getElementById('sidebarOverlay').classList.toggle('active');
+        }
+
+        // FUNGSI SLIDER & BADGE
         renderSliderRecommendations('home-recommendations-slider');
 
         const kickChannel = "luthfi1234321"; 
