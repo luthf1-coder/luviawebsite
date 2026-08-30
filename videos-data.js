@@ -21,6 +21,18 @@ if (typeof firebase !== 'undefined' && !firebase.apps.length) {
 // Pusat Data Video
 const videoList = [
     {
+    "id": "kick_vod_124783423",
+    "title": "Stream via RTMP (OBS, Vmix, Zoom) with Restream",
+    "defaultViews": 0,
+    "thumb": "https://kick.com/favicon.ico",
+    "sources": [],
+    "driveEmbed": "https://drive.google.com/file/d/13rV-LjZl1VW8z2ZLbphqWIeJDA1XneVu/preview",
+    "youtubeId": "",
+    "rumbleEmbed": "",
+    "downloadUrl": "https://drive.google.com/uc?export=download&id=13rV-LjZl1VW8z2ZLbphqWIeJDA1XneVu",
+    "description": "VOD LS TV"
+},
+    {
     "id": "kick_vod_123490654",
     "title": "VOD PLAY LIVE STREAMING LUVIA STUDIO TV",
     "defaultViews": 0,
