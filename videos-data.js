@@ -22,9 +22,9 @@ if (typeof firebase !== 'undefined' && !firebase.apps.length) {
 const videoList = [
     {
     "id": "kick_vod_124783423",
-    "title": "Stream via RTMP (OBS, Vmix, Zoom) with Restream",
+    "title": "VOD PLAY LIVE STREAMING LUVIA STUDIO TV",
     "defaultViews": 0,
-    "thumb": "https://kick.com/favicon.ico",
+    "thumb": "Asset Foto/Thumbnimail_VOD_LIVE.png",
     "sources": [],
     "driveEmbed": "https://drive.google.com/file/d/13rV-LjZl1VW8z2ZLbphqWIeJDA1XneVu/preview",
     "youtubeId": "",
