@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DAFTAR VIDEO - LUVIA STUDIO OFFICIAL TV</title>
+    <link rel="stylesheet" href="style.css" />
+    <link rel="icon" type="image/png" href="Asset Foto/Thumbnimail .png">
+    
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-database-compat.js"></script>
+</head>
+<body>
+    <nav>
+        <div class="container nav-container">
+            <button class="hamburger-menu" onclick="toggleSidebar()" title="Menu">☰</button>
+            <div class="nav-history-controls">
+                <button onclick="history.back()" class="btn-nav-history" title="Kembali">←</button>
+                <button onclick="history.forward()" class="btn-nav-history" title="Maju">→</button>
+            </div>
+            <form class="nav-search" onsubmit="return false;">
+                <input type="text" placeholder="Cari video..." aria-label="Cari">
+                <button type="submit">🔍</button>
+            </form>
+        </div>
+    </nav>
+
+    <div class="sidebar-overlay" id="sidebarOverlay" onclick="toggleSidebar()"></div>
+    <div class="sidebar" id="sidebar">
+        <div class="sidebar-header">
+            <h2>MENU</h2>
+            <button class="close-btn" onclick="toggleSidebar()">&times;</button>
+        </div>
+        <div class="sidebar-links">
+            <a href="index.html" onclick="toggleSidebar()">Beranda</a>
+            <a href="index.html#about" onclick="toggleSidebar()">Tentang</a>
+            <a href="videos.html" onclick="toggleSidebar()">Video</a>
+            <a href="index.html#projects" onclick="toggleSidebar()">Program TV</a>
+            <a href="index.html#livestreaming" onclick="toggleSidebar()">Live Streaming</a>
+            <a href="index.html#contact" onclick="toggleSidebar()">Social Media</a>
+        </div>
+        <div class="sidebar-footer">
+            <p>&copy; 2026 LUVIA STUDIO TV All Right Reserved</p>
+        </div>
+    </div>
+
+    <section class="section page-stream-container">
+        <div class="container">
+            <h2 class="stream-title">Semua Video Tersedia</h2>
+            <div class="videos-page-grid" id="all-videos-container">
+                </div>
+        </div>
+    </section>
+
+    <footer>
+        <div class="container">
+            <p>&copy; 2026 LUVIA STUDIO TV All Right Reserved | Channel Ini Dikelola Oleh TIM MEDIA CENTER LS MEDIA</p>
+        </div>
+    </footer>
+
+    <script src="videos-data.js"></script>
+    <script>
+        function toggleSidebar() {
+            document.getElementById('sidebar').classList.toggle('active');
+            document.getElementById('sidebarOverlay').classList.toggle('active');
+        }
+        
+        // Memanggil fungsi baru di videos-data.js untuk me-render daftar video di halaman ini
+        renderAllVideosPage('all-videos-container');
+    </script>
+</body>
+</html>
