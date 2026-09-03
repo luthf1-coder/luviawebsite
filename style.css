@@ -1131,3 +1131,56 @@ footer {
 }
 .live-chat-list::-webkit-scrollbar { width: 6px; }
 .live-chat-list::-webkit-scrollbar-thumb { background: rgba(255, 145, 77, 0.6); border-radius: 10px; }
+
+
+/* ===================================================================
+   TAMBAHAN CSS BARU KHUSUS UNTUK HALAMAN DAFTAR VIDEO (GAMBAR 1 & 2)
+   =================================================================== */
+.videos-page-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: 20px;
+}
+
+@media (max-width: 768px) {
+    /* Mengubah grid video menjadi list vertikal (Gambar 1) khusus untuk HP */
+    .videos-page-grid {
+        display: flex;
+        flex-direction: column;
+        gap: 15px;
+    }
+
+    .videos-page-grid .video-card {
+        display: flex;
+        flex-direction: row; /* Gambar di Kiri, Teks di Kanan */
+        height: 110px;
+        background: linear-gradient(135deg, rgba(140, 82, 255, 0.45), rgba(255, 145, 77, 0.45));
+        border: 1px solid rgba(255, 255, 255, 0.2);
+    }
+
+    .videos-page-grid .thumb-box {
+        width: 160px; /* Lebar Thumbnail di HP */
+        height: 100%;
+        flex-shrink: 0;
+    }
+
+    .videos-page-grid .video-details {
+        padding: 8px 12px;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+    }
+
+    .videos-page-grid .video-details h3 {
+        font-size: 0.9rem;
+        display: -webkit-box;
+        -webkit-line-clamp: 3;
+        -webkit-box-orient: vertical;
+        overflow: hidden;
+        margin-bottom: 4px;
+    }
+
+    .videos-page-grid .video-details p {
+        font-size: 0.75rem;
+    }
+}
