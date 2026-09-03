@@ -8,16 +8,13 @@
     <link rel="stylesheet" href="style.css" />
     <link rel="icon" type="image/png" href="Asset Foto/Thumbnimail .png">
 
-<!-- SDK Firebase Realtime Database -->
-    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-database-compat.js"></script>
 </head>
 <body>
     
-    <!-- NAVIGATION BAR -->
     <nav>
         <div class="container nav-container">
-            <!-- Tombol Garis Tiga (Hamburger Menu) -->
             <button class="hamburger-menu" onclick="toggleSidebar()" title="Menu">☰</button>
             
             <div class="nav-history-controls">
@@ -32,7 +29,6 @@
         </div>
     </nav>
 
-    <!-- SIDEBAR POP-UP MENU -->
     <div class="sidebar-overlay" id="sidebarOverlay" onclick="toggleSidebar()"></div>
     <div class="sidebar" id="sidebar">
         <div class="sidebar-header">
@@ -42,7 +38,7 @@
         <div class="sidebar-links">
             <a href="#" onclick="toggleSidebar()">Beranda</a>
             <a href="#about" onclick="toggleSidebar()">Tentang</a>
-            <a href="#recommendations" onclick="toggleSidebar()">Rekomendasi</a>
+            <a href="videos.html" onclick="toggleSidebar()">Video</a>
             <a href="#projects" onclick="toggleSidebar()">Program TV</a>
             <a href="#livestreaming" onclick="toggleSidebar()">Live Streaming</a>
             <a href="#contact" onclick="toggleSidebar()">Social Media</a>
@@ -66,12 +62,10 @@
         </div>
     </section>
 
-    <!-- SLIDER REKOMENDASI VIDEO -->
     <section id="recommendations" class="section">
         <div class="container">
             <h2>Rekomendasi Video</h2>
             <div class="video-slider" id="home-recommendations-slider">
-                <!-- Kartu Utama Live Streaming -->
                 <a href="livestream.html" class="slider-card featured-live">
                     <div class="thumb-box">
                         <span id="kick-home-badge" class="badge-live">🔴 CHECKING...</span>
@@ -82,8 +76,7 @@
                         <p>LUVIA STUDIO TV • LIVE</p>
                     </div>
                 </a>
-                <!-- Rekomendasi video non-live di-render dari videos-data.js -->
-            </div>
+                </div>
         </div>
     </section>
 
@@ -127,7 +120,6 @@
         </div>
     </section>
 
-    <!-- Download CV Khusus Halaman Utama -->
     <section class="section-cv">
         <div class="download-cv">
             <a href="CV LUVIA STUDIO TV.pdf" download class="btn-cv">Download CV</a>
