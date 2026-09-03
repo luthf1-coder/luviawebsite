@@ -69,43 +69,43 @@ const videoList = [
         description: "Semua tentang sebuah Kebersamaan dan Kebahagiaan Angkatan 7 (SMPIQu) & dan Angkatan 1 (SMAIQu) di LPD Al-Bahjah Cianjur"
     },
     // {
-    //     id: "video3",
-    //     title: "Dokumenter Spesial Multi-Resolusi (Archive.org)",
-    //     defaultViews: 45,
-    //     thumb: "Asset Foto/Thumbnimail  Banner YT.png",
-    //     // Multi-resolusi khusus Archive.org / Direct MP4
-    //     sources: [
-    //         { src: "https://archive.org/download/nama_item_kamu/video_360p.mp4", size: 360, type: "video/mp4" },
-    //         { src: "https://archive.org/download/nama_item_kamu/video_720p.mp4", size: 720, type: "video/mp4" },
-    //         { src: "https://archive.org/download/nama_item_kamu/video_1080p.mp4", size: 1080, type: "video/mp4" }
-    //     ],
-    //     description: "Sesi dokumenter eksklusif dengan pilihan resolusi pemutar dan tombol unduh sesuai kualitas."
+    //      id: "video3",
+    //      title: "Dokumenter Spesial Multi-Resolusi (Archive.org)",
+    //      defaultViews: 45,
+    //      thumb: "Asset Foto/Thumbnimail  Banner YT.png",
+    //      // Multi-resolusi khusus Archive.org / Direct MP4
+    //      sources: [
+    //          { src: "https://archive.org/download/nama_item_kamu/video_360p.mp4", size: 360, type: "video/mp4" },
+    //          { src: "https://archive.org/download/nama_item_kamu/video_720p.mp4", size: 720, type: "video/mp4" },
+    //          { src: "https://archive.org/download/nama_item_kamu/video_1080p.mp4", size: 1080, type: "video/mp4" }
+    //      ],
+    //      description: "Sesi dokumenter eksklusif dengan pilihan resolusi pemutar dan tombol unduh sesuai kualitas."
     // },
     // {
-    //     id: "video4",
-    //     title: "REKAMAN LIVE SPECIAL RUMBLE",
-    //     defaultViews: 50,
-    //     thumb: "Asset Foto/live stream.png",
-    //     archiveSrc: "",
-    //     driveEmbed: "",
-    //     youtubeId: "",
-    //     rumbleEmbed: "https://rumble.com/embed/vID unik/kode identitas video milikmu/",
-    //     // Solusi 2: Direct MP4 Link dari Dashboard Rumble
-    //     downloadUrl: "https://ak.rumble.com/vID unik/kode identitas video milikmu.mp4", 
-    //     description: "Hasil rekaman siaran langsung dari platform Rumble."
+    //      id: "video4",
+    //      title: "REKAMAN LIVE SPECIAL RUMBLE",
+    //      defaultViews: 50,
+    //      thumb: "Asset Foto/live stream.png",
+    //      archiveSrc: "",
+    //      driveEmbed: "",
+    //      youtubeId: "",
+    //      rumbleEmbed: "https://rumble.com/embed/vID unik/kode identitas video milikmu/",
+    //      // Solusi 2: Direct MP4 Link dari Dashboard Rumble
+    //      downloadUrl: "https://ak.rumble.com/vID unik/kode identitas video milikmu.mp4", 
+    //      description: "Hasil rekaman siaran langsung dari platform Rumble."
     // },
     // {
-    //     id: "video5",
-    //     title: "Contoh Video Google Drive",
-    //     defaultViews: 10,
-    //     thumb: "Asset Foto/Thumbnimail  Banner YT.png",
-    //     archiveSrc: "",
-    //     driveEmbed: "https://drive.google.com/file/d/ID_FILE_GDRIVE/preview",
-    //     youtubeId: "",
-    //     rumbleEmbed: "",
-    //     // Solusi Direct Download Google Drive (Format export=download)
-    //     downloadUrl: "https://drive.google.com/uc?export=download&id=ID_FILE_GDRIVE",
-    //     description: "Video sampel yang tersimpan di Google Drive."
+    //      id: "video5",
+    //      title: "Contoh Video Google Drive",
+    //      defaultViews: 10,
+    //      thumb: "Asset Foto/Thumbnimail  Banner YT.png",
+    //      archiveSrc: "",
+    //      driveEmbed: "https://drive.google.com/file/d/ID_FILE_GDRIVE/preview",
+    //      youtubeId: "",
+    //      rumbleEmbed: "",
+    //      // Solusi Direct Download Google Drive (Format export=download)
+    //      downloadUrl: "https://drive.google.com/uc?export=download&id=ID_FILE_GDRIVE",
+    //      description: "Video sampel yang tersimpan di Google Drive."
     // },
     {
         id: "video6",
@@ -246,6 +246,10 @@ function renderSliderRecommendations(containerId, list = videoList) {
     const container = document.getElementById(containerId);
     if (!container) return;
 
+    // === INI KODE TAMBAHAN UNTUK MEMFILTER TOP 4 VIEWS TERTINGGI ===
+    const sortedList = [...list].sort((a, b) => (b.defaultViews || 0) - (a.defaultViews || 0)).slice(0, 4);
+    // ==============================================================
+
     const liveCount = getActiveLiveViewers();
     let html = `
         <a href="livestream.html" class="slider-card featured-live">
@@ -260,12 +264,12 @@ function renderSliderRecommendations(containerId, list = videoList) {
         </a>
     `;
 
-    if (list.length === 0) {
+    if (sortedList.length === 0) {
         html += `<div style="padding: 20px; color: #ffffff; font-weight: bold;">Video tidak ditemukan.</div>`;
         container.innerHTML = html;
     } else {
         container.innerHTML = html;
-        list.forEach(vid => {
+        sortedList.forEach(vid => {
             const card = document.createElement('a');
             card.href = `watch.html?id=${vid.id}`;
             card.className = 'slider-card';
@@ -314,10 +318,14 @@ async function updateKickBadgeStatus(badgeId) {
     }
 }
 
-// 1. Render Slider di Halaman Utama (index.html)
+// 1. Render Slider di Halaman Utama (index.html) - (Diupdate untuk filter top 4 views)
 function renderSliderRecommendations(containerId, list = videoList) {
     const container = document.getElementById(containerId);
     if (!container) return;
+
+    // === INI KODE TAMBAHAN UNTUK MEMFILTER TOP 4 VIEWS TERTINGGI ===
+    const sortedList = [...list].sort((a, b) => (b.defaultViews || 0) - (a.defaultViews || 0)).slice(0, 4);
+    // ==============================================================
 
     let html = `
         <a href="livestream.html" class="slider-card featured-live">
@@ -332,12 +340,12 @@ function renderSliderRecommendations(containerId, list = videoList) {
         </a>
     `;
 
-    if (list.length === 0) {
+    if (sortedList.length === 0) {
         html += `<div style="padding: 20px; color: #ffffff; font-weight: bold;">Video tidak ditemukan.</div>`;
         container.innerHTML = html;
     } else {
         container.innerHTML = html;
-        list.forEach(vid => {
+        sortedList.forEach(vid => {
             const card = document.createElement('a');
             card.href = `watch.html?id=${vid.id}`;
             card.className = 'slider-card';
@@ -414,6 +422,51 @@ function renderGridRecommendations(containerId, list = videoList) {
         updateKickBadgeStatus('kick-watch-badge');
     }
 }
+
+// === TAMBAHAN FUNGSI BARU KHUSUS UNTUK HALAMAN DAFTAR VIDEO (videos.html) ===
+function renderAllVideosPage(containerId, list = videoList) {
+    const container = document.getElementById(containerId);
+    if (!container) return;
+
+    let html = `
+        <a href="livestream.html" class="video-card featured-live-card">
+            <div class="thumb-box">
+                <span id="kick-all-badge" class="badge-live">🔍 Memeriksa...</span>
+                <img src="Asset Foto/live stream.png" alt="Live Streaming">
+            </div>
+            <div class="video-details">
+                <h3>LIVE STREAMING LUVIA STUDIO TV</h3>
+                <p>LUVIA STUDIO TV • LIVE</p>
+            </div>
+        </a>
+    `;
+
+    container.innerHTML = html;
+
+    list.forEach(vid => {
+        const card = document.createElement('a');
+        card.href = `watch.html?id=${vid.id}`;
+        card.className = 'video-card';
+        card.innerHTML = `
+            <div class="thumb-box">
+                <img src="${vid.thumb}" alt="${vid.title}">
+            </div>
+            <div class="video-details">
+                <h3>${vid.title}</h3>
+                <p>LUVIA STUDIO TV • <span id="view-count-all-${vid.id}">👁️ Memuat...</span></p>
+            </div>
+        `;
+        container.appendChild(card);
+
+        listenVideoViews(vid.id, vid.defaultViews || 0, (totalViews) => {
+            const el = document.getElementById(`view-count-all-${vid.id}`);
+            if (el) el.innerText = `👁️ ${formatViews(totalViews)}`;
+        });
+    });
+
+    updateKickBadgeStatus('kick-all-badge');
+}
+// ==============================================================================
 
 
 // ==========================================
