@@ -180,22 +180,25 @@
         }
         updateHomeLiveBadge();
 
-     // --- SISTEM HERO CAROUSEL 8 DETIK BERGESER ---
+    // --- SISTEM HERO CAROUSEL 8 DETIK BERGESER + SWIPE HP ---
         let currentSlide = 0;
         let slideInterval;
         let totalSlides = 0;
+        let touchStartX = 0;
+        let touchEndX = 0;
 
         function renderHeroCarousel() {
             const inner = document.getElementById('carousel-inner');
             const indicators = document.getElementById('carousel-indicators');
-            if(!inner || !indicators) return;
+            const heroCarousel = document.getElementById('hero-carousel');
+            if(!inner || !indicators || !heroCarousel) return;
 
             // Ambil maksimal 5 video unggulan untuk banner
             const slides = videoList.slice(0, 5); 
             totalSlides = slides.length;
 
             if(totalSlides === 0) {
-                document.getElementById('hero-carousel').style.display = 'none';
+                heroCarousel.style.display = 'none';
                 return;
             }
 
@@ -205,12 +208,14 @@
             slides.forEach((vid, index) => {
                 const desc = vid.description || 'Saksikan tayangan spesial dari LUVIA STUDIO TV.';
                 innerHtml += `
-                    <div class="carousel-item" style="background-image: url('${vid.thumb}')">
+                    <div class="carousel-item">
+                        <!-- Gambar Background dipisah di sini agar gradasinya aman -->
+                        <div class="carousel-bg" style="background-image: url('${vid.thumb}')"></div>
+                        
+                        <!-- Overlay Teks & Tombol di atasnya -->
                         <div class="carousel-overlay">
-                            <!-- Badge diganti untuk menampilkan Views secara langsung -->
                             <span class="carousel-badge" id="hero-badge-${vid.id}">Total Memuat...</span>
                             <h2 class="carousel-title">${vid.title}</h2>
-                            <!-- Rating sudah dihapus -->
                             <div class="carousel-meta">2026 • LUVIA STUDIO TV</div>
                             <p class="carousel-desc">${desc}</p>
                             <a href="watch.html?id=${vid.id}" class="btn-watch-hero">▷ Tonton</a>
@@ -231,7 +236,30 @@
                 });
             });
 
+            // Pasang Fitur Swipe di HP
+            heroCarousel.addEventListener('touchstart', e => {
+                touchStartX = e.changedTouches[0].screenX;
+            }, {passive: true});
+
+            heroCarousel.addEventListener('touchend', e => {
+                touchEndX = e.changedTouches[0].screenX;
+                handleSwipeGesture();
+            }, {passive: true});
+
             startCarousel();
+        }
+
+        // Logika Deteksi Swipe
+        function handleSwipeGesture() {
+            const minSwipeDistance = 40; // Sensitivitas geser
+            if (touchEndX < touchStartX - minSwipeDistance) {
+                nextSlide(); // Geser ke kiri
+                resetInterval();
+            }
+            if (touchEndX > touchStartX + minSwipeDistance) {
+                prevSlide(); // Geser ke kanan
+                resetInterval();
+            }
         }
 
         function updateCarousel() {
@@ -251,6 +279,11 @@
             updateCarousel();
         }
 
+        function prevSlide() {
+            currentSlide = (currentSlide - 1 + totalSlides) % totalSlides;
+            updateCarousel();
+        }
+
         function goToSlide(index) {
             currentSlide = index;
             updateCarousel();
@@ -258,7 +291,7 @@
         }
 
         function startCarousel() {
-            slideInterval = setInterval(nextSlide, 8000); // Otomatis jalan 8 detik
+            slideInterval = setInterval(nextSlide, 8000); // 8 detik
         }
 
         function resetInterval() {
