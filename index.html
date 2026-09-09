@@ -8,11 +8,12 @@
     <link rel="stylesheet" href="style.css" />
     <link rel="icon" type="image/png" href="Asset Foto/Thumbnimail .png">
 
-<script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-database-compat.js"></script>
+
+    <!-- CSS Tambahan untuk Hero Slider (Bisa dipindahkan ke style.css nanti) -->
 </head>
 <body>
-    
     <nav>
         <div class="container nav-container">
             <button class="hamburger-menu" onclick="toggleSidebar()" title="Menu">☰</button>
@@ -22,7 +23,8 @@
                 <button onclick="history.forward()" class="btn-nav-history" title="Maju">→</button>
             </div>
             
-            <form class="nav-search" onsubmit="return false;">
+            <!-- Fungsi Pencarian Langsung Ke Halaman videos.html -->
+            <form class="nav-search" onsubmit="event.preventDefault(); const q = this.querySelector('input').value; if(q) window.location.href='videos.html?search=' + encodeURIComponent(q);">
                 <input type="text" placeholder="Cari video..." aria-label="Cari">
                 <button type="submit">🔍</button>
             </form>
@@ -48,23 +50,22 @@
         </div>
     </div>
 
-    <header class="header-banner"></header>
-
-    <section id="about" class="section">
-        <div class="container">
-            <div style="text-align: center;">
-                <img src="Asset Foto/Thumbnimail .png" alt="Logo LUVIA STUDIO TV" class="profile-img">
-                <h2> About This</h2>
-                <p>Selamat Datang Di Website Resmi LUVIA STUDIO TV!</p>
-                <p>LUVIA STUDIO TV adalah stasiun televisi swasta nasional yang menayangkan program informasi, hiburan, dan edukasi yang menginspirasi. Dengan jaringan tersebar di Youtube, LUVIA STUDIO TV berkomitmen menghadirkan tayangan yang informatif, inspiratif, dan berkualitas bagi seluruh masyarakat Indonesia.</p>
-                <p>Terus saksikan kami di Youtube: @luthfi-fx</p>
-            </div>       
+    <!-- Header Banner Diubah Menjadi Slider Gambar -->
+    <header class="hero-slider" id="heroSlider">
+        <div class="hero-slides-container" id="heroSlidesContainer">
+            <!-- Slide akan dirender via JavaScript di bawah -->
         </div>
-    </section>
+        <div class="hero-dots" id="heroDots"></div>
+    </header>
 
     <section id="recommendations" class="section">
         <div class="container">
-            <h2>Rekomendasi Video</h2>
+            <!-- Menambahkan Ikon/Tombol Lainnya di Samping Judul -->
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
+                <h2 style="margin: 0;">Rekomendasi Video</h2>
+                <a href="videos.html" class="btn" style="padding: 6px 16px; font-size: 14px; text-decoration: none; border-radius: 20px;">Lainnya ➔</a>
+            </div>
+            
             <div class="video-slider" id="home-recommendations-slider">
                 <a href="livestream.html" class="slider-card featured-live">
                     <div class="thumb-box">
@@ -76,7 +77,7 @@
                         <p>LUVIA STUDIO TV • LIVE</p>
                     </div>
                 </a>
-                </div>
+            </div>
         </div>
     </section>
 
@@ -105,6 +106,19 @@
                     <a href="livestream.html" class="btn btn-watch">Nonton Streaming</a>
                 </div>
             </div>
+        </div>
+    </section>
+
+    <!-- Bagian Tentang Dipindahkan ke Sini (Sebelum Footer & Contact) -->
+    <section id="about" class="section">
+        <div class="container">
+            <div style="text-align: center;">
+                <img src="Asset Foto/Thumbnimail .png" alt="Logo LUVIA STUDIO TV" class="profile-img">
+                <h2> About This</h2>
+                <p>Selamat Datang Di Website Resmi LUVIA STUDIO TV!</p>
+                <p>LUVIA STUDIO TV adalah stasiun televisi swasta nasional yang menayangkan program informasi, hiburan, dan edukasi yang menginspirasi. Dengan jaringan tersebar di Youtube, LUVIA STUDIO TV berkomitmen menghadirkan tayangan yang informatif, inspiratif, dan berkualitas bagi seluruh masyarakat Indonesia.</p>
+                <p>Terus saksikan kami di Youtube: @luthfi-fx</p>
+            </div>       
         </div>
     </section>
 
@@ -140,8 +154,10 @@
             document.getElementById('sidebarOverlay').classList.toggle('active');
         }
 
-        // FUNGSI SLIDER & BADGE
-        renderSliderRecommendations('home-recommendations-slider');
+        // FUNGSI SLIDER & BADGE (Lama)
+        if (typeof renderSliderRecommendations === "function") {
+            renderSliderRecommendations('home-recommendations-slider');
+        }
 
         const kickChannel = "luthfi1234321"; 
         async function updateHomeLiveBadge() {
@@ -165,6 +181,78 @@
             }
         }
         updateHomeLiveBadge();
+
+        // -------------------------------------------------------------
+        // FUNGSI BARU UNTUK HERO SLIDER (BANNER ATAS)
+        // -------------------------------------------------------------
+        function initHeroSlider(featuredData) {
+            const container = document.getElementById('heroSlidesContainer');
+            const dotsContainer = document.getElementById('heroDots');
+            if (!container || !featuredData || featuredData.length === 0) return;
+
+            let html = '';
+            let dotsHtml = '';
+            
+            featuredData.forEach((vid, index) => {
+                // Template Slide Sesuai Referensi Gambar (Ganti url & datanya sesuai format di videos-data.js mu)
+                html += `
+                    <div class="hero-slide" style="background-image: url('${vid.thumbnail || 'Asset Foto/default-thumb.jpg'}')">
+                        <div class="hero-content">
+                            <div class="badge">MOVIE</div>
+                            <h1 style="font-size: 28px;">${vid.title || 'Judul Video'}</h1>
+                            <div class="meta">⭐ 6.9 • 2026 • 1h 35m • Action, Thriller</div>
+                            <p>${vid.description || 'Deskripsi singkat mengenai video ini akan tampil di sini untuk memberi konteks penonton.'}</p>
+                            <a href="${vid.url || 'videos.html'}" class="hero-btn">▷ Tonton</a>
+                        </div>
+                    </div>
+                `;
+                dotsHtml += `<span class="hero-dot ${index === 0 ? 'active' : ''}" onclick="goToSlide(${index})"></span>`;
+            });
+            
+            container.innerHTML = html;
+            dotsContainer.innerHTML = dotsHtml;
+
+            let currentSlide = 0;
+            const totalSlides = featuredData.length;
+
+            window.goToSlide = function(index) {
+                currentSlide = index;
+                updateSlider();
+                resetInterval();
+            };
+
+            function updateSlider() {
+                container.style.transform = `translateX(-${currentSlide * 100}%)`;
+                const dots = document.querySelectorAll('.hero-dot');
+                dots.forEach((dot, idx) => {
+                    if (idx === currentSlide) dot.classList.add('active');
+                    else dot.classList.remove('active');
+                });
+            }
+
+            function nextSlide() {
+                currentSlide = (currentSlide + 1) % totalSlides;
+                updateSlider();
+            }
+
+            // Atur agar gambar bergeser setiap 8 detik (8000 ms)
+            let slideInterval = setInterval(nextSlide, 8000); 
+
+            function resetInterval() {
+                clearInterval(slideInterval);
+                slideInterval = setInterval(nextSlide, 8000);
+            }
+        }
+
+        // PENTING: Karena datanya ada di videos-data.js, Anda bisa menggunakan variabel daftar videounggulan yang ada di sana.
+        // Contoh penggunaan (Silahkan modifikasi nama variabel array sesuai dengan yang ada di file JS Anda):
+        // Jika di videos-data.js terdapat array bernama `allVideos`, Anda bisa memanggilnya:
+        setTimeout(() => {
+            if (typeof allVideos !== 'undefined') {
+                // Ambil 5 video unggulan/terbaru sebagai contoh
+                initHeroSlider(allVideos.slice(0, 5));
+            }
+        }, 500); 
     </script>
 </body>
 </html>
