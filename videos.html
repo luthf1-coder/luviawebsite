@@ -18,7 +18,9 @@
                 <button onclick="history.back()" class="btn-nav-history" title="Kembali">←</button>
                 <button onclick="history.forward()" class="btn-nav-history" title="Maju">→</button>
             </div>
-            <form class="nav-search" onsubmit="return false;">
+            
+            <!-- Fungsi Pencarian yang me-redirect & menambahkan parameter search pada URL -->
+            <form class="nav-search" onsubmit="event.preventDefault(); const q = this.querySelector('input').value; if(q) window.location.href='videos.html?search=' + encodeURIComponent(q);">
                 <input type="text" placeholder="Cari video..." aria-label="Cari">
                 <button type="submit">🔍</button>
             </form>
@@ -80,7 +82,9 @@
         }
         
         // Memanggil fungsi baru di videos-data.js untuk me-render daftar video di halaman ini
-        renderAllVideosPage('all-videos-container');
+        if (typeof renderAllVideosPage === "function") {
+            renderAllVideosPage('all-videos-container');
+        }
     </script>
 </body>
 </html>
