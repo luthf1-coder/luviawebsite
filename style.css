@@ -1238,15 +1238,17 @@ footer {
     top: 0; left: 0; width: 100%; height: 100%;
     background-size: cover;
     background-position: center top;
-    -webkit-mask-image: linear-gradient(to bottom, rgba(0,0,0,1) 50%, rgba(0,0,0,0) 100%);
-    mask-image: linear-gradient(to bottom, rgba(0,0,0,1) 50%, rgba(0,0,0,0) 100%);
+    /* Ubah persentase agar gambar perlahan memudar dari tengah ke bawah, menyatu sempurna dengan warna web */
+    -webkit-mask-image: linear-gradient(to bottom, rgba(0,0,0,1) 30%, rgba(0,0,0,0) 100%);
+    mask-image: linear-gradient(to bottom, rgba(0,0,0,1) 30%, rgba(0,0,0,0) 100%);
 }
+
 /* Lapisan untuk teks & tombol agar TIDAK terkena gradasi pudarnya gambar */
 .carousel-overlay {
     position: absolute;
     bottom: 0; left: 0; width: 100%; height: 100%;
-    /* Hitam sangat tipis di bawah agar teks putih tetap terbaca */
-    background: linear-gradient(to top, rgba(0,0,0,0.65) 0%, transparent 60%);
+    /* NAH INI YANG KEMARIN BIKIN HITAM! Sekarang kita buat TRANSPARAN TOTAL */
+    background: transparent;
     display: flex;
     flex-direction: column;
     justify-content: flex-end;
