@@ -490,7 +490,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     const urlParams = new URLSearchParams(window.location.search);
     const searchQuery = urlParams.get('search');
-    const isHomePage = window.location.pathname.endsWith('index.html') || window.location.pathname === '/' || window.location.pathname.endsWith('/');
+    const isHomePage = window.location.pathname.endsWith('videos.html') || window.location.pathname === '/' || window.location.pathname.endsWith('/');
 
     if (searchQuery && isHomePage) {
         const input = document.querySelector('.nav-search input');
