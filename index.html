@@ -11,126 +11,7 @@
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-database-compat.js"></script>
 
-    <!-- CSS Tambahan untuk Hero Slider Bergaya Seperti Gambar Referensi -->
-    <style>
-        .hero-carousel {
-            position: relative;
-            width: 100%;
-            height: 60vh; /* Sesuaikan tinggi banner */
-            overflow: hidden;
-            background-color: #000;
-            margin-top: 60px; /* Jarak untuk navbar */
-        }
-        .carousel-inner {
-            display: flex;
-            height: 100%;
-            transition: transform 0.5s ease-in-out;
-        }
-        .carousel-item {
-            min-width: 100%;
-            height: 100%;
-            position: relative;
-            background-size: cover;
-            background-position: center;
-        }
-        .carousel-overlay {
-            position: absolute;
-            bottom: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: linear-gradient(to top, rgba(0,0,0,1) 0%, rgba(0,0,0,0.5) 50%, rgba(0,0,0,0) 100%);
-            display: flex;
-            flex-direction: column;
-            justify-content: flex-end;
-            padding: 30px 20px;
-            box-sizing: border-box;
-        }
-        .carousel-badge {
-            background-color: #ff0044;
-            color: white;
-            padding: 4px 10px;
-            border-radius: 4px;
-            font-size: 12px;
-            font-weight: bold;
-            display: inline-block;
-            margin-bottom: 10px;
-            width: max-content;
-        }
-        .carousel-title {
-            color: white;
-            font-size: 28px;
-            margin: 0 0 5px 0;
-            font-weight: 800;
-            text-transform: uppercase;
-            line-height: 1.2;
-        }
-        .carousel-meta {
-            color: #f1c40f;
-            font-size: 13px;
-            margin-bottom: 10px;
-            font-weight: bold;
-        }
-        .carousel-meta span { color: #ccc; font-weight: normal; }
-        .carousel-desc {
-            color: #ddd;
-            font-size: 14px;
-            margin-bottom: 20px;
-            display: -webkit-box;
-            -webkit-line-clamp: 2;
-            -webkit-box-orient: vertical;
-            overflow: hidden;
-            max-width: 80%;
-        }
-        .btn-watch-hero {
-            background-color: #ff0044;
-            color: white;
-            padding: 10px 24px;
-            border-radius: 5px;
-            text-decoration: none;
-            font-weight: bold;
-            display: inline-flex;
-            align-items: center;
-            gap: 8px;
-            width: max-content;
-            transition: 0.3s;
-        }
-        .btn-watch-hero:hover { background-color: #d00037; }
-        .carousel-indicators {
-            position: absolute;
-            bottom: 15px;
-            left: 50%;
-            transform: translateX(-50%);
-            display: flex;
-            gap: 8px;
-        }
-        .dot {
-            width: 8px;
-            height: 8px;
-            background-color: rgba(255,255,255,0.4);
-            border-radius: 50%;
-            cursor: pointer;
-            transition: 0.3s;
-        }
-        .dot.active {
-            background-color: #ff0044;
-            width: 20px;
-            border-radius: 4px;
-        }
-        .header-recommendation {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 15px;
-        }
-        .btn-more {
-            color: #ff0044;
-            text-decoration: none;
-            font-weight: bold;
-            font-size: 14px;
-        }
-    </style>
-</head>
+  </head>
 <body>
     
     <nav>
@@ -299,7 +180,7 @@
         }
         updateHomeLiveBadge();
 
-        // --- SISTEM HERO CAROUSEL 8 DETIK BERGESER ---
+     // --- SISTEM HERO CAROUSEL 8 DETIK BERGESER ---
         let currentSlide = 0;
         let slideInterval;
         let totalSlides = 0;
@@ -326,9 +207,11 @@
                 innerHtml += `
                     <div class="carousel-item" style="background-image: url('${vid.thumb}')">
                         <div class="carousel-overlay">
-                            <span class="carousel-badge">VIDEO</span>
+                            <!-- Badge diganti untuk menampilkan Views secara langsung -->
+                            <span class="carousel-badge" id="hero-badge-${vid.id}">Total Memuat...</span>
                             <h2 class="carousel-title">${vid.title}</h2>
-                            <div class="carousel-meta">⭐ 8.5 <span>• 2026 • LUVIA STUDIO TV</span></div>
+                            <!-- Rating sudah dihapus -->
+                            <div class="carousel-meta">2026 • LUVIA STUDIO TV</div>
                             <p class="carousel-desc">${desc}</p>
                             <a href="watch.html?id=${vid.id}" class="btn-watch-hero">▷ Tonton</a>
                         </div>
@@ -339,6 +222,15 @@
 
             inner.innerHTML = innerHtml;
             indicators.innerHTML = indicatorsHtml;
+            
+            // Panggil sistem tracking Firebase agar Total Views terisi
+            slides.forEach(vid => {
+                listenVideoViews(vid.id, vid.defaultViews || 0, (totalViews) => {
+                    const badge = document.getElementById(`hero-badge-${vid.id}`);
+                    if (badge) badge.innerText = `Total ${formatViews(totalViews)}`;
+                });
+            });
+
             startCarousel();
         }
 
@@ -366,7 +258,7 @@
         }
 
         function startCarousel() {
-            slideInterval = setInterval(nextSlide, 8000); // 8000 ms = 8 detik
+            slideInterval = setInterval(nextSlide, 8000); // Otomatis jalan 8 detik
         }
 
         function resetInterval() {
