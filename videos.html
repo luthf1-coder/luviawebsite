@@ -18,9 +18,7 @@
                 <button onclick="history.back()" class="btn-nav-history" title="Kembali">←</button>
                 <button onclick="history.forward()" class="btn-nav-history" title="Maju">→</button>
             </div>
-            
-            <!-- Fungsi Pencarian yang me-redirect & menambahkan parameter search pada URL -->
-            <form class="nav-search" onsubmit="event.preventDefault(); const q = this.querySelector('input').value; if(q) window.location.href='videos.html?search=' + encodeURIComponent(q);">
+            <form class="nav-search" onsubmit="return false;">
                 <input type="text" placeholder="Cari video..." aria-label="Cari">
                 <button type="submit">🔍</button>
             </form>
@@ -35,10 +33,10 @@
         </div>
         <div class="sidebar-links">
             <a href="index.html" onclick="toggleSidebar()">Beranda</a>
-            <a href="index.html#about" onclick="toggleSidebar()">Tentang</a>
             <a href="videos.html" onclick="toggleSidebar()">Video</a>
             <a href="index.html#projects" onclick="toggleSidebar()">Program TV</a>
             <a href="index.html#livestreaming" onclick="toggleSidebar()">Live Streaming</a>
+            <a href="index.html#about" onclick="toggleSidebar()">Tentang</a>
             <a href="index.html#contact" onclick="toggleSidebar()">Social Media</a>
         </div>
         <div class="sidebar-footer">
@@ -46,7 +44,7 @@
         </div>
     </div>
 
- <header class="header-banner"></header>
+ <header class="header-banner" style="margin-top: 60px;"></header>
     
     <section class="section page-stream-container">
         <div class="container">
@@ -81,10 +79,26 @@
             document.getElementById('sidebarOverlay').classList.toggle('active');
         }
         
-        // Memanggil fungsi baru di videos-data.js untuk me-render daftar video di halaman ini
-        if (typeof renderAllVideosPage === "function") {
-            renderAllVideosPage('all-videos-container');
+        // Fitur Cek Pencarian di URL dan Filter Data
+        const urlParams = new URLSearchParams(window.location.search);
+        const searchQuery = urlParams.get('search');
+        let displayList = videoList;
+
+        if (searchQuery) {
+            const q = searchQuery.toLowerCase();
+            displayList = videoList.filter(vid => 
+                vid.title.toLowerCase().includes(q) || 
+                (vid.description && vid.description.toLowerCase().includes(q))
+            );
+            document.querySelector('.stream-title').innerText = `Hasil Pencarian: "${searchQuery}" (${displayList.length})`;
+            
+            // Masukkan keyword ke input box agar user tahu apa yang dicari
+            const inputField = document.querySelector('.nav-search input');
+            if(inputField) inputField.value = searchQuery;
         }
+
+        // Render hasil sesuai dengan daftar (semua atau yang difilter)
+        renderAllVideosPage('all-videos-container', displayList);
     </script>
 </body>
 </html>
