@@ -50,23 +50,20 @@
         <div class="container">
             <h2 class="stream-title">Semua Video Tersedia</h2>
             
-            <!-- FITUR BARU: FILTER GENRE OTOMATIS -->
+            <!-- FITUR BARU: FILTER GENRE DROPDOWN -->
             <div class="filter-wrapper">
-                <div id="genre-filter-container" class="genre-filter">
-                    <!-- Tombol Genre akan muncul otomatis di sini via Javascript -->
+                <div class="dropdown-container">
+                    <button class="btn-dropdown" id="genreDropdownBtn" onclick="toggleDropdown(event)">Cari berdasarkan genre ▼</button>
+                    <!-- Daftar genre akan muncul di sini via Javascript -->
+                    <div class="dropdown-list" id="genreDropdownList"></div>
                 </div>
             </div>
 
-            <!-- GRID VIDEO -->
-            <div class="videos-page-grid" id="all-videos-container">
-                <!-- Video akan dimuat di sini via Javascript -->
-            </div>
+            <!-- GRID KARTU VIDEO -->
+            <div class="videos-page-grid" id="all-videos-container"></div>
             
-            <!-- FITUR BARU: PAGINASI / HALAMAN (Di kanan bawah grid video) -->
-            <div id="pagination-container" class="pagination-container">
-                <!-- Tombol Halaman 1, 2, dll akan muncul di sini -->
-            </div>
-
+            <!-- FITUR BARU: PAGINASI / HALAMAN -->
+            <div id="pagination-container" class="pagination-container"></div>
         </div>
     </section>
 
@@ -96,33 +93,29 @@
             document.getElementById('sidebarOverlay').classList.toggle('active');
         }
         
-        // =======================================================
-        // LOGIKA BARU: SORTING, GENRE DINAMIS, & PAGINATION
-        // =======================================================
         let currentFilteredList = [];
         let currentPage = 1;
         const itemsPerPage = 12; // Maksimal 12 Kartu Video per Halaman
 
         function initVideosPage() {
-            // 1. URUTKAN VIDEO DARI YANG TERBARU KE TERLAMA (Berdasarkan uploadDate)
+            // 1. Urutkan dari yang terbaru ke terlama
             const sortedList = [...videoList].sort((a, b) => {
                 const dateA = a.uploadDate ? new Date(a.uploadDate) : new Date(0);
                 const dateB = b.uploadDate ? new Date(b.uploadDate) : new Date(0);
                 return dateB - dateA;
             });
 
-            // 2. BUAT TOMBOL GENRE OTOMATIS BERDASARKAN DATA DI videos-data.js
-            // Mengambil semua genre unik yang ada, membuang data yang kosong/undefined
+            // 2. Buat isi Dropdown Genre Otomatis
             const genres = [...new Set(sortedList.map(v => v.genre).filter(Boolean))];
-            const genreContainer = document.getElementById('genre-filter-container');
+            const genreList = document.getElementById('genreDropdownList');
             
-            let genreHtml = `<button class="btn-genre active" onclick="filterByGenre('Semua', this)">Semua</button>`;
+            let genreHtml = `<div class="dropdown-item active" onclick="filterByGenre('Semua', this)">Semua Genre</div>`;
             genres.forEach(g => {
-                genreHtml += `<button class="btn-genre" onclick="filterByGenre('${g}', this)">${g}</button>`;
+                genreHtml += `<div class="dropdown-item" onclick="filterByGenre('${g}', this)">${g}</div>`;
             });
-            genreContainer.innerHTML = genreHtml;
+            genreList.innerHTML = genreHtml;
 
-            // 3. CEK URL (Apakah ada pencarian atau kiriman klik genre dari watch.html)
+            // 3. Cek URL parameters
             const urlParams = new URLSearchParams(window.location.search);
             const searchQuery = urlParams.get('search');
             const genreQuery = urlParams.get('genre');
@@ -141,31 +134,55 @@
                     vid.genre && vid.genre.toLowerCase() === genreQuery.toLowerCase()
                 );
                 document.querySelector('.stream-title').innerText = `Genre: ${genreQuery} (${currentFilteredList.length})`;
-                updateActiveGenreButton(genreQuery);
+                updateActiveDropdownItem(genreQuery);
             } else {
                 currentFilteredList = sortedList;
             }
 
-            // Render halaman pertama
             renderPage(1);
         }
 
-        // FUNGSI KLIK TOMBOL GENRE
-        function filterByGenre(genre, btnElement) {
-            // Ubah tampilan tombol yang aktif
-            document.querySelectorAll('.btn-genre').forEach(btn => btn.classList.remove('active'));
-            if(btnElement) btnElement.classList.add('active');
-            else updateActiveGenreButton(genre);
+        // --- SISTEM DROPDOWN ---
+        function toggleDropdown(e) {
+            e.stopPropagation();
+            document.getElementById('genreDropdownList').classList.toggle('show');
+        }
 
-            // Urutkan ulang data
+        // Tutup dropdown jika klik di luar area
+        window.onclick = function(event) {
+            if (!event.target.matches('.btn-dropdown')) {
+                const dropdowns = document.getElementsByClassName("dropdown-list");
+                for (let i = 0; i < dropdowns.length; i++) {
+                    if (dropdowns[i].classList.contains('show')) {
+                        dropdowns[i].classList.remove('show');
+                    }
+                }
+            }
+        }
+
+        // FUNGSI KLIK ITEM GENRE PADA DROPDOWN
+        function filterByGenre(genre, element) {
+            // Ubah class active di item
+            document.querySelectorAll('.dropdown-item').forEach(el => el.classList.remove('active'));
+            if(element) element.classList.add('active');
+            else updateActiveDropdownItem(genre);
+
+            // Ubah teks tombol Dropdown
+            const btn = document.getElementById('genreDropdownBtn');
+            if (genre === 'Semua' || genre === 'Semua Genre') {
+                btn.innerHTML = `Cari berdasarkan genre ▼`;
+            } else {
+                btn.innerHTML = `Genre: ${genre} ▼`;
+            }
+
+            // Urutkan ulang lalu filter
             const sortedList = [...videoList].sort((a, b) => {
                 const dateA = a.uploadDate ? new Date(a.uploadDate) : new Date(0);
                 const dateB = b.uploadDate ? new Date(b.uploadDate) : new Date(0);
                 return dateB - dateA;
             });
 
-            // Saring berdasarkan genre
-            if (genre === 'Semua') {
+            if (genre === 'Semua' || genre === 'Semua Genre') {
                 currentFilteredList = sortedList;
                 document.querySelector('.stream-title').innerText = `Semua Video Tersedia`;
             } else {
@@ -173,34 +190,36 @@
                 document.querySelector('.stream-title').innerText = `Genre: ${genre} (${currentFilteredList.length})`;
             }
 
-            // Kembalikan ke halaman 1 setiap ganti genre
+            // Kembalikan ke halaman 1
             renderPage(1);
         }
 
-        // FUNGSI MENCARI TOMBOL GENRE YANG SESUAI (Jika masuk dari URL)
-        function updateActiveGenreButton(genre) {
-            document.querySelectorAll('.btn-genre').forEach(btn => {
-                if(btn.innerText.toLowerCase() === genre.toLowerCase()) {
-                    btn.classList.add('active');
+        // Fungsi bantuan update tampilan aktif
+        function updateActiveDropdownItem(genre) {
+            document.querySelectorAll('.dropdown-item').forEach(el => {
+                if(el.innerText.toLowerCase() === genre.toLowerCase() || (genre === 'Semua' && el.innerText === 'Semua Genre')) {
+                    el.classList.add('active');
                 } else {
-                    btn.classList.remove('active');
+                    el.classList.remove('active');
                 }
             });
+            
+            const btn = document.getElementById('genreDropdownBtn');
+            if (genre === 'Semua' || genre === 'Semua Genre') {
+                btn.innerHTML = `Cari berdasarkan genre ▼`;
+            } else {
+                btn.innerHTML = `Genre: ${genre} ▼`;
+            }
         }
 
-        // FUNGSI RENDER PER HALAMAN (PAGINASI)
+        // FUNGSI RENDER HALAMAN (PAGINASI)
         function renderPage(page) {
             currentPage = page;
             const startIndex = (page - 1) * itemsPerPage;
             const endIndex = startIndex + itemsPerPage;
-            
-            // Potong array data sesuai jumlah per halaman (12)
             const pageItems = currentFilteredList.slice(startIndex, endIndex);
 
-            // Render ke layar (Fungsi bawaan dari videos-data.js)
             renderAllVideosPage('all-videos-container', pageItems);
-            
-            // Update tombol paginasi di bawah
             renderPaginationControls();
         }
 
@@ -209,24 +228,21 @@
             const totalPages = Math.ceil(currentFilteredList.length / itemsPerPage);
             const container = document.getElementById('pagination-container');
             
-            // Jika videonya kurang dari 12, sembunyikan tombol halaman
             if (totalPages <= 1) {
                 container.innerHTML = '';
                 return;
             }
 
             let html = `<button class="btn-page" ${currentPage === 1 ? 'disabled' : ''} onclick="renderPage(${currentPage - 1})">❮ Prev</button>`;
-            
             for(let i = 1; i <= totalPages; i++) {
                 html += `<button class="btn-page ${currentPage === i ? 'active' : ''}" onclick="renderPage(${i})">${i}</button>`;
             }
-
             html += `<button class="btn-page" ${currentPage === totalPages ? 'disabled' : ''} onclick="renderPage(${currentPage + 1})">Next ❯</button>`;
             
             container.innerHTML = html;
         }
 
-        // Jalankan sistem saat website selesai dimuat
+        // Jalankan saat load
         document.addEventListener('DOMContentLoaded', initVideosPage);
     </script>
 </body>
