@@ -39,14 +39,22 @@
             <div class="video-info">
                 <h2 id="info-title">...</h2>
                 <div id="info-desc">
-                    <p id="desc-text">Memuat deskripsi...</p>
+                    
+                    <!-- PERUBAHAN: AREA GENRE, WAKTU UPLOAD & JUMLAH DITONTON DIPINDAH KE SINI -->
+                    <div id="genre-container" style="margin-bottom: 12px;">
+                        <a href="#" id="genre-link" style="background: linear-gradient(45deg, #8c52ff, #ff914d); color: white; padding: 6px 14px; border-radius: 20px; text-decoration: none; font-size: 0.85rem; font-weight: bold; display: inline-block; box-shadow: 0 4px 10px rgba(0,0,0,0.2);">Memuat Genre...</a>
+                    </div>
+                    <div id="meta-container" style="font-size: 0.95rem; color: #e0e0e0; margin-bottom: 20px; font-weight: 500; display: flex; align-items: center; gap: 8px;">
+                         <span id="upload-date-display">...</span> <span style="color:#888;">•</span> <span id="views-display-box" style="color: #ff914d; font-weight: bold;">👁️ Memuat jumlah ditonton...</span>
+                    </div>
+
+                    <p id="desc-text" style="line-height: 1.7; margin-bottom: 30px;">Memuat deskripsi...</p>
 
                     <!-- MULAI: AREA KOMENTAR ALA YOUTUBE -->
                     <div id="comments-section" class="comments-section">
                         <h3><span id="comment-count">0</span> Komentar</h3>
 
                         <div class="comment-input-area">
-                            <!-- UBAH LINK GAMBAR INI DENGAN LINK GITHUB KAMU -->
                             <img src="Asset Foto/Thumbnimail .png" class="comment-avatar" alt="Avatar">
                             <form id="comment-form" class="comment-form">
                                 <input type="text" id="comment-name" placeholder="Nama Anda..." required>
@@ -65,9 +73,7 @@
                     <!-- SELESAI: AREA KOMENTAR ALA YOUTUBE -->
 
                     <div id="download-area"></div>
-                    <div id="views-display-box" style="font-weight: bold; color: #ff914d; margin-top: 10px;">
-                        👁️ Memuat jumlah ditonton...
-                    </div>
+                    <!-- views-display-box asalnya di sini sudah dipindah ke atas -->
                 </div>
             </div>
         </section>
@@ -84,7 +90,6 @@
     <script src="videos-data.js"></script>
 
     <script>
-        // --- Inisialisasi Video Sama Seperti Sebelumnya ---
         const urlParams = new URLSearchParams(window.location.search);
         const currentVideoId = urlParams.get('id') || 'video1';
         const currentVid = (typeof videoList !== 'undefined' && videoList.find(v => v.id === currentVideoId)) || {
@@ -94,6 +99,15 @@
         document.getElementById('player-title').innerText = currentVid.title;
         document.getElementById('info-title').innerText = currentVid.title;
         document.getElementById('desc-text').innerText = currentVid.description || 'Tidak ada deskripsi.';
+
+        // --- PERUBAHAN: SKRIP INJEKSI GENRE & WAKTU UPLOAD ---
+        const genreName = currentVid.genre || 'Umum';
+        document.getElementById('genre-link').innerText = genreName;
+        document.getElementById('genre-link').href = 'videos.html?genre=' + encodeURIComponent(genreName);
+        
+        const uploadText = currentVid.uploadDate ? `Diupload ${formatDateIndonesian(currentVid.uploadDate)}` : 'Diupload pada tanggal tidak diketahui';
+        document.getElementById('upload-date-display').innerText = uploadText;
+        // ----------------------------------------------------
 
         let downloadAreaHTML = '';
         const safeTitle = (currentVid.title || 'video').replace(/'/g, "\\'");
@@ -114,7 +128,6 @@
         const playerWrapper = document.getElementById('video-player-wrapper');
         
         if (currentVid.driveEmbed) {
-            // Tambahkan class="drive-iframe" untuk menjalankan trik ilusi
             playerWrapper.innerHTML = `<iframe class="drive-iframe" src="${currentVid.driveEmbed}" allowfullscreen="true" style="border:none;"></iframe>`;
         } else if (currentVid.rumbleEmbed) {
             playerWrapper.innerHTML = `<iframe src="${currentVid.rumbleEmbed}" allowfullscreen="true" style="border:none;"></iframe>`;
@@ -127,19 +140,19 @@
             if (document.getElementById('plyr-player') && typeof Plyr !== 'undefined') {
                 new Plyr('#plyr-player', { 
                     settings: ['quality', 'speed'],
-                    seekTime: 10, // Mengatur durasi lompatan menjadi 10 detik
+                    seekTime: 10,
                     controls: [
-                        'play-large',   // Tombol play besar di tengah
-                        'rewind',       // Tombol mundur 10 detik
-                        'play',         // Tombol play/pause di bawah
-                        'fast-forward', // Tombol lewati 10 detik
-                        'progress',     // Bar progres durasi video
-                        'current-time', // Menampilkan waktu saat ini
-                        'duration',     // Menampilkan total durasi video
-                        'mute',         // Tombol bisukan suara
-                        'volume',       // Bar pengaturan volume
-                        'settings',     // Ikon gir pengaturan (kualitas & kecepatan)
-                        'fullscreen'    // Tombol layar penuh
+                        'play-large',   
+                        'rewind',       
+                        'play',         
+                        'fast-forward', 
+                        'progress',     
+                        'current-time', 
+                        'duration',     
+                        'mute',         
+                        'volume',       
+                        'settings',     
+                        'fullscreen'    
                     ]
                 });
             }
@@ -159,15 +172,13 @@
         // ==========================================
         const commentsRef = firebase.database().ref('video_comments_v2/' + currentVid.id);
         const commentsList = document.getElementById('comments-list');
-        const defaultAvatarURL = "Asset Foto/Thumbnimail .png"; // BISA DIGANTI LINK GITHUB
-        const adminPassword = "adminlstv"; // PASSWORD UNTUK HAPUS KOMENTAR
+        const defaultAvatarURL = "Asset Foto/Thumbnimail .png"; 
+        const adminPassword = "adminlstv"; 
 
-        // Ikon SVG
         const iconThumbOutline = `<svg viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"><path d="M14 9V5a3 3 0 0 0-3-3l-4 9v11h11.28a2 2 0 0 0 2-1.7l1.38-9a2 2 0 0 0-2-2.3zM7 22H4a2 2 0 0 1-2-2v-7a2 2 0 0 1 2-2h3"></path></svg>`;
         const iconThumbSolid = `<svg viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" stroke-width="2" fill="white" stroke-linecap="round" stroke-linejoin="round"><path d="M14 9V5a3 3 0 0 0-3-3l-4 9v11h11.28a2 2 0 0 0 2-1.7l1.38-9a2 2 0 0 0-2-2.3zM7 22H4a2 2 0 0 1-2-2v-7a2 2 0 0 1 2-2h3"></path></svg>`;
         const iconTrash = `<svg viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>`;
 
-        // Format Tanggal
         function timeAgo(ts) {
             if(!ts) return "Baru saja";
             const diff = Date.now() - ts;
@@ -179,7 +190,6 @@
             return `${Math.floor(hours / 24)} hari yang lalu`;
         }
 
-        // Render HTML Komentar
         function buildCommentHTML(id, c, isReply = false) {
             const hasLiked = localStorage.getItem(`liked_${id}`);
             const likesCount = c.likes || 0;
@@ -209,7 +219,6 @@
                         </div>
             `;
 
-            // Form Balasan tersembunyi
             if (!isReply) {
                 html += `
                         <div class="reply-form-container" id="reply-form-${id}" style="display: none;">
@@ -231,13 +240,12 @@
             return html;
         }
 
-        // Ambil Data Realtime
         commentsRef.on('value', (snapshot) => {
             const data = snapshot.val();
             let totalComments = 0;
 
             if (data) {
-                const keys = Object.keys(data).reverse(); // Terbaru di atas
+                const keys = Object.keys(data).reverse(); 
                 let finalHTML = '';
 
                 keys.forEach(key => {
@@ -249,15 +257,14 @@
                 commentsList.innerHTML = finalHTML;
                 document.getElementById('comment-count').innerText = totalComments;
 
-                // Render Balasan (Replies)
                 keys.forEach(key => {
                     const c = data[key];
                     if (c.replies) {
-                        const replyKeys = Object.keys(c.replies); // Berurutan dari lama ke baru (di bawah)
+                        const replyKeys = Object.keys(c.replies); 
                         let repliesHTML = '';
                         replyKeys.forEach(rKey => {
                             const rData = c.replies[rKey];
-                            rData.parentId = key; // penanda parent
+                            rData.parentId = key; 
                             repliesHTML += buildCommentHTML(rKey, rData, true);
                         });
                         document.getElementById(`replies-list-${key}`).innerHTML = repliesHTML;
@@ -270,7 +277,6 @@
             }
         });
 
-        // Kirim Komentar Induk
         document.getElementById('comment-form').addEventListener('submit', (e) => {
             e.preventDefault();
             const nameInput = document.getElementById('comment-name');
@@ -286,7 +292,6 @@
             }
         });
 
-        // Kirim Balasan (Reply)
         window.submitReply = function(parentId) {
             const nameVal = document.getElementById(`reply-name-${parentId}`).value;
             const textVal = document.getElementById(`reply-text-${parentId}`).value;
@@ -302,13 +307,11 @@
             }
         };
 
-        // Buka/Tutup Form Balasan
         window.toggleReplyForm = function(id) {
             const form = document.getElementById(`reply-form-${id}`);
             form.style.display = form.style.display === 'none' ? 'flex' : 'none';
         };
 
-        // Sistem Like (Tombol Mantap)
         window.toggleLike = function(commentId, parentId, isReply) {
             const hasLiked = localStorage.getItem(`liked_${commentId}`);
             let targetRef = isReply 
@@ -326,7 +329,6 @@
             });
         };
 
-        // Sistem Hapus (Dengan Password)
         window.deleteComment = function(commentId, parentId, isReply) {
             const pw = prompt("Masukkan password tersebut jika anda adalah admin!");
             if (pw === adminPassword) {
