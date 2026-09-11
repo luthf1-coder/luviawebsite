@@ -79,9 +79,10 @@
             document.getElementById('sidebarOverlay').classList.toggle('active');
         }
         
-        // Fitur Cek Pencarian di URL dan Filter Data
+        // PERUBAHAN: Fitur Cek Pencarian di URL dan Filter Data (Termasuk Genre)
         const urlParams = new URLSearchParams(window.location.search);
         const searchQuery = urlParams.get('search');
+        const genreQuery = urlParams.get('genre');
         let displayList = videoList;
 
         if (searchQuery) {
@@ -92,9 +93,15 @@
             );
             document.querySelector('.stream-title').innerText = `Hasil Pencarian: "${searchQuery}" (${displayList.length})`;
             
-            // Masukkan keyword ke input box agar user tahu apa yang dicari
             const inputField = document.querySelector('.nav-search input');
             if(inputField) inputField.value = searchQuery;
+            
+        } else if (genreQuery) {
+            // FILTER BERDASARKAN GENRE
+            displayList = videoList.filter(vid => 
+                vid.genre && vid.genre.toLowerCase() === genreQuery.toLowerCase()
+            );
+            document.querySelector('.stream-title').innerText = `Genre: ${genreQuery} (${displayList.length})`;
         }
 
         // Render hasil sesuai dengan daftar (semua atau yang difilter)
