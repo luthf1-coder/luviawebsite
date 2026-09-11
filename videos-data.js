@@ -1,6 +1,7 @@
 // ==========================================
 // 1. KONFIGURASI FIREBASE REALTIME DATABASE
 // ==========================================
+// Ganti nilai firebaseConfig di bawah ini dengan konfigurasi Firebase milikmu!
 const firebaseConfig = {
   apiKey: "AIzaSyDQfY4Q3ulm0NOZyzSdbzYb53SNCFCZrj0",
   authDomain: "luvia-studio-tv.firebaseapp.com",
@@ -12,6 +13,7 @@ const firebaseConfig = {
   measurementId: "G-51NHLLES6V"
 };
 
+// Inisialisasi Firebase jika library Firebase SDK sudah terunduh di HTML
 if (typeof firebase !== 'undefined' && !firebase.apps.length) {
     firebase.initializeApp(firebaseConfig);
 }
@@ -74,6 +76,45 @@ const videoList = [
         genre: "Dokumenter",
         uploadDate: "2026-07-20"
     },
+    // {
+    //      id: "video3",
+    //      title: "Dokumenter Spesial Multi-Resolusi (Archive.org)",
+    //      defaultViews: 45,
+    //      thumb: "Asset Foto/Thumbnimail  Banner YT.png",
+    //      // Multi-resolusi khusus Archive.org / Direct MP4
+    //      sources: [
+    //          { src: "https://archive.org/download/nama_item_kamu/video_360p.mp4", size: 360, type: "video/mp4" },
+    //          { src: "https://archive.org/download/nama_item_kamu/video_720p.mp4", size: 720, type: "video/mp4" },
+    //          { src: "https://archive.org/download/nama_item_kamu/video_1080p.mp4", size: 1080, type: "video/mp4" }
+    //      ],
+    //      description: "Sesi dokumenter eksklusif dengan pilihan resolusi pemutar dan tombol unduh sesuai kualitas."
+    // },
+    // {
+    //      id: "video4",
+    //      title: "REKAMAN LIVE SPECIAL RUMBLE",
+    //      defaultViews: 50,
+    //      thumb: "Asset Foto/live stream.png",
+    //      archiveSrc: "",
+    //      driveEmbed: "",
+    //      youtubeId: "",
+    //      rumbleEmbed: "https://rumble.com/embed/vID unik/kode identitas video milikmu/",
+    //      // Solusi 2: Direct MP4 Link dari Dashboard Rumble
+    //      downloadUrl: "https://ak.rumble.com/vID unik/kode identitas video milikmu.mp4", 
+    //      description: "Hasil rekaman siaran langsung dari platform Rumble."
+    // },
+    // {
+    //      id: "video5",
+    //      title: "Contoh Video Google Drive",
+    //      defaultViews: 10,
+    //      thumb: "Asset Foto/Thumbnimail  Banner YT.png",
+    //      archiveSrc: "",
+    //      driveEmbed: "https://drive.google.com/file/d/ID_FILE_GDRIVE/preview",
+    //      youtubeId: "",
+    //      rumbleEmbed: "",
+    //      // Solusi Direct Download Google Drive (Format export=download)
+    //      downloadUrl: "https://drive.google.com/uc?export=download&id=ID_FILE_GDRIVE",
+    //      description: "Video sampel yang tersimpan di Google Drive."
+    // },
     {
         id: "video6",
         title: "Detective Conan: Episode One - The Great Detective Turned Small Dubbing Indonesia",
@@ -121,8 +162,9 @@ const videoList = [
     }
 ];
 
+
 // ==========================================
-// FUNGSI BANTUAN TANGGAL & WAKTU
+// FUNGSI BANTUAN TANGGAL & WAKTU (BARU DITAMBAHKAN)
 // ==========================================
 function timeAgoFormated(dateString) {
     if (!dateString) return "Baru saja";
@@ -145,17 +187,18 @@ function formatDateIndonesian(dateString) {
     return `${date.getDate()} ${months[date.getMonth()]} ${date.getFullYear()}`;
 }
 
-
 // ==========================================
 // 2. HELPER VIEWS FIREBASE & FORMATTING
 // ==========================================
 
+// Format angka tayangan (Pencegah NaN)
 function formatViews(views) {
     const num = parseInt(views, 10);
     if (isNaN(num)) return '0 Ditonton';
     return num.toLocaleString('id-ID') + ' Ditonton';
 }
 
+// Fungsi Mendengarkan Perubahan Data Views Realtime dari Firebase
 function listenVideoViews(videoId, defaultViews = 0, callback) {
     if (typeof firebase === 'undefined' || !firebase.apps.length) {
         callback(parseInt(defaultViews, 10) || 0);
@@ -174,6 +217,7 @@ function listenVideoViews(videoId, defaultViews = 0, callback) {
     });
 }
 
+// Fungsi Menambah +1 View ke Firebase saat Video Dibuka
 async function incrementVideoViewsAsync(videoId, defaultViews = 0) {
     const baseViews = parseInt(defaultViews, 10) || 0;
 
@@ -259,7 +303,7 @@ window.addEventListener('storage', (e) => {
 });
 
 // ==========================================
-// 3. FUNGSI RENDER REKOMENDASI (GLOBAL VIEWS)
+// 3. FUNGSI RENDER REKOMENDASI (GLOBAL VIEWS & TANGGAL KARTU)
 // ==========================================
 
 async function updateKickBadgeStatus(badgeId) {
@@ -290,8 +334,11 @@ function renderSliderRecommendations(containerId, list = videoList) {
     const container = document.getElementById(containerId);
     if (!container) return;
 
+    // === INI KODE TAMBAHAN UNTUK MEMFILTER TOP 4 VIEWS TERTINGGI ===
     const sortedList = [...list].sort((a, b) => (b.defaultViews || 0) - (a.defaultViews || 0)).slice(0, 4);
+    // ==============================================================
 
+    const liveCount = getActiveLiveViewers();
     let html = `
         <a href="livestream.html" class="slider-card featured-live">
             <div class="thumb-box">
@@ -314,13 +361,14 @@ function renderSliderRecommendations(containerId, list = videoList) {
             const card = document.createElement('a');
             card.href = `watch.html?id=${vid.id}`;
             card.className = 'slider-card';
+            const uploadTime = vid.uploadDate ? timeAgoFormated(vid.uploadDate) : '';
             card.innerHTML = `
                 <div class="thumb-box">
                     <img src="${vid.thumb}" alt="${vid.title}">
                 </div>
                 <div class="slider-details">
                     <h3>${vid.title}</h3>
-                    <p id="view-count-slider-${vid.id}">👁️ Memuat...</p>
+                    <p><span id="view-count-slider-${vid.id}">👁️ Memuat...</span>${uploadTime ? ' • ' + uploadTime : ''}</p>
                 </div>
             `;
             container.appendChild(card);
@@ -335,7 +383,7 @@ function renderSliderRecommendations(containerId, list = videoList) {
     updateKickBadgeStatus('kick-home-badge');
 }
 
-// Render Grid di Halaman Nonton & Live Stream
+// Render Grid di Halaman Nonton & Live Stream (watch.html & livestream.html)
 function renderGridRecommendations(containerId, list = videoList) {
     const container = document.getElementById(containerId);
     if (!container) return;
@@ -364,13 +412,14 @@ function renderGridRecommendations(containerId, list = videoList) {
         const card = document.createElement('a');
         card.href = `watch.html?id=${vid.id}`;
         card.className = 'video-card';
+        const uploadTime = vid.uploadDate ? timeAgoFormated(vid.uploadDate) : '';
         card.innerHTML = `
             <div class="thumb-box">
                 <img src="${vid.thumb}" alt="${vid.title}">
             </div>
             <div class="video-details">
                 <h3>${vid.title}</h3>
-                <p>LUVIA STUDIO TV • <span id="view-count-grid-${vid.id}">👁️ Memuat...</span></p>
+                <p>LUVIA STUDIO TV<br><span id="view-count-grid-${vid.id}">👁️ Memuat...</span>${uploadTime ? ' • ' + uploadTime : ''}</p>
             </div>
         `;
         container.appendChild(card);
@@ -386,7 +435,7 @@ function renderGridRecommendations(containerId, list = videoList) {
     }
 }
 
-// Render Videos Halaman Daftar
+// === TAMBAHAN FUNGSI BARU KHUSUS UNTUK HALAMAN DAFTAR VIDEO (videos.html) ===
 function renderAllVideosPage(containerId, list = videoList) {
     const container = document.getElementById(containerId);
     if (!container) return;
@@ -410,13 +459,14 @@ function renderAllVideosPage(containerId, list = videoList) {
         const card = document.createElement('a');
         card.href = `watch.html?id=${vid.id}`;
         card.className = 'video-card';
+        const uploadTime = vid.uploadDate ? timeAgoFormated(vid.uploadDate) : '';
         card.innerHTML = `
             <div class="thumb-box">
                 <img src="${vid.thumb}" alt="${vid.title}">
             </div>
             <div class="video-details">
                 <h3>${vid.title}</h3>
-                <p>LUVIA STUDIO TV • <span id="view-count-all-${vid.id}">👁️ Memuat...</span></p>
+                <p>LUVIA STUDIO TV<br><span id="view-count-all-${vid.id}">👁️ Memuat...</span>${uploadTime ? ' • ' + uploadTime : ''}</p>
             </div>
         `;
         container.appendChild(card);
@@ -429,6 +479,7 @@ function renderAllVideosPage(containerId, list = videoList) {
 
     updateKickBadgeStatus('kick-all-badge');
 }
+// ==============================================================================
 
 
 // ==========================================
