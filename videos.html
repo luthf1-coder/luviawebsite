@@ -44,17 +44,33 @@
         </div>
     </div>
 
- <header class="header-banner" style="margin-top: 60px;"></header>
+    <header class="header-banner" style="margin-top: 60px;"></header>
     
     <section class="section page-stream-container">
         <div class="container">
             <h2 class="stream-title">Semua Video Tersedia</h2>
-            <div class="videos-page-grid" id="all-videos-container">
+            
+            <!-- FITUR BARU: FILTER GENRE OTOMATIS -->
+            <div class="filter-wrapper">
+                <div id="genre-filter-container" class="genre-filter">
+                    <!-- Tombol Genre akan muncul otomatis di sini via Javascript -->
                 </div>
+            </div>
+
+            <!-- GRID VIDEO -->
+            <div class="videos-page-grid" id="all-videos-container">
+                <!-- Video akan dimuat di sini via Javascript -->
+            </div>
+            
+            <!-- FITUR BARU: PAGINASI / HALAMAN (Di kanan bawah grid video) -->
+            <div id="pagination-container" class="pagination-container">
+                <!-- Tombol Halaman 1, 2, dll akan muncul di sini -->
+            </div>
+
         </div>
     </section>
 
- <section id="contact" class="section">
+    <section id="contact" class="section">
         <div class="container">
             <h2>Follow Us</h2>
             <div class="contact-links">
@@ -72,6 +88,7 @@
         </div>
     </footer>
 
+    <!-- Muat data video terlebih dahulu -->
     <script src="videos-data.js"></script>
     <script>
         function toggleSidebar() {
@@ -79,33 +96,138 @@
             document.getElementById('sidebarOverlay').classList.toggle('active');
         }
         
-        // PERUBAHAN: Fitur Cek Pencarian di URL dan Filter Data (Termasuk Genre)
-        const urlParams = new URLSearchParams(window.location.search);
-        const searchQuery = urlParams.get('search');
-        const genreQuery = urlParams.get('genre');
-        let displayList = videoList;
+        // =======================================================
+        // LOGIKA BARU: SORTING, GENRE DINAMIS, & PAGINATION
+        // =======================================================
+        let currentFilteredList = [];
+        let currentPage = 1;
+        const itemsPerPage = 12; // Maksimal 12 Kartu Video per Halaman
 
-        if (searchQuery) {
-            const q = searchQuery.toLowerCase();
-            displayList = videoList.filter(vid => 
-                vid.title.toLowerCase().includes(q) || 
-                (vid.description && vid.description.toLowerCase().includes(q))
-            );
-            document.querySelector('.stream-title').innerText = `Hasil Pencarian: "${searchQuery}" (${displayList.length})`;
+        function initVideosPage() {
+            // 1. URUTKAN VIDEO DARI YANG TERBARU KE TERLAMA (Berdasarkan uploadDate)
+            const sortedList = [...videoList].sort((a, b) => {
+                const dateA = a.uploadDate ? new Date(a.uploadDate) : new Date(0);
+                const dateB = b.uploadDate ? new Date(b.uploadDate) : new Date(0);
+                return dateB - dateA;
+            });
+
+            // 2. BUAT TOMBOL GENRE OTOMATIS BERDASARKAN DATA DI videos-data.js
+            // Mengambil semua genre unik yang ada, membuang data yang kosong/undefined
+            const genres = [...new Set(sortedList.map(v => v.genre).filter(Boolean))];
+            const genreContainer = document.getElementById('genre-filter-container');
             
-            const inputField = document.querySelector('.nav-search input');
-            if(inputField) inputField.value = searchQuery;
-            
-        } else if (genreQuery) {
-            // FILTER BERDASARKAN GENRE
-            displayList = videoList.filter(vid => 
-                vid.genre && vid.genre.toLowerCase() === genreQuery.toLowerCase()
-            );
-            document.querySelector('.stream-title').innerText = `Genre: ${genreQuery} (${displayList.length})`;
+            let genreHtml = `<button class="btn-genre active" onclick="filterByGenre('Semua', this)">Semua</button>`;
+            genres.forEach(g => {
+                genreHtml += `<button class="btn-genre" onclick="filterByGenre('${g}', this)">${g}</button>`;
+            });
+            genreContainer.innerHTML = genreHtml;
+
+            // 3. CEK URL (Apakah ada pencarian atau kiriman klik genre dari watch.html)
+            const urlParams = new URLSearchParams(window.location.search);
+            const searchQuery = urlParams.get('search');
+            const genreQuery = urlParams.get('genre');
+
+            if (searchQuery) {
+                const q = searchQuery.toLowerCase();
+                currentFilteredList = sortedList.filter(vid => 
+                    vid.title.toLowerCase().includes(q) || 
+                    (vid.description && vid.description.toLowerCase().includes(q))
+                );
+                document.querySelector('.stream-title').innerText = `Hasil Pencarian: "${searchQuery}" (${currentFilteredList.length})`;
+                const inputField = document.querySelector('.nav-search input');
+                if(inputField) inputField.value = searchQuery;
+            } else if (genreQuery) {
+                currentFilteredList = sortedList.filter(vid => 
+                    vid.genre && vid.genre.toLowerCase() === genreQuery.toLowerCase()
+                );
+                document.querySelector('.stream-title').innerText = `Genre: ${genreQuery} (${currentFilteredList.length})`;
+                updateActiveGenreButton(genreQuery);
+            } else {
+                currentFilteredList = sortedList;
+            }
+
+            // Render halaman pertama
+            renderPage(1);
         }
 
-        // Render hasil sesuai dengan daftar (semua atau yang difilter)
-        renderAllVideosPage('all-videos-container', displayList);
+        // FUNGSI KLIK TOMBOL GENRE
+        function filterByGenre(genre, btnElement) {
+            // Ubah tampilan tombol yang aktif
+            document.querySelectorAll('.btn-genre').forEach(btn => btn.classList.remove('active'));
+            if(btnElement) btnElement.classList.add('active');
+            else updateActiveGenreButton(genre);
+
+            // Urutkan ulang data
+            const sortedList = [...videoList].sort((a, b) => {
+                const dateA = a.uploadDate ? new Date(a.uploadDate) : new Date(0);
+                const dateB = b.uploadDate ? new Date(b.uploadDate) : new Date(0);
+                return dateB - dateA;
+            });
+
+            // Saring berdasarkan genre
+            if (genre === 'Semua') {
+                currentFilteredList = sortedList;
+                document.querySelector('.stream-title').innerText = `Semua Video Tersedia`;
+            } else {
+                currentFilteredList = sortedList.filter(vid => vid.genre === genre);
+                document.querySelector('.stream-title').innerText = `Genre: ${genre} (${currentFilteredList.length})`;
+            }
+
+            // Kembalikan ke halaman 1 setiap ganti genre
+            renderPage(1);
+        }
+
+        // FUNGSI MENCARI TOMBOL GENRE YANG SESUAI (Jika masuk dari URL)
+        function updateActiveGenreButton(genre) {
+            document.querySelectorAll('.btn-genre').forEach(btn => {
+                if(btn.innerText.toLowerCase() === genre.toLowerCase()) {
+                    btn.classList.add('active');
+                } else {
+                    btn.classList.remove('active');
+                }
+            });
+        }
+
+        // FUNGSI RENDER PER HALAMAN (PAGINASI)
+        function renderPage(page) {
+            currentPage = page;
+            const startIndex = (page - 1) * itemsPerPage;
+            const endIndex = startIndex + itemsPerPage;
+            
+            // Potong array data sesuai jumlah per halaman (12)
+            const pageItems = currentFilteredList.slice(startIndex, endIndex);
+
+            // Render ke layar (Fungsi bawaan dari videos-data.js)
+            renderAllVideosPage('all-videos-container', pageItems);
+            
+            // Update tombol paginasi di bawah
+            renderPaginationControls();
+        }
+
+        // FUNGSI MEMBUAT TOMBOL HALAMAN 1, 2, NEXT, PREV
+        function renderPaginationControls() {
+            const totalPages = Math.ceil(currentFilteredList.length / itemsPerPage);
+            const container = document.getElementById('pagination-container');
+            
+            // Jika videonya kurang dari 12, sembunyikan tombol halaman
+            if (totalPages <= 1) {
+                container.innerHTML = '';
+                return;
+            }
+
+            let html = `<button class="btn-page" ${currentPage === 1 ? 'disabled' : ''} onclick="renderPage(${currentPage - 1})">❮ Prev</button>`;
+            
+            for(let i = 1; i <= totalPages; i++) {
+                html += `<button class="btn-page ${currentPage === i ? 'active' : ''}" onclick="renderPage(${i})">${i}</button>`;
+            }
+
+            html += `<button class="btn-page" ${currentPage === totalPages ? 'disabled' : ''} onclick="renderPage(${currentPage + 1})">Next ❯</button>`;
+            
+            container.innerHTML = html;
+        }
+
+        // Jalankan sistem saat website selesai dimuat
+        document.addEventListener('DOMContentLoaded', initVideosPage);
     </script>
 </body>
 </html>
