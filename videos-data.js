@@ -119,7 +119,7 @@ const videoList = [
         customEmbed: "",
         downloadUrl: "https://cdn.dubbindo.site/driveduo/uploads/34eeded7-a628-47a1-90ff-13fb45a4ad83/34eeded7-a628-47a1-90ff-13fb45a4ad83",
         description: "Detective Conan Spesial"
-    }
+    },
     {
         id: "video7",
         title: "pdhsd",
