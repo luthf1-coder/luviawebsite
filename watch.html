@@ -122,10 +122,26 @@
             playerWrapper.innerHTML = `<iframe src="${currentVid.customEmbed}" allowfullscreen="true" allow="autoplay; encrypted-media" style="border:none;"></iframe>`;
         } else if (currentVid.youtubeId) {
             playerWrapper.innerHTML = `<iframe src="https://www.youtube.com/embed/${currentVid.youtubeId}?enablejsapi=1" allowfullscreen="true" allow="accelerometer; autoplay; encrypted-media; picture-in-picture" style="border:none;"></iframe>`;
-        } else {
+       } else {
             playerWrapper.innerHTML = `<video id="plyr-player" controls playsinline poster="${currentVid.thumb || ''}"><source src="${currentVid.archiveSrc || ''}" type="video/mp4" /></video>`;
             if (document.getElementById('plyr-player') && typeof Plyr !== 'undefined') {
-                new Plyr('#plyr-player', { settings: ['quality', 'speed'] });
+                new Plyr('#plyr-player', { 
+                    settings: ['quality', 'speed'],
+                    seekTime: 10, // Mengatur durasi lompatan menjadi 10 detik
+                    controls: [
+                        'play-large',   // Tombol play besar di tengah
+                        'rewind',       // Tombol mundur 10 detik
+                        'play',         // Tombol play/pause di bawah
+                        'fast-forward', // Tombol lewati 10 detik
+                        'progress',     // Bar progres durasi video
+                        'current-time', // Menampilkan waktu saat ini
+                        'duration',     // Menampilkan total durasi video
+                        'mute',         // Tombol bisukan suara
+                        'volume',       // Bar pengaturan volume
+                        'settings',     // Ikon gir pengaturan (kualitas & kecepatan)
+                        'fullscreen'    // Tombol layar penuh
+                    ]
+                });
             }
         }
 
