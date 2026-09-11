@@ -122,7 +122,7 @@ const videoList = [
     },
     {
         id: "video7",
-        title: "pdhsd",
+        title: "Tunggu Aku Sukses Nanti (2026)",
         defaultViews: 10,
         thumb: "https://www.citycineplex.com/images/poster/f02659.jpg",
         archiveSrc: "https://cdn.dubbindo.site/dubbing/upload/videos/2026/09/QFNaG5RGRLhKoxssfTe8_06_9564b82870288455492e54153b066c9d_video_720p_converted.mp4",
@@ -131,7 +131,7 @@ const videoList = [
         rumbleEmbed: "",
         customEmbed: "",
         downloadUrl: "",
-        description: "Detective Conan Spesial"
+        description: "Tunggu Aku Sukses Nanti adalah film komedi keluarga Indonesia tahun 2026 yang disutradarai oleh Naya Anindita. Film ini dibintangi oleh Ardit Erwandha, Lulu Tobing, dan Ariyo Wahab. Menceritakan tentang Arga yang tengah berjuang menuju kesuksesan demi menaikkan martabat dan perekonomian keluarganya."
     }
 ];
 
