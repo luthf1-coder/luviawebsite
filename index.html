@@ -180,7 +180,7 @@
         }
         updateHomeLiveBadge();
 
-    // --- SISTEM HERO CAROUSEL 8 DETIK BERGESER + SWIPE HP ---
+// --- SISTEM HERO CAROUSEL 8 DETIK BERGESER + SWIPE HP ---
         let currentSlide = 0;
         let slideInterval;
         let totalSlides = 0;
@@ -193,8 +193,14 @@
             const heroCarousel = document.getElementById('hero-carousel');
             if(!inner || !indicators || !heroCarousel) return;
 
-            // Ambil maksimal 5 video unggulan untuk banner
-            const slides = videoList.slice(0, 5); 
+            // MENGAMBIL LOGIKA REKOMENDASI VIDEO
+            // 1. Mengurutkan video berdasarkan views tertinggi ke terendah
+            // 2. Mengambil 4 video teratas (TIDAK TERMASUK kartu Live Streaming)
+            const sortedList = [...videoList]
+                .sort((a, b) => (b.defaultViews || 0) - (a.defaultViews || 0))
+                .slice(0, 4); 
+            
+            const slides = sortedList;
             totalSlides = slides.length;
 
             if(totalSlides === 0) {
@@ -209,10 +215,10 @@
                 const desc = vid.description || 'Saksikan tayangan spesial dari LUVIA STUDIO TV.';
                 innerHtml += `
                     <div class="carousel-item">
-                        <!-- Gambar Background dipisah di sini agar gradasinya aman -->
+                        <!-- Gambar Background -->
                         <div class="carousel-bg" style="background-image: url('${vid.thumb}')"></div>
                         
-                        <!-- Overlay Teks & Tombol di atasnya -->
+                        <!-- Overlay Teks & Tombol -->
                         <div class="carousel-overlay">
                             <span class="carousel-badge" id="hero-badge-${vid.id}">Total Memuat...</span>
                             <h2 class="carousel-title">${vid.title}</h2>
@@ -228,7 +234,7 @@
             inner.innerHTML = innerHtml;
             indicators.innerHTML = indicatorsHtml;
             
-            // Panggil sistem tracking Firebase agar Total Views terisi
+            // Panggil sistem tracking Firebase agar Total Views terisi realtime
             slides.forEach(vid => {
                 listenVideoViews(vid.id, vid.defaultViews || 0, (totalViews) => {
                     const badge = document.getElementById(`hero-badge-${vid.id}`);
@@ -291,7 +297,7 @@
         }
 
         function startCarousel() {
-            slideInterval = setInterval(nextSlide, 8000); // 8 detik
+            slideInterval = setInterval(nextSlide, 8000); // 8 detik otomatis bergeser
         }
 
         function resetInterval() {
@@ -300,7 +306,7 @@
         }
 
         // Panggil render saat halaman di-load
-        renderHeroCarousel();
+        renderHeroCarousel();    
     </script>
 </body>
 </html>
