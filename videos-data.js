@@ -1,8 +1,7 @@
 // ==========================================
 // 1. KONFIGURASI FIREBASE REALTIME DATABASE
 // ==========================================
-// Ganti nilai firebaseConfig di bawah ini dengan konfigurasi Firebase milikmu!
-        const firebaseConfig = {
+const firebaseConfig = {
   apiKey: "AIzaSyDQfY4Q3ulm0NOZyzSdbzYb53SNCFCZrj0",
   authDomain: "luvia-studio-tv.firebaseapp.com",
   databaseURL: "https://luvia-studio-tv-default-rtdb.firebaseio.com",
@@ -13,7 +12,6 @@
   measurementId: "G-51NHLLES6V"
 };
 
-// Inisialisasi Firebase jika library Firebase SDK sudah terunduh di HTML
 if (typeof firebase !== 'undefined' && !firebase.apps.length) {
     firebase.initializeApp(firebaseConfig);
 }
@@ -30,7 +28,9 @@ const videoList = [
     "youtubeId": "",
     "rumbleEmbed": "",
     "downloadUrl": "https://drive.google.com/uc?export=download&id=13rV-LjZl1VW8z2ZLbphqWIeJDA1XneVu",
-    "description": "VOD LS TV"
+    "description": "VOD LS TV",
+    "genre": "Live Stream",
+    "uploadDate": "2026-08-15"
 },
     {
     "id": "kick_vod_123490654",
@@ -42,7 +42,9 @@ const videoList = [
     "youtubeId": "",
     "rumbleEmbed": "",
     "downloadUrl": "https://drive.google.com/uc?export=download&id=1GDOsTvewAmRzVIY1wyaZV2GdPk7-DMB4",
-    "description": "VOD LS TV. Disarakan saat memutar video ini dalam mode fullscreen!"
+    "description": "VOD LS TV. Disarakan saat memutar video ini dalam mode fullscreen!",
+    "genre": "Live Stream",
+    "uploadDate": "2026-08-18"
 },
     {
         id: "video1",
@@ -54,7 +56,9 @@ const videoList = [
         youtubeId: "U6N_8dUF30g",
         rumbleEmbed: "",
         downloadUrl: "https://www.ssyoutube.com/watch?v=U6N_8dUF30g", 
-        description: "Semua tentang sebuah Kebersamaan dan Kebahagiaan Angkatan 7 (SMPIQu) & dan Angkatan 1 (SMAIQu) di LPD Al-Bahjah Cianjur"
+        description: "Semua tentang sebuah Kebersamaan dan Kebahagiaan Angkatan 7 (SMPIQu) & dan Angkatan 1 (SMAIQu) di LPD Al-Bahjah Cianjur",
+        genre: "Dokumenter",
+        uploadDate: "2026-07-15"
     },
     {
         id: "video2",
@@ -66,47 +70,10 @@ const videoList = [
         youtubeId: "sUNYcOKjw-w",
         rumbleEmbed: "",
         downloadUrl: "https://www.ssyoutube.com/watch?v=sUNYcOKjw-w",
-        description: "Semua tentang sebuah Kebersamaan dan Kebahagiaan Angkatan 7 (SMPIQu) & dan Angkatan 1 (SMAIQu) di LPD Al-Bahjah Cianjur"
+        description: "Semua tentang sebuah Kebersamaan dan Kebahagiaan Angkatan 7 (SMPIQu) & dan Angkatan 1 (SMAIQu) di LPD Al-Bahjah Cianjur",
+        genre: "Dokumenter",
+        uploadDate: "2026-07-20"
     },
-    // {
-    //      id: "video3",
-    //      title: "Dokumenter Spesial Multi-Resolusi (Archive.org)",
-    //      defaultViews: 45,
-    //      thumb: "Asset Foto/Thumbnimail  Banner YT.png",
-    //      // Multi-resolusi khusus Archive.org / Direct MP4
-    //      sources: [
-    //          { src: "https://archive.org/download/nama_item_kamu/video_360p.mp4", size: 360, type: "video/mp4" },
-    //          { src: "https://archive.org/download/nama_item_kamu/video_720p.mp4", size: 720, type: "video/mp4" },
-    //          { src: "https://archive.org/download/nama_item_kamu/video_1080p.mp4", size: 1080, type: "video/mp4" }
-    //      ],
-    //      description: "Sesi dokumenter eksklusif dengan pilihan resolusi pemutar dan tombol unduh sesuai kualitas."
-    // },
-    // {
-    //      id: "video4",
-    //      title: "REKAMAN LIVE SPECIAL RUMBLE",
-    //      defaultViews: 50,
-    //      thumb: "Asset Foto/live stream.png",
-    //      archiveSrc: "",
-    //      driveEmbed: "",
-    //      youtubeId: "",
-    //      rumbleEmbed: "https://rumble.com/embed/vID unik/kode identitas video milikmu/",
-    //      // Solusi 2: Direct MP4 Link dari Dashboard Rumble
-    //      downloadUrl: "https://ak.rumble.com/vID unik/kode identitas video milikmu.mp4", 
-    //      description: "Hasil rekaman siaran langsung dari platform Rumble."
-    // },
-    // {
-    //      id: "video5",
-    //      title: "Contoh Video Google Drive",
-    //      defaultViews: 10,
-    //      thumb: "Asset Foto/Thumbnimail  Banner YT.png",
-    //      archiveSrc: "",
-    //      driveEmbed: "https://drive.google.com/file/d/ID_FILE_GDRIVE/preview",
-    //      youtubeId: "",
-    //      rumbleEmbed: "",
-    //      // Solusi Direct Download Google Drive (Format export=download)
-    //      downloadUrl: "https://drive.google.com/uc?export=download&id=ID_FILE_GDRIVE",
-    //      description: "Video sampel yang tersimpan di Google Drive."
-    // },
     {
         id: "video6",
         title: "Detective Conan: Episode One - The Great Detective Turned Small Dubbing Indonesia",
@@ -118,7 +85,9 @@ const videoList = [
         rumbleEmbed: "",
         customEmbed: "",
         downloadUrl: "https://cdn.dubbindo.site/driveduo/uploads/34eeded7-a628-47a1-90ff-13fb45a4ad83/34eeded7-a628-47a1-90ff-13fb45a4ad83",
-        description: "Detective Conan Spesial"
+        description: "Detective Conan Spesial",
+        genre: "Anime",
+        uploadDate: "2026-08-25"
     },
     {
         id: "video7",
@@ -131,7 +100,9 @@ const videoList = [
         rumbleEmbed: "",
         customEmbed: "",
         downloadUrl: "",
-        description: "Tunggu Aku Sukses Nanti adalah film komedi keluarga Indonesia tahun 2026 yang disutradarai oleh Naya Anindita. Film ini dibintangi oleh Ardit Erwandha, Lulu Tobing, dan Ariyo Wahab. Menceritakan tentang Arga yang tengah berjuang menuju kesuksesan demi menaikkan martabat dan perekonomian keluarganya."
+        description: "Tunggu Aku Sukses Nanti adalah film komedi keluarga Indonesia tahun 2026 yang disutradarai oleh Naya Anindita. Film ini dibintangi oleh Ardit Erwandha, Lulu Tobing, dan Ariyo Wahab. Menceritakan tentang Arga yang tengah berjuang menuju kesuksesan demi menaikkan martabat dan perekonomian keluarganya.",
+        genre: "Film Komedi",
+        uploadDate: "2026-09-01"
     },
     {
         id: "video8",
@@ -144,22 +115,47 @@ const videoList = [
         rumbleEmbed: "",
         customEmbed: "",
         downloadUrl: "",
-        description: "Shock Wave adalah film Hong kong produksi tahun 2017 bergenre laga thriller yang disutradarai sekaligus ditulis skenarionya oleh Herman Yau, diproduseri dan dibintangi oleh Andy Lau. Film ini menandai kerja sama ketiga antara Yau dan Lau setelah film Don't Fool Me dan Fascination Amour."
+        description: "Shock Wave adalah film Hong kong produksi tahun 2017 bergenre laga thriller yang disutradarai sekaligus ditulis skenarionya oleh Herman Yau, diproduseri dan dibintangi oleh Andy Lau. Film ini menandai kerja sama ketiga antara Yau dan Lau setelah film Don't Fool Me dan Fascination Amour.",
+        genre: "Film Action",
+        uploadDate: "2026-09-05"
     }
 ];
+
+// ==========================================
+// FUNGSI BANTUAN TANGGAL & WAKTU
+// ==========================================
+function timeAgoFormated(dateString) {
+    if (!dateString) return "Baru saja";
+    const date = new Date(dateString);
+    const now = new Date();
+    const diffTime = Math.abs(now - date);
+    const diffDays = Math.floor(diffTime / (1000 * 60 * 60 * 24)); 
+    
+    if (diffDays === 0) return "Hari ini";
+    if (diffDays < 7) return `${diffDays} hari yang lalu`;
+    if (diffDays < 30) return `${Math.floor(diffDays / 7)} minggu yang lalu`;
+    if (diffDays < 365) return `${Math.floor(diffDays / 30)} bulan yang lalu`;
+    return `${Math.floor(diffDays / 365)} tahun yang lalu`;
+}
+
+function formatDateIndonesian(dateString) {
+    if (!dateString) return "";
+    const months = ["Januari", "Februari", "Maret", "April", "Mei", "Juni", "Juli", "Agustus", "September", "Oktober", "November", "Desember"];
+    const date = new Date(dateString);
+    return `${date.getDate()} ${months[date.getMonth()]} ${date.getFullYear()}`;
+}
+
 
 // ==========================================
 // 2. HELPER VIEWS FIREBASE & FORMATTING
 // ==========================================
 
-// Format angka tayangan (Pencegah NaN)
 function formatViews(views) {
     const num = parseInt(views, 10);
     if (isNaN(num)) return '0 Ditonton';
     return num.toLocaleString('id-ID') + ' Ditonton';
 }
 
-// Fungsi Mendengarkan Perubahan Data Views Realtime dari Firebase
 function listenVideoViews(videoId, defaultViews = 0, callback) {
     if (typeof firebase === 'undefined' || !firebase.apps.length) {
         callback(parseInt(defaultViews, 10) || 0);
@@ -178,7 +174,6 @@ function listenVideoViews(videoId, defaultViews = 0, callback) {
     });
 }
 
-// Fungsi Menambah +1 View ke Firebase saat Video Dibuka
 async function incrementVideoViewsAsync(videoId, defaultViews = 0) {
     const baseViews = parseInt(defaultViews, 10) || 0;
 
@@ -267,65 +262,11 @@ window.addEventListener('storage', (e) => {
 // 3. FUNGSI RENDER REKOMENDASI (GLOBAL VIEWS)
 // ==========================================
 
-// Render Slider di Halaman Utama (index.html)
-function renderSliderRecommendations(containerId, list = videoList) {
-    const container = document.getElementById(containerId);
-    if (!container) return;
-
-    // === INI KODE TAMBAHAN UNTUK MEMFILTER TOP 4 VIEWS TERTINGGI ===
-    const sortedList = [...list].sort((a, b) => (b.defaultViews || 0) - (a.defaultViews || 0)).slice(0, 4);
-    // ==============================================================
-
-    const liveCount = getActiveLiveViewers();
-    let html = `
-        <a href="livestream.html" class="slider-card featured-live">
-            <div class="thumb-box">
-                <span id="kick-home-badge" class="badge-live">🔴 SEDANG LIVE (${liveCount} Penonton)</span>
-                <img src="Asset Foto/live stream.png" alt="Live Streaming">
-            </div>
-            <div class="slider-details">
-                <h3>LIVE STREAMING LUVIA STUDIO TV</h3>
-                <p>Siaran Langsung • Klik Untuk Nonton</p>
-            </div>
-        </a>
-    `;
-
-    if (sortedList.length === 0) {
-        html += `<div style="padding: 20px; color: #ffffff; font-weight: bold;">Video tidak ditemukan.</div>`;
-        container.innerHTML = html;
-    } else {
-        container.innerHTML = html;
-        sortedList.forEach(vid => {
-            const card = document.createElement('a');
-            card.href = `watch.html?id=${vid.id}`;
-            card.className = 'slider-card';
-            card.innerHTML = `
-                <div class="thumb-box">
-                    <img src="${vid.thumb}" alt="${vid.title}">
-                </div>
-                <div class="slider-details">
-                    <h3>${vid.title}</h3>
-                    <p id="view-count-slider-${vid.id}">👁️ Memuat...</p>
-                </div>
-            `;
-            container.appendChild(card);
-
-            // Pasang Listener Realtime Per Video
-            listenVideoViews(vid.id, vid.defaultViews || 0, (totalViews) => {
-                const el = document.getElementById(`view-count-slider-${vid.id}`);
-                if (el) el.innerText = `👁️ ${formatViews(totalViews)}`;
-            });
-        });
-    }
-}
-
-// Render Grid di Halaman Nonton & Live Stream (watch.html & livestream.html)
-// --- FUNGSI CEK STATUS LIVE KICK OTOMATIS ---
 async function updateKickBadgeStatus(badgeId) {
     const badge = document.getElementById(badgeId);
     if (!badge) return;
 
-    const kickUsername = "luthfi1234321"; // Username Kick kamu
+    const kickUsername = "luthfi1234321"; 
     try {
         const res = await fetch(`https://kick.com/api/v2/channels/${kickUsername}`);
         const data = await res.json();
@@ -344,14 +285,12 @@ async function updateKickBadgeStatus(badgeId) {
     }
 }
 
-// 1. Render Slider di Halaman Utama (index.html) - (Diupdate untuk filter top 4 views)
+// Render Slider di Halaman Utama (index.html)
 function renderSliderRecommendations(containerId, list = videoList) {
     const container = document.getElementById(containerId);
     if (!container) return;
 
-    // === INI KODE TAMBAHAN UNTUK MEMFILTER TOP 4 VIEWS TERTINGGI ===
     const sortedList = [...list].sort((a, b) => (b.defaultViews || 0) - (a.defaultViews || 0)).slice(0, 4);
-    // ==============================================================
 
     let html = `
         <a href="livestream.html" class="slider-card featured-live">
@@ -393,11 +332,10 @@ function renderSliderRecommendations(containerId, list = videoList) {
         });
     }
 
-    // Cek status live Kick otomatis untuk slider
     updateKickBadgeStatus('kick-home-badge');
 }
 
-// 2. Render Grid di Halaman Nonton & Live Stream (watch.html & livestream.html)
+// Render Grid di Halaman Nonton & Live Stream
 function renderGridRecommendations(containerId, list = videoList) {
     const container = document.getElementById(containerId);
     if (!container) return;
@@ -443,13 +381,12 @@ function renderGridRecommendations(containerId, list = videoList) {
         });
     });
 
-    // Cek status live Kick otomatis untuk grid rekomendasi watch.html
     if (!isLivePage) {
         updateKickBadgeStatus('kick-watch-badge');
     }
 }
 
-// === TAMBAHAN FUNGSI BARU KHUSUS UNTUK HALAMAN DAFTAR VIDEO (videos.html) ===
+// Render Videos Halaman Daftar
 function renderAllVideosPage(containerId, list = videoList) {
     const container = document.getElementById(containerId);
     if (!container) return;
@@ -492,7 +429,6 @@ function renderAllVideosPage(containerId, list = videoList) {
 
     updateKickBadgeStatus('kick-all-badge');
 }
-// ==============================================================================
 
 
 // ==========================================
