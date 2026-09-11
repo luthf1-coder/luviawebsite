@@ -120,6 +120,19 @@ const videoList = [
         downloadUrl: "https://cdn.dubbindo.site/driveduo/uploads/34eeded7-a628-47a1-90ff-13fb45a4ad83/34eeded7-a628-47a1-90ff-13fb45a4ad83",
         description: "Detective Conan Spesial"
     }
+           {
+        id: "video8",
+        title: "Detective Conan: Episode One - The Great Detective Turned Small Dubbing Indonesia",
+        defaultViews: 10,
+        thumb: "https://www.citycineplex.com/images/poster/f02659.jpg",
+        archiveSrc: "https://cdn.dubbindo.site/dubbing/upload/videos/2026/09/QFNaG5RGRLhKoxssfTe8_06_9564b82870288455492e54153b066c9d_video_720p_converted.mp4",
+        driveEmbed: "",
+        youtubeId: "",
+        rumbleEmbed: "",
+        customEmbed: "",
+        downloadUrl: "https://cdn.dubbindo.site/driveduo/uploads/34eeded7-a628-47a1-90ff-13fb45a4ad83/34eeded7-a628-47a1-90ff-13fb45a4ad83",
+        description: "Detective Conan Spesial"
+    }
 ];
 
 // ==========================================
