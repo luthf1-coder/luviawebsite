@@ -1478,3 +1478,148 @@ footer {
         margin-top: 30px;
     }
 }
+
+/* ===================================================================
+   DESAIN TAMBAHAN: DROPDOWN GENRE & PAGINASI (HALAMAN VIDEO)
+   =================================================================== */
+
+/* Dropdown Wrapper */
+.filter-wrapper {
+    margin-bottom: 25px;
+    z-index: 100; /* Agar dropdown berada di atas kartu video */
+    position: relative; 
+}
+
+.dropdown-container {
+    position: relative;
+    display: inline-block;
+}
+
+/* Tombol Dropdown Utama */
+.btn-dropdown {
+    background: rgba(255, 255, 255, 0.15);
+    border: 1px solid rgba(255, 255, 255, 0.3);
+    color: #ffffff;
+    padding: 10px 22px;
+    border-radius: 25px;
+    cursor: pointer;
+    font-size: 1rem;
+    font-weight: bold;
+    transition: all 0.3s ease;
+    backdrop-filter: blur(5px);
+    display: flex;
+    align-items: center;
+    box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+}
+
+.btn-dropdown:hover {
+    background: rgba(255, 255, 255, 0.3);
+    border-color: rgba(255, 255, 255, 0.6);
+}
+
+/* Kotak Daftar Dropdown (Tersembunyi Awalnya) */
+.dropdown-list {
+    display: none;
+    position: absolute;
+    top: 110%; /* Muncul tepat di bawah tombol */
+    left: 0;
+    background: rgba(35, 35, 35, 0.95);
+    backdrop-filter: blur(12px);
+    min-width: 240px;
+    border-radius: 12px;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.6);
+    z-index: 1000;
+    border: 1px solid rgba(255, 255, 255, 0.15);
+    overflow: hidden;
+}
+
+/* Tampilkan dengan Animasi ketika diklik */
+.dropdown-list.show {
+    display: block;
+    animation: fadeInDropdown 0.3s ease;
+}
+
+@keyframes fadeInDropdown {
+    from { opacity: 0; transform: translateY(-10px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+/* Item Genre dalam Daftar Dropdown */
+.dropdown-item {
+    color: #f1f1f1;
+    padding: 12px 20px;
+    text-decoration: none;
+    display: block;
+    cursor: pointer;
+    font-size: 0.95rem;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+    transition: background 0.2s;
+}
+
+.dropdown-item:last-child {
+    border-bottom: none;
+}
+
+.dropdown-item:hover {
+    background: rgba(255, 145, 77, 0.6);
+    color: #fff;
+}
+
+.dropdown-item.active {
+    background: linear-gradient(45deg, #8c52ff, #ff914d);
+    font-weight: bold;
+    color: #fff;
+}
+
+
+/* Kontainer Paginasi (Tombol Halaman) - Di Kanan Bawah */
+.pagination-container {
+    display: flex;
+    justify-content: flex-end; /* Rata Kanan */
+    align-items: center;
+    gap: 8px;
+    margin-top: 40px;
+    margin-bottom: 10px;
+    flex-wrap: wrap;
+}
+
+/* Tombol Halaman */
+.btn-page {
+    background: rgba(255, 255, 255, 0.15);
+    border: 1px solid rgba(255, 255, 255, 0.3);
+    color: #ffffff;
+    padding: 8px 14px;
+    border-radius: 8px;
+    cursor: pointer;
+    font-weight: 600;
+    font-size: 0.95rem;
+    transition: all 0.3s;
+    backdrop-filter: blur(5px);
+}
+
+.btn-page:hover:not(:disabled) {
+    background: #ff914d;
+    border-color: transparent;
+    color: #000;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(255, 145, 77, 0.4);
+}
+
+.btn-page.active {
+    background: linear-gradient(45deg, #8c52ff, #ff914d);
+    border-color: transparent;
+    color: #ffffff;
+}
+
+.btn-page:disabled {
+    opacity: 0.4;
+    cursor: not-allowed;
+}
+
+/* Penyesuaian HP untuk Paginasi */
+@media (max-width: 768px) {
+    .pagination-container {
+        justify-content: center; /* Di HP jadi di tengah agar mudah dipencet */
+        margin-top: 30px;
+    }
+}
