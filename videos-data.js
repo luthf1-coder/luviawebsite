@@ -132,6 +132,19 @@ const videoList = [
         customEmbed: "",
         downloadUrl: "",
         description: "Tunggu Aku Sukses Nanti adalah film komedi keluarga Indonesia tahun 2026 yang disutradarai oleh Naya Anindita. Film ini dibintangi oleh Ardit Erwandha, Lulu Tobing, dan Ariyo Wahab. Menceritakan tentang Arga yang tengah berjuang menuju kesuksesan demi menaikkan martabat dan perekonomian keluarganya."
+    },
+    {
+        id: "video8",
+        title: "Shock Wave (2017) Dubbing Indonesia",
+        defaultViews: 0,
+        thumb: "https://i.ytimg.com/vi/h7UKJmjmclg/hq720.jpg?sqp=-oaymwEhCK4FEIIDSFryq4qpAxMIARUAAAAAGAElAADIQj0AgKJD&rs=AOn4CLBb4nNt1mhNoD2feam3AVm_cT5kjA",
+        archiveSrc: "https://cdn.dubbindo.site/dubbing/upload/videos/2026/09/x4Uo98IHHPoWdRFxNw9n_11_22af45dad554e422f2430fd5ee212625_video_720p_converted.mp4",
+        driveEmbed: "",
+        youtubeId: "",
+        rumbleEmbed: "",
+        customEmbed: "",
+        downloadUrl: "",
+        description: "Shock Wave adalah film Hong kong produksi tahun 2017 bergenre laga thriller yang disutradarai sekaligus ditulis skenarionya oleh Herman Yau, diproduseri dan dibintangi oleh Andy Lau. Film ini menandai kerja sama ketiga antara Yau dan Lau setelah film Don't Fool Me dan Fascination Amour."
     }
 ];
 
