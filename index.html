@@ -193,9 +193,6 @@
             const heroCarousel = document.getElementById('hero-carousel');
             if(!inner || !indicators || !heroCarousel) return;
 
-            // MENGAMBIL LOGIKA REKOMENDASI VIDEO
-            // 1. Mengurutkan video berdasarkan views tertinggi ke terendah
-            // 2. Mengambil 4 video teratas (TIDAK TERMASUK kartu Live Streaming)
             const sortedList = [...videoList]
                 .sort((a, b) => (b.defaultViews || 0) - (a.defaultViews || 0))
                 .slice(0, 4); 
@@ -220,9 +217,11 @@
                         
                         <!-- Overlay Teks & Tombol -->
                         <div class="carousel-overlay">
-                            <span class="carousel-badge" id="hero-badge-${vid.id}">Total Memuat...</span>
+                            <!-- PERUBAHAN: Badge diubah menjadi Genre -->
+                            <span class="carousel-badge">${vid.genre || 'Umum'}</span>
                             <h2 class="carousel-title">${vid.title}</h2>
-                            <div class="carousel-meta">2026 • LUVIA STUDIO TV</div>
+                            <!-- PERUBAHAN: View ditaruh di sini dan bersampingan dengan waktu upload -->
+                            <div class="carousel-meta"><span id="hero-badge-${vid.id}">Total Memuat...</span> • ${timeAgoFormated(vid.uploadDate)}</div>
                             <p class="carousel-desc">${desc}</p>
                             <a href="watch.html?id=${vid.id}" class="btn-watch-hero">▷ Tonton</a>
                         </div>
