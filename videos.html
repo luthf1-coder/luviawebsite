@@ -248,6 +248,77 @@
 
         // Jalankan saat load
         document.addEventListener('DOMContentLoaded', initVideosPage);
+        // ==========================================
+// SISTEM PENCARIAN LIVE (AUTOCOMPLETE)
+// ==========================================
+document.addEventListener('DOMContentLoaded', () => {
+    const searchInput = document.getElementById('navSearchInput');
+    const searchDropdown = document.getElementById('searchDropdownList');
+    const searchForm = document.getElementById('navSearchForm');
+
+    if (searchInput && searchDropdown) {
+        // Ketika user mengetik di kolom pencarian
+        searchInput.addEventListener('input', function() {
+            const query = this.value.toLowerCase().trim();
+            
+            // Jika kosong, sembunyikan kotak
+            if (query.length === 0) {
+                searchDropdown.classList.remove('show');
+                return;
+            }
+
+            // Filter data secara live dari videoList
+            if (typeof videoList !== 'undefined') {
+                const results = videoList.filter(vid => 
+                    vid.title.toLowerCase().includes(query) || 
+                    (vid.genre && vid.genre.toLowerCase().includes(query))
+                ).slice(0, 6); // Tampilkan maksimal 6 rekomendasi teratas
+
+                if (results.length > 0) {
+                    let html = '';
+                    results.forEach(vid => {
+                        html += `
+                            <a href="watch.html?id=${vid.id}" class="search-result-item">
+                                <img src="${vid.thumb}" alt="Thumbnail">
+                                <div class="search-result-info">
+                                    <h4>${vid.title}</h4>
+                                    <p>${vid.genre || 'Umum'} • ${vid.defaultViews || 0} Ditonton</p>
+                                </div>
+                            </a>
+                        `;
+                    });
+                    searchDropdown.innerHTML = html;
+                    searchDropdown.classList.add('show');
+                } else {
+                    searchDropdown.innerHTML = `<div style="padding: 15px; text-align: center; color: #bbb; font-size: 0.85rem;">Tidak ada video "${query}"</div>`;
+                    searchDropdown.classList.add('show');
+                }
+            }
+        });
+
+        // Tutup kotak pencarian jika user klik sembarang tempat di luar kotak
+        document.addEventListener('click', function(e) {
+            if (!searchForm.contains(e.target)) {
+                searchDropdown.classList.remove('show');
+            }
+        });
+
+        // Jika user menekan tombol ENTER (Arahkan ke daftar pencarian full)
+        searchForm.addEventListener('submit', (e) => {
+            e.preventDefault();
+            const q = searchInput.value.trim();
+            if (q) {
+                const isVideosPage = window.location.pathname.endsWith('videos.html');
+                if (isVideosPage && typeof executeSearchOnHome === 'function') {
+                    executeSearchOnHome(q);
+                    searchDropdown.classList.remove('show');
+                } else {
+                    window.location.href = `videos.html?search=${encodeURIComponent(q)}`;
+                }
+            }
+        });
+    }
+});
     </script>
 </body>
 </html>
