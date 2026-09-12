@@ -1623,3 +1623,95 @@ footer {
         margin-top: 30px;
     }
 }
+
+/* ===================================================================
+   DESAIN PENCARIAN LIVE (AUTOCOMPLETE) MENIMPA KONTEN
+   =================================================================== */
+.nav-search {
+    position: relative; /* Penting agar dropdown menempel sejajar dengan form pencarian */
+}
+
+.search-dropdown-list {
+    display: none;
+    position: absolute;
+    top: calc(100% + 8px); /* Muncul pas di bawah kotak input */
+    right: 0; /* Rata kanan */
+    width: 320px; /* Lebar kotak rekomendasi */
+    background: rgba(30, 30, 30, 0.95);
+    backdrop-filter: blur(15px);
+    -webkit-backdrop-filter: blur(15px);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    border-radius: 12px;
+    box-shadow: 0 10px 40px rgba(0,0,0,0.6);
+    z-index: 9999; /* Memastikan dia menimpa seluruh konten website */
+    max-height: 400px;
+    overflow-y: auto;
+}
+
+.search-dropdown-list.show {
+    display: block;
+    animation: fadeInDown 0.2s ease-in-out;
+}
+
+@keyframes fadeInDown {
+    from { opacity: 0; transform: translateY(-10px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+.search-result-item {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 12px;
+    text-decoration: none;
+    color: #fff;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+    transition: background 0.2s;
+}
+
+.search-result-item:hover {
+    background: rgba(255, 145, 77, 0.3);
+}
+
+.search-result-item img {
+    width: 80px;
+    height: 45px;
+    object-fit: cover;
+    border-radius: 6px;
+}
+
+.search-result-info {
+    flex: 1;
+}
+
+.search-result-info h4 {
+    margin: 0 0 4px 0;
+    font-size: 0.85rem;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+    color: #fff;
+}
+
+.search-result-info p {
+    margin: 0;
+    font-size: 0.7rem;
+    color: #aaa;
+}
+
+/* Penyesuaian di HP agar pencarian full width di layar */
+@media (max-width: 768px) {
+    .search-dropdown-list {
+        position: fixed;
+        top: 70px; 
+        left: 5%;
+        width: 90%;
+        right: auto;
+    }
+}
+
+/* Memperbaiki masalah pada Screenshot 59 agar tidak terpotong */
+.filter-wrapper {
+    overflow: visible !important;
+}
