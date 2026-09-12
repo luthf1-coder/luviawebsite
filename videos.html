@@ -18,12 +18,11 @@
                 <button onclick="history.back()" class="btn-nav-history" title="Kembali">←</button>
                 <button onclick="history.forward()" class="btn-nav-history" title="Maju">→</button>
             </div>
-            <!-- FORM PENCARIAN BARU -->
+            
+            <!-- FORM PENCARIAN TERBARU -->
             <form class="nav-search" id="navSearchForm" onsubmit="return false;">
                 <input type="text" id="navSearchInput" placeholder="Cari video..." aria-label="Cari" autocomplete="off">
                 <button type="submit">🔍</button>
-                
-                <!-- Boks Dropdown Hasil Pencarian Langsung (Menimpa Konten) -->
                 <div class="search-dropdown-list" id="searchDropdownList"></div>
             </form>
         </div>
@@ -54,19 +53,14 @@
         <div class="container">
             <h2 class="stream-title">Semua Video Tersedia</h2>
             
-            <!-- FITUR BARU: FILTER GENRE DROPDOWN -->
             <div class="filter-wrapper">
                 <div class="dropdown-container">
                     <button class="btn-dropdown" id="genreDropdownBtn" onclick="toggleDropdown(event)">Cari berdasarkan genre ▼</button>
-                    <!-- Daftar genre akan muncul di sini via Javascript -->
                     <div class="dropdown-list" id="genreDropdownList"></div>
                 </div>
             </div>
 
-            <!-- GRID KARTU VIDEO -->
             <div class="videos-page-grid" id="all-videos-container"></div>
-            
-            <!-- FITUR BARU: PAGINASI / HALAMAN -->
             <div id="pagination-container" class="pagination-container"></div>
         </div>
     </section>
@@ -89,7 +83,6 @@
         </div>
     </footer>
 
-    <!-- Muat data video terlebih dahulu -->
     <script src="videos-data.js"></script>
     <script>
         function toggleSidebar() {
@@ -99,17 +92,15 @@
         
         let currentFilteredList = [];
         let currentPage = 1;
-        const itemsPerPage = 12; // Maksimal 12 Kartu Video per Halaman
+        const itemsPerPage = 12; 
 
         function initVideosPage() {
-            // 1. Urutkan dari yang terbaru ke terlama
             const sortedList = [...videoList].sort((a, b) => {
                 const dateA = a.uploadDate ? new Date(a.uploadDate) : new Date(0);
                 const dateB = b.uploadDate ? new Date(b.uploadDate) : new Date(0);
                 return dateB - dateA;
             });
 
-            // 2. Buat isi Dropdown Genre Otomatis
             const genres = [...new Set(sortedList.map(v => v.genre).filter(Boolean))];
             const genreList = document.getElementById('genreDropdownList');
             
@@ -119,15 +110,17 @@
             });
             genreList.innerHTML = genreHtml;
 
-            // 3. Cek URL parameters
             const urlParams = new URLSearchParams(window.location.search);
             const searchQuery = urlParams.get('search');
             const genreQuery = urlParams.get('genre');
 
             if (searchQuery) {
                 const q = searchQuery.toLowerCase();
+                // UPDATE: Sync Logic Pencarian
                 currentFilteredList = sortedList.filter(vid => 
-                    vid.title.toLowerCase().includes(q) || 
+                    (vid.title && vid.title.toLowerCase().includes(q)) || 
+                    (vid.genre && vid.genre.toLowerCase().includes(q)) ||
+                    (vid.uploadDate && vid.uploadDate.includes(q)) ||
                     (vid.description && vid.description.toLowerCase().includes(q))
                 );
                 document.querySelector('.stream-title').innerText = `Hasil Pencarian: "${searchQuery}" (${currentFilteredList.length})`;
@@ -146,32 +139,25 @@
             renderPage(1);
         }
 
-        // --- SISTEM DROPDOWN ---
         function toggleDropdown(e) {
             e.stopPropagation();
             document.getElementById('genreDropdownList').classList.toggle('show');
         }
 
-        // Tutup dropdown jika klik di luar area
         window.onclick = function(event) {
             if (!event.target.matches('.btn-dropdown')) {
                 const dropdowns = document.getElementsByClassName("dropdown-list");
                 for (let i = 0; i < dropdowns.length; i++) {
-                    if (dropdowns[i].classList.contains('show')) {
-                        dropdowns[i].classList.remove('show');
-                    }
+                    if (dropdowns[i].classList.contains('show')) dropdowns[i].classList.remove('show');
                 }
             }
         }
 
-        // FUNGSI KLIK ITEM GENRE PADA DROPDOWN
         function filterByGenre(genre, element) {
-            // Ubah class active di item
             document.querySelectorAll('.dropdown-item').forEach(el => el.classList.remove('active'));
             if(element) element.classList.add('active');
             else updateActiveDropdownItem(genre);
 
-            // Ubah teks tombol Dropdown
             const btn = document.getElementById('genreDropdownBtn');
             if (genre === 'Semua' || genre === 'Semua Genre') {
                 btn.innerHTML = `Cari berdasarkan genre ▼`;
@@ -179,7 +165,6 @@
                 btn.innerHTML = `Genre: ${genre} ▼`;
             }
 
-            // Urutkan ulang lalu filter
             const sortedList = [...videoList].sort((a, b) => {
                 const dateA = a.uploadDate ? new Date(a.uploadDate) : new Date(0);
                 const dateB = b.uploadDate ? new Date(b.uploadDate) : new Date(0);
@@ -193,12 +178,9 @@
                 currentFilteredList = sortedList.filter(vid => vid.genre === genre);
                 document.querySelector('.stream-title').innerText = `Genre: ${genre} (${currentFilteredList.length})`;
             }
-
-            // Kembalikan ke halaman 1
             renderPage(1);
         }
 
-        // Fungsi bantuan update tampilan aktif
         function updateActiveDropdownItem(genre) {
             document.querySelectorAll('.dropdown-item').forEach(el => {
                 if(el.innerText.toLowerCase() === genre.toLowerCase() || (genre === 'Semua' && el.innerText === 'Semua Genre')) {
@@ -207,16 +189,11 @@
                     el.classList.remove('active');
                 }
             });
-            
             const btn = document.getElementById('genreDropdownBtn');
-            if (genre === 'Semua' || genre === 'Semua Genre') {
-                btn.innerHTML = `Cari berdasarkan genre ▼`;
-            } else {
-                btn.innerHTML = `Genre: ${genre} ▼`;
-            }
+            if (genre === 'Semua' || genre === 'Semua Genre') btn.innerHTML = `Cari berdasarkan genre ▼`;
+            else btn.innerHTML = `Genre: ${genre} ▼`;
         }
 
-        // FUNGSI RENDER HALAMAN (PAGINASI)
         function renderPage(page) {
             currentPage = page;
             const startIndex = (page - 1) * itemsPerPage;
@@ -227,15 +204,11 @@
             renderPaginationControls();
         }
 
-        // FUNGSI MEMBUAT TOMBOL HALAMAN 1, 2, NEXT, PREV
         function renderPaginationControls() {
             const totalPages = Math.ceil(currentFilteredList.length / itemsPerPage);
             const container = document.getElementById('pagination-container');
             
-            if (totalPages <= 1) {
-                container.innerHTML = '';
-                return;
-            }
+            if (totalPages <= 1) { container.innerHTML = ''; return; }
 
             let html = `<button class="btn-page" ${currentPage === 1 ? 'disabled' : ''} onclick="renderPage(${currentPage - 1})">❮ Prev</button>`;
             for(let i = 1; i <= totalPages; i++) {
@@ -246,9 +219,9 @@
             container.innerHTML = html;
         }
 
-        // Jalankan saat load
         document.addEventListener('DOMContentLoaded', initVideosPage);
- // ==========================================
+
+// ==========================================
 // SISTEM PENCARIAN LIVE (AUTOCOMPLETE) 
 // ==========================================
 document.addEventListener('DOMContentLoaded', () => {
