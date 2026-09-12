@@ -1702,8 +1702,9 @@ footer {
 
 .search-result-info p {
     margin: 0;
-    font-size: 0.7rem;
-    color: #aaa;
+    font-size: 0.75rem;
+    color: #ffffff; /* Diubah jadi putih agar jelas */
+    font-weight: 500;
 }
 
 /* Penyesuaian di HP agar pencarian full width di layar */
@@ -1757,4 +1758,24 @@ a.carousel-badge {
 a.carousel-badge:hover {
     opacity: 0.85;
     transform: scale(1.05);
+}
+
+/* DESAIN TOMBOL GENRE DI DALAM KARTU VIDEO */
+.card-genre-btn {
+    display: inline-block;
+    background: linear-gradient(45deg, #8c52ff, #ff914d);
+    color: #ffffff;
+    padding: 2px 10px;
+    border-radius: 12px;
+    font-size: 0.7rem;
+    font-weight: bold;
+    margin-bottom: 6px;
+    cursor: pointer;
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+    border: 1px solid rgba(255,255,255,0.3);
+}
+
+.card-genre-btn:hover {
+    transform: scale(1.05);
+    box-shadow: 0 4px 8px rgba(0,0,0,0.3);
 }
