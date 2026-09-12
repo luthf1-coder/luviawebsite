@@ -10,23 +10,26 @@
 
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-database-compat.js"></script>
-</head>
+
+  </head>
 <body>
     
     <nav>
         <div class="container nav-container">
             <button class="hamburger-menu" onclick="toggleSidebar()" title="Menu">☰</button>
+            
             <div class="nav-history-controls">
                 <button onclick="history.back()" class="btn-nav-history" title="Kembali">←</button>
                 <button onclick="history.forward()" class="btn-nav-history" title="Maju">→</button>
             </div>
             
-            <!-- FORM PENCARIAN TERBARU -->
-            <form class="nav-search" id="navSearchForm" onsubmit="return false;">
+         <form class="nav-search" id="navSearchForm" onsubmit="return false;">
                 <input type="text" id="navSearchInput" placeholder="Cari video..." aria-label="Cari" autocomplete="off">
                 <button type="submit">🔍</button>
+                <div class="search-dropdown-list" id="searchDropdownList"></div>
+            </form>
                 
-                <!-- Boks Dropdown Hasil Pencarian Langsung -->
+                <!-- Boks Dropdown Hasil Pencarian Langsung (Menimpa Konten) -->
                 <div class="search-dropdown-list" id="searchDropdownList"></div>
             </form>
         </div>
@@ -51,20 +54,34 @@
         </div>
     </div>
 
-    <!-- HERO SLIDER -->
+    <!-- HERO SLIDER (Pengganti bagian Tentang yang lama di atas) -->
     <div id="hero-carousel" class="hero-carousel">
-        <div class="carousel-inner" id="carousel-inner"></div>
-        <div class="carousel-indicators" id="carousel-indicators"></div>
+        <div class="carousel-inner" id="carousel-inner">
+            <!-- Slide akan di-generate via JavaScript dari data video -->
+        </div>
+        <div class="carousel-indicators" id="carousel-indicators">
+            <!-- Indikator bulat akan di-generate via JavaScript -->
+        </div>
     </div>
 
     <section id="recommendations" class="section">
         <div class="container">
             <div class="header-recommendation">
                 <h2 style="margin: 0;">Rekomendasi Video</h2>
+                <!-- Tombol Lainnya ditambahkan di sini -->
                 <a href="videos.html" class="btn-more">Lainnya ❯</a>
             </div>
             <div class="video-slider" id="home-recommendations-slider">
-                <!-- Akan dimuat JS -->
+                <a href="livestream.html" class="slider-card featured-live">
+                    <div class="thumb-box">
+                        <span id="kick-home-badge" class="badge-live">🔴 CHECKING...</span>
+                        <img src="Asset Foto/live stream.png" alt="Live Streaming">
+                    </div>
+                    <div class="slider-details">
+                        <h3>LIVE STREAMING LUVIA STUDIO TV</h3>
+                        <p>LUVIA STUDIO TV • LIVE</p>
+                    </div>
+                </a>
             </div>
         </div>
     </section>
@@ -97,6 +114,7 @@
         </div>
     </section>
 
+    <!-- BAGIAN TENTANG DIPINDAHKAN KE SINI (Sebelum Follow Us) -->
     <section id="about" class="section">
         <div class="container">
             <div style="text-align: center;">
@@ -135,20 +153,24 @@
 
     <script src="videos-data.js"></script>
     <script>
+        // FUNGSI UNTUK MEMBUKA & MENUTUP SIDEBAR
         function toggleSidebar() {
             document.getElementById('sidebar').classList.toggle('active');
             document.getElementById('sidebarOverlay').classList.toggle('active');
         }
 
+        // FUNGSI SLIDER & BADGE
         renderSliderRecommendations('home-recommendations-slider');
 
         const kickChannel = "luthfi1234321"; 
         async function updateHomeLiveBadge() {
             const badge = document.getElementById('kick-home-badge');
             if (!badge) return;
+
             try {
                 const res = await fetch(`https://kick.com/api/v2/channels/${kickChannel}`);
                 const data = await res.json();
+
                 if (data.livestream) {
                     badge.innerText = "🔴 SEDANG LIVE";
                     badge.className = "badge-live";
@@ -163,7 +185,7 @@
         }
         updateHomeLiveBadge();
 
-// --- SISTEM HERO CAROUSEL ---
+// --- SISTEM HERO CAROUSEL 8 DETIK BERGESER + SWIPE HP ---
         let currentSlide = 0;
         let slideInterval;
         let totalSlides = 0;
@@ -176,7 +198,10 @@
             const heroCarousel = document.getElementById('hero-carousel');
             if(!inner || !indicators || !heroCarousel) return;
 
-            const sortedList = [...videoList].sort((a, b) => (b.defaultViews || 0) - (a.defaultViews || 0)).slice(0, 4); 
+            const sortedList = [...videoList]
+                .sort((a, b) => (b.defaultViews || 0) - (a.defaultViews || 0))
+                .slice(0, 4); 
+            
             const slides = sortedList;
             totalSlides = slides.length;
 
@@ -190,18 +215,18 @@
 
             slides.forEach((vid, index) => {
                 const desc = vid.description || 'Saksikan tayangan spesial dari LUVIA STUDIO TV.';
-                
-                // UPDATE: Genre di slider sekarang dibuat sebagai tag <a> (Link)
-                const safeGenre = encodeURIComponent(vid.genre || 'Umum');
-                
                 innerHtml += `
                     <div class="carousel-item">
+                        <!-- Gambar Background -->
                         <div class="carousel-bg" style="background-image: url('${vid.thumb}')"></div>
-                        <div class="carousel-overlay">
-                            <!-- INI SEKARANG BISA DIKLIK MENUJU VIDEOS.HTML -->
-                            <a href="videos.html?genre=${safeGenre}" class="carousel-badge">${vid.genre || 'Umum'}</a>
+                        
+                        <!-- Overlay Teks & Tombol -->
+                       <div class="carousel-overlay">
+                            <!-- Link ke filter genre -->
+                            <a href="videos.html?genre=${encodeURIComponent(vid.genre || 'Umum')}" class="carousel-badge">${vid.genre || 'Umum'}</a>
                             
                             <h2 class="carousel-title">${vid.title}</h2>
+                            <!-- Waktu rilis diselipkan di sini -->
                             <div class="carousel-meta"><span id="hero-badge-${vid.id}">Total Memuat...</span> • ${timeAgoFormated(vid.uploadDate)}</div>
                             <p class="carousel-desc">${desc}</p>
                             <a href="watch.html?id=${vid.id}" class="btn-watch-hero">▷ Tonton</a>
@@ -214,6 +239,7 @@
             inner.innerHTML = innerHtml;
             indicators.innerHTML = indicatorsHtml;
             
+            // Panggil sistem tracking Firebase agar Total Views terisi realtime
             slides.forEach(vid => {
                 listenVideoViews(vid.id, vid.defaultViews || 0, (totalViews) => {
                     const badge = document.getElementById(`hero-badge-${vid.id}`);
@@ -221,33 +247,72 @@
                 });
             });
 
-            heroCarousel.addEventListener('touchstart', e => { touchStartX = e.changedTouches[0].screenX; }, {passive: true});
-            heroCarousel.addEventListener('touchend', e => { touchEndX = e.changedTouches[0].screenX; handleSwipeGesture(); }, {passive: true});
+            // Pasang Fitur Swipe di HP
+            heroCarousel.addEventListener('touchstart', e => {
+                touchStartX = e.changedTouches[0].screenX;
+            }, {passive: true});
+
+            heroCarousel.addEventListener('touchend', e => {
+                touchEndX = e.changedTouches[0].screenX;
+                handleSwipeGesture();
+            }, {passive: true});
+
             startCarousel();
         }
 
+        // Logika Deteksi Swipe
         function handleSwipeGesture() {
-            const minSwipeDistance = 40; 
-            if (touchEndX < touchStartX - minSwipeDistance) { nextSlide(); resetInterval(); }
-            if (touchEndX > touchStartX + minSwipeDistance) { prevSlide(); resetInterval(); }
+            const minSwipeDistance = 40; // Sensitivitas geser
+            if (touchEndX < touchStartX - minSwipeDistance) {
+                nextSlide(); // Geser ke kiri
+                resetInterval();
+            }
+            if (touchEndX > touchStartX + minSwipeDistance) {
+                prevSlide(); // Geser ke kanan
+                resetInterval();
+            }
         }
+
         function updateCarousel() {
             const inner = document.getElementById('carousel-inner');
             const dots = document.querySelectorAll('.dot');
             if(!inner) return;
-            inner.style.transform = `translateX(-${currentSlide * 100}%)`;
-            dots.forEach((dot, i) => { dot.classList.toggle('active', i === currentSlide); });
-        }
-        function nextSlide() { currentSlide = (currentSlide + 1) % totalSlides; updateCarousel(); }
-        function prevSlide() { currentSlide = (currentSlide - 1 + totalSlides) % totalSlides; updateCarousel(); }
-        function goToSlide(index) { currentSlide = index; updateCarousel(); resetInterval(); }
-        function startCarousel() { slideInterval = setInterval(nextSlide, 8000); }
-        function resetInterval() { clearInterval(slideInterval); startCarousel(); }
-        renderHeroCarousel();    
 
-// ==========================================
+            inner.style.transform = `translateX(-${currentSlide * 100}%)`;
+            
+            dots.forEach((dot, i) => {
+                dot.classList.toggle('active', i === currentSlide);
+            });
+        }
+
+        function nextSlide() {
+            currentSlide = (currentSlide + 1) % totalSlides;
+            updateCarousel();
+        }
+
+        function prevSlide() {
+            currentSlide = (currentSlide - 1 + totalSlides) % totalSlides;
+            updateCarousel();
+        }
+
+        function goToSlide(index) {
+            currentSlide = index;
+            updateCarousel();
+            resetInterval();
+        }
+
+        function startCarousel() {
+            slideInterval = setInterval(nextSlide, 8000); // 8 detik otomatis bergeser
+        }
+
+        function resetInterval() {
+            clearInterval(slideInterval);
+            startCarousel();
+        }
+
+        // Panggil render saat halaman di-load
+        renderHeroCarousel();
 // SISTEM PENCARIAN LIVE (AUTOCOMPLETE) 
-// ==========================================
 document.addEventListener('DOMContentLoaded', () => {
     const searchInput = document.getElementById('navSearchInput');
     const searchDropdown = document.getElementById('searchDropdownList');
@@ -269,12 +334,12 @@ document.addEventListener('DOMContentLoaded', () => {
                 if (results.length > 0) {
                     let html = '';
                     results.forEach(vid => {
-                        // PERBAIKAN: Pasang span dengan ID khusus untuk menampung view dari Firebase
                         html += `
                             <a href="watch.html?id=${vid.id}" class="search-result-item">
                                 <img src="${vid.thumb}" alt="Thumbnail">
                                 <div class="search-result-info">
                                     <h4>${vid.title}</h4>
+                                    <!-- ID khusus untuk load data firebase realtime -->
                                     <p>${vid.genre || 'Umum'} • <span id="search-view-${vid.id}">Memuat...</span></p>
                                 </div>
                             </a>
@@ -283,7 +348,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     searchDropdown.innerHTML = html;
                     searchDropdown.classList.add('show');
 
-                    // PERBAIKAN: Panggil Firebase untuk mengubah angka 0 menjadi views yang asli!
+                    // LOAD FIREBASE VIEWS
                     results.forEach(vid => {
                         if (typeof listenVideoViews === 'function') {
                             listenVideoViews(vid.id, vid.defaultViews || 0, (totalViews) => {
@@ -292,9 +357,8 @@ document.addEventListener('DOMContentLoaded', () => {
                             });
                         }
                     });
-
                 } else {
-                    searchDropdown.innerHTML = `<div style="padding: 15px; text-align: center; color: #bbb; font-size: 0.85rem;">Tidak ada video "${query}"</div>`;
+                    searchDropdown.innerHTML = `<div style="padding: 15px; text-align: center; color: #bbb; font-size: 0.85rem;">Tidak ada hasil untuk "${query}"</div>`;
                     searchDropdown.classList.add('show');
                 }
             }
@@ -318,7 +382,7 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         });
     }
-});    
+});
     </script>
 </body>
 </html>
