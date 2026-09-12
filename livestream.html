@@ -281,9 +281,7 @@
         if (typeof renderGridRecommendations === 'function') {
             renderGridRecommendations('watch-recommendations-grid');
         }
-// ==========================================
 // SISTEM PENCARIAN LIVE (AUTOCOMPLETE) 
-// ==========================================
 document.addEventListener('DOMContentLoaded', () => {
     const searchInput = document.getElementById('navSearchInput');
     const searchDropdown = document.getElementById('searchDropdownList');
@@ -305,12 +303,12 @@ document.addEventListener('DOMContentLoaded', () => {
                 if (results.length > 0) {
                     let html = '';
                     results.forEach(vid => {
-                        // PERBAIKAN: Pasang span dengan ID khusus untuk menampung view dari Firebase
                         html += `
                             <a href="watch.html?id=${vid.id}" class="search-result-item">
                                 <img src="${vid.thumb}" alt="Thumbnail">
                                 <div class="search-result-info">
                                     <h4>${vid.title}</h4>
+                                    <!-- ID khusus untuk load data firebase realtime -->
                                     <p>${vid.genre || 'Umum'} • <span id="search-view-${vid.id}">Memuat...</span></p>
                                 </div>
                             </a>
@@ -319,7 +317,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     searchDropdown.innerHTML = html;
                     searchDropdown.classList.add('show');
 
-                    // PERBAIKAN: Panggil Firebase untuk mengubah angka 0 menjadi views yang asli!
+                    // LOAD FIREBASE VIEWS
                     results.forEach(vid => {
                         if (typeof listenVideoViews === 'function') {
                             listenVideoViews(vid.id, vid.defaultViews || 0, (totalViews) => {
@@ -328,9 +326,8 @@ document.addEventListener('DOMContentLoaded', () => {
                             });
                         }
                     });
-
                 } else {
-                    searchDropdown.innerHTML = `<div style="padding: 15px; text-align: center; color: #bbb; font-size: 0.85rem;">Tidak ada video "${query}"</div>`;
+                    searchDropdown.innerHTML = `<div style="padding: 15px; text-align: center; color: #bbb; font-size: 0.85rem;">Tidak ada hasil untuk "${query}"</div>`;
                     searchDropdown.classList.add('show');
                 }
             }
