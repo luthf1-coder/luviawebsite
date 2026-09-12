@@ -18,11 +18,14 @@
                 <button onclick="history.back()" class="btn-nav-history" title="Kembali">←</button>
                 <button onclick="history.forward()" class="btn-nav-history" title="Maju">→</button>
             </div>
-            
-            <!-- FORM PENCARIAN TERBARU -->
+            <!-- FORM PENCARIAN BARU -->
             <form class="nav-search" id="navSearchForm" onsubmit="return false;">
                 <input type="text" id="navSearchInput" placeholder="Cari video..." aria-label="Cari" autocomplete="off">
                 <button type="submit">🔍</button>
+                <div class="search-dropdown-list" id="searchDropdownList"></div>
+            </form>
+                
+                <!-- Boks Dropdown Hasil Pencarian Langsung (Menimpa Konten) -->
                 <div class="search-dropdown-list" id="searchDropdownList"></div>
             </form>
         </div>
@@ -61,6 +64,16 @@
             </div>
 
             <div class="videos-page-grid" id="all-videos-container"></div>
+            
+            <!-- Tempat tombol Next/Prev Halaman -->
+            <div id="pagination-container" class="pagination-container"></div>
+        </div>
+    </section>
+
+            <!-- GRID KARTU VIDEO -->
+            <div class="videos-page-grid" id="all-videos-container"></div>
+            
+            <!-- FITUR BARU: PAGINASI / HALAMAN -->
             <div id="pagination-container" class="pagination-container"></div>
         </div>
     </section>
@@ -83,6 +96,7 @@
         </div>
     </footer>
 
+    <!-- Muat data video terlebih dahulu -->
     <script src="videos-data.js"></script>
     <script>
         function toggleSidebar() {
@@ -95,20 +109,21 @@
         const itemsPerPage = 12; 
 
         function initVideosPage() {
+            // Urutkan dari terbaru ke terlama
             const sortedList = [...videoList].sort((a, b) => {
                 const dateA = a.uploadDate ? new Date(a.uploadDate) : new Date(0);
                 const dateB = b.uploadDate ? new Date(b.uploadDate) : new Date(0);
                 return dateB - dateA;
             });
 
+            // Otomatis daftar genre dari data
             const genres = [...new Set(sortedList.map(v => v.genre).filter(Boolean))];
             const genreList = document.getElementById('genreDropdownList');
-            
             let genreHtml = `<div class="dropdown-item active" onclick="filterByGenre('Semua', this)">Semua Genre</div>`;
             genres.forEach(g => {
                 genreHtml += `<div class="dropdown-item" onclick="filterByGenre('${g}', this)">${g}</div>`;
             });
-            genreList.innerHTML = genreHtml;
+            if(genreList) genreList.innerHTML = genreHtml;
 
             const urlParams = new URLSearchParams(window.location.search);
             const searchQuery = urlParams.get('search');
@@ -116,20 +131,16 @@
 
             if (searchQuery) {
                 const q = searchQuery.toLowerCase();
-                // UPDATE: Sync Logic Pencarian
                 currentFilteredList = sortedList.filter(vid => 
                     (vid.title && vid.title.toLowerCase().includes(q)) || 
                     (vid.genre && vid.genre.toLowerCase().includes(q)) ||
-                    (vid.uploadDate && vid.uploadDate.includes(q)) ||
                     (vid.description && vid.description.toLowerCase().includes(q))
                 );
                 document.querySelector('.stream-title').innerText = `Hasil Pencarian: "${searchQuery}" (${currentFilteredList.length})`;
                 const inputField = document.querySelector('.nav-search input');
                 if(inputField) inputField.value = searchQuery;
             } else if (genreQuery) {
-                currentFilteredList = sortedList.filter(vid => 
-                    vid.genre && vid.genre.toLowerCase() === genreQuery.toLowerCase()
-                );
+                currentFilteredList = sortedList.filter(vid => vid.genre && vid.genre.toLowerCase() === genreQuery.toLowerCase());
                 document.querySelector('.stream-title').innerText = `Genre: ${genreQuery} (${currentFilteredList.length})`;
                 updateActiveDropdownItem(genreQuery);
             } else {
@@ -139,11 +150,11 @@
             renderPage(1);
         }
 
+        // FUNGSI DROPDOWN 
         function toggleDropdown(e) {
             e.stopPropagation();
             document.getElementById('genreDropdownList').classList.toggle('show');
         }
-
         window.onclick = function(event) {
             if (!event.target.matches('.btn-dropdown')) {
                 const dropdowns = document.getElementsByClassName("dropdown-list");
@@ -159,11 +170,7 @@
             else updateActiveDropdownItem(genre);
 
             const btn = document.getElementById('genreDropdownBtn');
-            if (genre === 'Semua' || genre === 'Semua Genre') {
-                btn.innerHTML = `Cari berdasarkan genre ▼`;
-            } else {
-                btn.innerHTML = `Genre: ${genre} ▼`;
-            }
+            btn.innerHTML = (genre === 'Semua') ? `Cari berdasarkan genre ▼` : `Genre: ${genre} ▼`;
 
             const sortedList = [...videoList].sort((a, b) => {
                 const dateA = a.uploadDate ? new Date(a.uploadDate) : new Date(0);
@@ -171,7 +178,7 @@
                 return dateB - dateA;
             });
 
-            if (genre === 'Semua' || genre === 'Semua Genre') {
+            if (genre === 'Semua') {
                 currentFilteredList = sortedList;
                 document.querySelector('.stream-title').innerText = `Semua Video Tersedia`;
             } else {
@@ -183,17 +190,14 @@
 
         function updateActiveDropdownItem(genre) {
             document.querySelectorAll('.dropdown-item').forEach(el => {
-                if(el.innerText.toLowerCase() === genre.toLowerCase() || (genre === 'Semua' && el.innerText === 'Semua Genre')) {
-                    el.classList.add('active');
-                } else {
-                    el.classList.remove('active');
-                }
+                if(el.innerText.toLowerCase() === genre.toLowerCase() || (genre === 'Semua' && el.innerText === 'Semua Genre')) el.classList.add('active');
+                else el.classList.remove('active');
             });
             const btn = document.getElementById('genreDropdownBtn');
-            if (genre === 'Semua' || genre === 'Semua Genre') btn.innerHTML = `Cari berdasarkan genre ▼`;
-            else btn.innerHTML = `Genre: ${genre} ▼`;
+            btn.innerHTML = (genre === 'Semua') ? `Cari berdasarkan genre ▼` : `Genre: ${genre} ▼`;
         }
 
+        // FUNGSI RENDER HALAMAN
         function renderPage(page) {
             currentPage = page;
             const startIndex = (page - 1) * itemsPerPage;
@@ -207,7 +211,6 @@
         function renderPaginationControls() {
             const totalPages = Math.ceil(currentFilteredList.length / itemsPerPage);
             const container = document.getElementById('pagination-container');
-            
             if (totalPages <= 1) { container.innerHTML = ''; return; }
 
             let html = `<button class="btn-page" ${currentPage === 1 ? 'disabled' : ''} onclick="renderPage(${currentPage - 1})">❮ Prev</button>`;
@@ -220,10 +223,7 @@
         }
 
         document.addEventListener('DOMContentLoaded', initVideosPage);
-
-// ==========================================
 // SISTEM PENCARIAN LIVE (AUTOCOMPLETE) 
-// ==========================================
 document.addEventListener('DOMContentLoaded', () => {
     const searchInput = document.getElementById('navSearchInput');
     const searchDropdown = document.getElementById('searchDropdownList');
@@ -245,12 +245,12 @@ document.addEventListener('DOMContentLoaded', () => {
                 if (results.length > 0) {
                     let html = '';
                     results.forEach(vid => {
-                        // PERBAIKAN: Pasang span dengan ID khusus untuk menampung view dari Firebase
                         html += `
                             <a href="watch.html?id=${vid.id}" class="search-result-item">
                                 <img src="${vid.thumb}" alt="Thumbnail">
                                 <div class="search-result-info">
                                     <h4>${vid.title}</h4>
+                                    <!-- ID khusus untuk load data firebase realtime -->
                                     <p>${vid.genre || 'Umum'} • <span id="search-view-${vid.id}">Memuat...</span></p>
                                 </div>
                             </a>
@@ -259,7 +259,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     searchDropdown.innerHTML = html;
                     searchDropdown.classList.add('show');
 
-                    // PERBAIKAN: Panggil Firebase untuk mengubah angka 0 menjadi views yang asli!
+                    // LOAD FIREBASE VIEWS
                     results.forEach(vid => {
                         if (typeof listenVideoViews === 'function') {
                             listenVideoViews(vid.id, vid.defaultViews || 0, (totalViews) => {
@@ -268,9 +268,8 @@ document.addEventListener('DOMContentLoaded', () => {
                             });
                         }
                     });
-
                 } else {
-                    searchDropdown.innerHTML = `<div style="padding: 15px; text-align: center; color: #bbb; font-size: 0.85rem;">Tidak ada video "${query}"</div>`;
+                    searchDropdown.innerHTML = `<div style="padding: 15px; text-align: center; color: #bbb; font-size: 0.85rem;">Tidak ada hasil untuk "${query}"</div>`;
                     searchDropdown.classList.add('show');
                 }
             }
