@@ -248,8 +248,8 @@
 
         // Jalankan saat load
         document.addEventListener('DOMContentLoaded', initVideosPage);
-        // ==========================================
-// SISTEM PENCARIAN LIVE (AUTOCOMPLETE)
+ // ==========================================
+// SISTEM PENCARIAN LIVE (AUTOCOMPLETE) 
 // ==========================================
 document.addEventListener('DOMContentLoaded', () => {
     const searchInput = document.getElementById('navSearchInput');
@@ -257,38 +257,45 @@ document.addEventListener('DOMContentLoaded', () => {
     const searchForm = document.getElementById('navSearchForm');
 
     if (searchInput && searchDropdown) {
-        // Ketika user mengetik di kolom pencarian
         searchInput.addEventListener('input', function() {
             const query = this.value.toLowerCase().trim();
-            
-            // Jika kosong, sembunyikan kotak
-            if (query.length === 0) {
-                searchDropdown.classList.remove('show');
-                return;
-            }
+            if (query.length === 0) { searchDropdown.classList.remove('show'); return; }
 
-            // Filter data secara live dari videoList
             if (typeof videoList !== 'undefined') {
                 const results = videoList.filter(vid => 
-                    vid.title.toLowerCase().includes(query) || 
-                    (vid.genre && vid.genre.toLowerCase().includes(query))
-                ).slice(0, 6); // Tampilkan maksimal 6 rekomendasi teratas
+                    (vid.title && vid.title.toLowerCase().includes(query)) || 
+                    (vid.genre && vid.genre.toLowerCase().includes(query)) ||
+                    (vid.uploadDate && vid.uploadDate.includes(query)) ||
+                    (vid.description && vid.description.toLowerCase().includes(query))
+                ).slice(0, 6); 
 
                 if (results.length > 0) {
                     let html = '';
                     results.forEach(vid => {
+                        // PERBAIKAN: Pasang span dengan ID khusus untuk menampung view dari Firebase
                         html += `
                             <a href="watch.html?id=${vid.id}" class="search-result-item">
                                 <img src="${vid.thumb}" alt="Thumbnail">
                                 <div class="search-result-info">
                                     <h4>${vid.title}</h4>
-                                    <p>${vid.genre || 'Umum'} • ${vid.defaultViews || 0} Ditonton</p>
+                                    <p>${vid.genre || 'Umum'} • <span id="search-view-${vid.id}">Memuat...</span></p>
                                 </div>
                             </a>
                         `;
                     });
                     searchDropdown.innerHTML = html;
                     searchDropdown.classList.add('show');
+
+                    // PERBAIKAN: Panggil Firebase untuk mengubah angka 0 menjadi views yang asli!
+                    results.forEach(vid => {
+                        if (typeof listenVideoViews === 'function') {
+                            listenVideoViews(vid.id, vid.defaultViews || 0, (totalViews) => {
+                                const viewEl = document.getElementById(`search-view-${vid.id}`);
+                                if (viewEl) viewEl.innerText = `${formatViews(totalViews)}`;
+                            });
+                        }
+                    });
+
                 } else {
                     searchDropdown.innerHTML = `<div style="padding: 15px; text-align: center; color: #bbb; font-size: 0.85rem;">Tidak ada video "${query}"</div>`;
                     searchDropdown.classList.add('show');
@@ -296,19 +303,15 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         });
 
-        // Tutup kotak pencarian jika user klik sembarang tempat di luar kotak
         document.addEventListener('click', function(e) {
-            if (!searchForm.contains(e.target)) {
-                searchDropdown.classList.remove('show');
-            }
+            if (!searchForm.contains(e.target)) searchDropdown.classList.remove('show');
         });
 
-        // Jika user menekan tombol ENTER (Arahkan ke daftar pencarian full)
         searchForm.addEventListener('submit', (e) => {
             e.preventDefault();
             const q = searchInput.value.trim();
             if (q) {
-                const isVideosPage = window.location.pathname.endsWith('videos.html');
+                const isVideosPage = window.location.pathname.endsWith('videos.html') || window.location.pathname === '/' || window.location.pathname.endsWith('/');
                 if (isVideosPage && typeof executeSearchOnHome === 'function') {
                     executeSearchOnHome(q);
                     searchDropdown.classList.remove('show');
