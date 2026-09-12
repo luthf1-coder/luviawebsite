@@ -1715,3 +1715,40 @@ footer {
 .filter-wrapper {
     overflow: visible !important;
 }
+
+/* ===================================================================
+   UPDATE: MENYAMAKAN WARNA KOTAK PENCARIAN & GENRE DENGAN HAMBURGER
+   =================================================================== */
+/* Menyamakan Kotak Pencarian dengan Hamburger */
+.nav-search {
+    background: rgba(255, 255, 255, 0.2) !important;
+    border: 1px solid rgba(255, 255, 255, 0.4) !important;
+    border-radius: 8px !important; /* Disamakan dengan hamburger (asalnya 20px) */
+    padding: 2px 10px !important;
+}
+
+/* Menyamakan Tombol Dropdown Genre di videos.html dengan Hamburger */
+.btn-dropdown {
+    background: rgba(255, 255, 255, 0.2) !important;
+    border: 1px solid rgba(255, 255, 255, 0.4) !important;
+    border-radius: 8px !important; /* Disamakan dengan hamburger (asalnya 25px) */
+    padding: 8px 18px !important;
+    color: #ffffff !important;
+}
+
+.btn-dropdown:hover {
+    background: rgba(255, 255, 255, 0.45) !important;
+}
+
+/* Memastikan tombol badge genre di slider utama bisa diklik (Link) */
+a.carousel-badge {
+    position: relative;
+    z-index: 15;
+    cursor: pointer;
+    text-decoration: none;
+    transition: transform 0.2s, opacity 0.2s;
+}
+a.carousel-badge:hover {
+    opacity: 0.85;
+    transform: scale(1.05);
+}
