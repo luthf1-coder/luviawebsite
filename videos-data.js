@@ -143,7 +143,7 @@ const videoList = [
         downloadUrl: "",
         description: "Tunggu Aku Sukses Nanti adalah film komedi keluarga Indonesia tahun 2026 yang disutradarai oleh Naya Anindita. Film ini dibintangi oleh Ardit Erwandha, Lulu Tobing, dan Ariyo Wahab. Menceritakan tentang Arga yang tengah berjuang menuju kesuksesan demi menaikkan martabat dan perekonomian keluarganya.",
         genre: "Film Komedi",
-        uploadDate: "2026-09-01"
+        uploadDate: "2026-09-12"
     },
     {
         id: "video8",
