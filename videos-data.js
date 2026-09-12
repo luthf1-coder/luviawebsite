@@ -22,23 +22,9 @@ if (typeof firebase !== 'undefined' && !firebase.apps.length) {
 const videoList = [
     {
     "id": "kick_vod_126911541",
-    "title": "VOD PLAY LIVE STREAMING LUVIA STUDIO TV",
+    "title": "BIOSKOP LIBURAN: DETECTIVE CONAN OVA 12: THE MIRACLE OF EXCALIBUR - VOD PLAY LIVE STREAMING LUVIA STUDIO TV",
     "defaultViews": 0,
-    "thumb": "Asset Foto/Thumbnimail_VOD_LIVE.png",
-    "sources": [],
-    "driveEmbed": "https://drive.google.com/file/d/17q9ANtgQeci7DHqxzcw4_LAMA_DrR8Tl/preview",
-    "youtubeId": "",
-    "rumbleEmbed": "",
-    "downloadUrl": "https://drive.google.com/uc?export=download&id=17q9ANtgQeci7DHqxzcw4_LAMA_DrR8Tl",
-    "description": "VOD LS TV pada 12 September 2026. Perhatian! Untuk menonton VOD, Disarankan untuk opsi Menonton full screen. Agar Kontrol Video tidak terhalang Oleh Bingkai Player!!!. Report di kolom komentar Jika ada error atau Video tidak dapat Diputar!!.",
-    "genre": "Video On Demand",
-    "uploadDate": "2026-09-12"
-},
-    {
-    "id": "kick_vod_126911541",
-    "title": "VOD PLAY LIVE STREAMING LUVIA STUDIO TV",
-    "defaultViews": 0,
-    "thumb": "Asset Foto/Thumbnimail_VOD_LIVE.png",
+    "thumb": "https://ia801002.us.archive.org/22/items/black-and-red-modern-movie-night-facebook-post-1/Black%20and%20Red%20Modern%20Movie%20Night%20Facebook%20Post%20%281%29.png",
     "sources": [],
     "driveEmbed": "https://drive.google.com/file/d/1xXdEKLKqSEZaIn3c6EFYNNLI2WTYD39D/preview",
     "youtubeId": "",
@@ -59,7 +45,7 @@ const videoList = [
     "rumbleEmbed": "",
     "downloadUrl": "https://drive.google.com/uc?export=download&id=13rV-LjZl1VW8z2ZLbphqWIeJDA1XneVu",
     "description": "VOD LS TV",
-    "genre": "Live Stream",
+    "genre": "Video On Demand",
     "uploadDate": "2026-08-15"
 },
     {
@@ -73,7 +59,7 @@ const videoList = [
     "rumbleEmbed": "",
     "downloadUrl": "https://drive.google.com/uc?export=download&id=1GDOsTvewAmRzVIY1wyaZV2GdPk7-DMB4",
     "description": "VOD LS TV. Disarakan saat memutar video ini dalam mode fullscreen!",
-    "genre": "Live Stream",
+    "genre": "Video On Demand",
     "uploadDate": "2026-08-18"
 },
     {
