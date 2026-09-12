@@ -1375,380 +1375,89 @@ footer {
     }
 }
 
-/* ===================================================================
-   DESAIN TAMBAHAN: FILTER GENRE & PAGINASI (HALAMAN VIDEO)
-   =================================================================== */
-
-/* Wrapper Filter Genre (Bisa digeser ke samping jika di HP) */
-.filter-wrapper {
-    margin-bottom: 25px;
-    overflow-x: auto;
-    white-space: nowrap;
-    padding-bottom: 10px;
-    scrollbar-width: thin; 
-    scrollbar-color: rgba(255, 255, 255, 0.4) transparent;
-}
-.filter-wrapper::-webkit-scrollbar {
-    height: 6px;
-}
-.filter-wrapper::-webkit-scrollbar-thumb {
-    background: rgba(255, 255, 255, 0.4);
-    border-radius: 10px;
-}
-
-.genre-filter {
-    display: inline-flex;
-    gap: 12px;
-}
-
-/* Tombol Genre */
-.btn-genre {
-    background: rgba(255, 255, 255, 0.15);
-    border: 1px solid rgba(255, 255, 255, 0.3);
-    color: #ffffff;
-    padding: 8px 18px;
-    border-radius: 25px;
-    cursor: pointer;
-    font-size: 0.95rem;
-    font-weight: 600;
-    transition: all 0.3s ease;
-    backdrop-filter: blur(5px);
-}
-
-.btn-genre:hover {
-    background: rgba(255, 255, 255, 0.3);
-    transform: translateY(-2px);
-}
-
-.btn-genre.active {
-    background: linear-gradient(45deg, #8c52ff, #ff914d);
-    border-color: transparent;
-    box-shadow: 0 4px 10px rgba(0,0,0,0.3);
-    color: white;
-}
-
-/* Kontainer Paginasi (Tombol Halaman) - Di Kanan Bawah */
-.pagination-container {
-    display: flex;
-    justify-content: flex-end; /* Rata Kanan */
-    align-items: center;
-    gap: 8px;
-    margin-top: 40px;
-    margin-bottom: 10px;
-    flex-wrap: wrap;
-}
-
-/* Tombol Halaman */
-.btn-page {
-    background: rgba(255, 255, 255, 0.15);
-    border: 1px solid rgba(255, 255, 255, 0.3);
-    color: #ffffff;
-    padding: 8px 14px;
-    border-radius: 8px;
-    cursor: pointer;
-    font-weight: 600;
-    font-size: 0.95rem;
-    transition: all 0.3s;
-    backdrop-filter: blur(5px);
-}
-
-.btn-page:hover:not(:disabled) {
-    background: #ff914d;
-    border-color: transparent;
-    color: #000;
-    transform: translateY(-2px);
-    box-shadow: 0 4px 8px rgba(255, 145, 77, 0.4);
-}
-
-.btn-page.active {
-    background: linear-gradient(45deg, #8c52ff, #ff914d);
-    border-color: transparent;
-    color: #ffffff;
-}
-
-.btn-page:disabled {
-    opacity: 0.4;
-    cursor: not-allowed;
-}
-
-/* Penyesuaian HP untuk Paginasi */
-@media (max-width: 768px) {
-    .pagination-container {
-        justify-content: center; /* Di HP jadi di tengah agar mudah dipencet */
-        margin-top: 30px;
-    }
-}
-
-/* ===================================================================
-   DESAIN TAMBAHAN: DROPDOWN GENRE & PAGINASI (HALAMAN VIDEO)
-   =================================================================== */
-
-/* Dropdown Wrapper */
-.filter-wrapper {
-    margin-bottom: 25px;
-    z-index: 100; /* Agar dropdown berada di atas kartu video */
-    position: relative; 
-}
-
-.dropdown-container {
-    position: relative;
-    display: inline-block;
-}
-
-/* Tombol Dropdown Utama */
-.btn-dropdown {
-    background: rgba(255, 255, 255, 0.15);
-    border: 1px solid rgba(255, 255, 255, 0.3);
-    color: #ffffff;
-    padding: 10px 22px;
-    border-radius: 25px;
-    cursor: pointer;
-    font-size: 1rem;
-    font-weight: bold;
-    transition: all 0.3s ease;
-    backdrop-filter: blur(5px);
-    display: flex;
-    align-items: center;
-    box-shadow: 0 4px 10px rgba(0,0,0,0.2);
-}
-
-.btn-dropdown:hover {
-    background: rgba(255, 255, 255, 0.3);
-    border-color: rgba(255, 255, 255, 0.6);
-}
-
-/* Kotak Daftar Dropdown (Tersembunyi Awalnya) */
-.dropdown-list {
-    display: none;
-    position: absolute;
-    top: 110%; /* Muncul tepat di bawah tombol */
-    left: 0;
-    background: rgba(35, 35, 35, 0.95);
-    backdrop-filter: blur(12px);
-    min-width: 240px;
-    border-radius: 12px;
-    box-shadow: 0 10px 30px rgba(0,0,0,0.6);
-    z-index: 1000;
-    border: 1px solid rgba(255, 255, 255, 0.15);
-    overflow: hidden;
-}
-
-/* Tampilkan dengan Animasi ketika diklik */
-.dropdown-list.show {
-    display: block;
-    animation: fadeInDropdown 0.3s ease;
-}
-
-@keyframes fadeInDropdown {
-    from { opacity: 0; transform: translateY(-10px); }
-    to { opacity: 1; transform: translateY(0); }
-}
-
-/* Item Genre dalam Daftar Dropdown */
-.dropdown-item {
-    color: #f1f1f1;
-    padding: 12px 20px;
-    text-decoration: none;
-    display: block;
-    cursor: pointer;
-    font-size: 0.95rem;
-    border-bottom: 1px solid rgba(255, 255, 255, 0.05);
-    transition: background 0.2s;
-}
-
-.dropdown-item:last-child {
-    border-bottom: none;
-}
-
-.dropdown-item:hover {
-    background: rgba(255, 145, 77, 0.6);
-    color: #fff;
-}
-
-.dropdown-item.active {
-    background: linear-gradient(45deg, #8c52ff, #ff914d);
-    font-weight: bold;
-    color: #fff;
-}
-
-
-/* Kontainer Paginasi (Tombol Halaman) - Di Kanan Bawah */
-.pagination-container {
-    display: flex;
-    justify-content: flex-end; /* Rata Kanan */
-    align-items: center;
-    gap: 8px;
-    margin-top: 40px;
-    margin-bottom: 10px;
-    flex-wrap: wrap;
-}
-
-/* Tombol Halaman */
-.btn-page {
-    background: rgba(255, 255, 255, 0.15);
-    border: 1px solid rgba(255, 255, 255, 0.3);
-    color: #ffffff;
-    padding: 8px 14px;
-    border-radius: 8px;
-    cursor: pointer;
-    font-weight: 600;
-    font-size: 0.95rem;
-    transition: all 0.3s;
-    backdrop-filter: blur(5px);
-}
-
-.btn-page:hover:not(:disabled) {
-    background: #ff914d;
-    border-color: transparent;
-    color: #000;
-    transform: translateY(-2px);
-    box-shadow: 0 4px 8px rgba(255, 145, 77, 0.4);
-}
-
-.btn-page.active {
-    background: linear-gradient(45deg, #8c52ff, #ff914d);
-    border-color: transparent;
-    color: #ffffff;
-}
-
-.btn-page:disabled {
-    opacity: 0.4;
-    cursor: not-allowed;
-}
-
-/* Penyesuaian HP untuk Paginasi */
-@media (max-width: 768px) {
-    .pagination-container {
-        justify-content: center; /* Di HP jadi di tengah agar mudah dipencet */
-        margin-top: 30px;
-    }
-}
-
-/* ===================================================================
-   DESAIN PENCARIAN LIVE (AUTOCOMPLETE) MENIMPA KONTEN
-   =================================================================== */
+/* ==========================================
+   TAMBAHAN: SEARCH OVERLAY, DROPDOWN & PAGINASI
+   ========================================== */
+/* Menyamakan Kotak Pencarian dengan Hamburger */
 .nav-search {
-    position: relative; /* Penting agar dropdown menempel sejajar dengan form pencarian */
+    position: relative; /* Penting untuk overlay */
+    background: rgba(255, 255, 255, 0.2) !important;
+    border: 1px solid rgba(255, 255, 255, 0.4) !important;
+    border-radius: 8px !important;
+    padding: 2px 10px !important;
 }
 
+/* Kotak Hasil Pencarian Live (Menimpa Konten) */
 .search-dropdown-list {
     display: none;
     position: absolute;
-    top: calc(100% + 8px); /* Muncul pas di bawah kotak input */
-    right: 0; /* Rata kanan */
-    width: 320px; /* Lebar kotak rekomendasi */
+    top: calc(100% + 8px);
+    right: 0;
+    width: 320px;
     background: rgba(30, 30, 30, 0.95);
     backdrop-filter: blur(15px);
     -webkit-backdrop-filter: blur(15px);
     border: 1px solid rgba(255, 255, 255, 0.2);
     border-radius: 12px;
     box-shadow: 0 10px 40px rgba(0,0,0,0.6);
-    z-index: 9999; /* Memastikan dia menimpa seluruh konten website */
+    z-index: 9999; /* Z-index tinggi agar menimpa konten di bawahnya */
     max-height: 400px;
     overflow-y: auto;
 }
-
 .search-dropdown-list.show {
     display: block;
-    animation: fadeInDown 0.2s ease-in-out;
 }
-
-@keyframes fadeInDown {
-    from { opacity: 0; transform: translateY(-10px); }
-    to { opacity: 1; transform: translateY(0); }
-}
-
 .search-result-item {
-    display: flex;
-    align-items: center;
-    gap: 12px;
-    padding: 12px;
-    text-decoration: none;
-    color: #fff;
+    display: flex; align-items: center; gap: 12px; padding: 12px;
+    text-decoration: none; color: #fff;
     border-bottom: 1px solid rgba(255, 255, 255, 0.08);
-    transition: background 0.2s;
 }
+.search-result-item:hover { background: rgba(255, 145, 77, 0.3); }
+.search-result-item img { width: 80px; height: 45px; object-fit: cover; border-radius: 6px; }
+.search-result-info h4 { margin: 0 0 4px 0; font-size: 0.85rem; }
+.search-result-info p { margin: 0; font-size: 0.7rem; color: #aaa; }
 
-.search-result-item:hover {
-    background: rgba(255, 145, 77, 0.3);
-}
-
-.search-result-item img {
-    width: 80px;
-    height: 45px;
-    object-fit: cover;
-    border-radius: 6px;
-}
-
-.search-result-info {
-    flex: 1;
-}
-
-.search-result-info h4 {
-    margin: 0 0 4px 0;
-    font-size: 0.85rem;
-    display: -webkit-box;
-    -webkit-line-clamp: 2;
-    -webkit-box-orient: vertical;
-    overflow: hidden;
-    color: #fff;
-}
-
-.search-result-info p {
-    margin: 0;
-    font-size: 0.7rem;
-    color: #aaa;
-}
-
-/* Penyesuaian di HP agar pencarian full width di layar */
-@media (max-width: 768px) {
-    .search-dropdown-list {
-        position: fixed;
-        top: 70px; 
-        left: 5%;
-        width: 90%;
-        right: auto;
-    }
-}
-
-/* Memperbaiki masalah pada Screenshot 59 agar tidak terpotong */
-.filter-wrapper {
-    overflow: visible !important;
-}
-
-/* ===================================================================
-   UPDATE: MENYAMAKAN WARNA KOTAK PENCARIAN & GENRE DENGAN HAMBURGER
-   =================================================================== */
-/* Menyamakan Kotak Pencarian dengan Hamburger */
-.nav-search {
-    background: rgba(255, 255, 255, 0.2) !important;
-    border: 1px solid rgba(255, 255, 255, 0.4) !important;
-    border-radius: 8px !important; /* Disamakan dengan hamburger (asalnya 20px) */
-    padding: 2px 10px !important;
-}
-
-/* Menyamakan Tombol Dropdown Genre di videos.html dengan Hamburger */
+/* Filter Dropdown (Tombol & List) */
+.filter-wrapper { position: relative; margin-bottom: 25px; z-index: 100; overflow: visible !important; }
+.dropdown-container { position: relative; display: inline-block; }
 .btn-dropdown {
     background: rgba(255, 255, 255, 0.2) !important;
     border: 1px solid rgba(255, 255, 255, 0.4) !important;
-    border-radius: 8px !important; /* Disamakan dengan hamburger (asalnya 25px) */
-    padding: 8px 18px !important;
-    color: #ffffff !important;
+    border-radius: 8px !important; /* Disamakan dengan hamburger */
+    color: #ffffff; padding: 10px 22px; cursor: pointer;
+    font-size: 0.95rem; font-weight: bold; backdrop-filter: blur(5px);
 }
+.dropdown-list {
+    display: none; position: absolute; top: 110%; left: 0;
+    background: rgba(35, 35, 35, 0.95); backdrop-filter: blur(12px);
+    min-width: 240px; border-radius: 12px;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.6); z-index: 1000; border: 1px solid rgba(255, 255, 255, 0.15);
+}
+.dropdown-list.show { display: block; }
+.dropdown-item {
+    color: #f1f1f1; padding: 12px 20px; cursor: pointer; font-size: 0.95rem;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+}
+.dropdown-item:hover { background: rgba(255, 145, 77, 0.6); }
 
-.btn-dropdown:hover {
-    background: rgba(255, 255, 255, 0.45) !important;
+/* Paginasi */
+.pagination-container {
+    display: flex; justify-content: flex-end; align-items: center;
+    gap: 8px; margin-top: 40px; margin-bottom: 10px; flex-wrap: wrap;
 }
+.btn-page {
+    background: rgba(255, 255, 255, 0.15); border: 1px solid rgba(255, 255, 255, 0.3);
+    color: #ffffff; padding: 8px 14px; border-radius: 8px; cursor: pointer; font-weight: 600;
+}
+.btn-page:hover:not(:disabled) { background: #ff914d; color: #000; border-color: transparent; }
+.btn-page.active { background: linear-gradient(45deg, #8c52ff, #ff914d); color: #ffffff; border-color: transparent; }
+.btn-page:disabled { opacity: 0.4; cursor: not-allowed; }
 
-/* Memastikan tombol badge genre di slider utama bisa diklik (Link) */
-a.carousel-badge {
-    position: relative;
-    z-index: 15;
-    cursor: pointer;
-    text-decoration: none;
-    transition: transform 0.2s, opacity 0.2s;
-}
-a.carousel-badge:hover {
-    opacity: 0.85;
-    transform: scale(1.05);
+/* Link Badge Genre di Utama */
+a.carousel-badge { cursor: pointer; text-decoration: none; z-index: 15; }
+a.carousel-badge:hover { opacity: 0.85; transform: scale(1.05); }
+
+@media (max-width: 768px) {
+    .search-dropdown-list { position: fixed; top: 70px; left: 5%; width: 90%; }
+    .pagination-container { justify-content: center; }
 }
