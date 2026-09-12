@@ -115,7 +115,7 @@ const videoList = [
     //      downloadUrl: "https://drive.google.com/uc?export=download&id=ID_FILE_GDRIVE",
     //      description: "Video sampel yang tersimpan di Google Drive."
     // },
-  {
+    {
         id: "video6",
         title: "Detective Conan: Episode One - The Great Detective Turned Small Dubbing Indonesia",
         defaultViews: 10,
@@ -162,8 +162,9 @@ const videoList = [
     }
 ];
 
+
 // ==========================================
-// FUNGSI BANTUAN TANGGAL & WAKTU
+// FUNGSI BANTUAN TANGGAL & WAKTU (BARU DITAMBAHKAN)
 // ==========================================
 function timeAgoFormated(dateString) {
     if (!dateString) return "Baru saja";
@@ -190,12 +191,14 @@ function formatDateIndonesian(dateString) {
 // 2. HELPER VIEWS FIREBASE & FORMATTING
 // ==========================================
 
+// Format angka tayangan (Pencegah NaN)
 function formatViews(views) {
     const num = parseInt(views, 10);
     if (isNaN(num)) return '0 Ditonton';
     return num.toLocaleString('id-ID') + ' Ditonton';
 }
 
+// Fungsi Mendengarkan Perubahan Data Views Realtime dari Firebase
 function listenVideoViews(videoId, defaultViews = 0, callback) {
     if (typeof firebase === 'undefined' || !firebase.apps.length) {
         callback(parseInt(defaultViews, 10) || 0);
@@ -214,9 +217,13 @@ function listenVideoViews(videoId, defaultViews = 0, callback) {
     });
 }
 
+// Fungsi Menambah +1 View ke Firebase saat Video Dibuka
 async function incrementVideoViewsAsync(videoId, defaultViews = 0) {
     const baseViews = parseInt(defaultViews, 10) || 0;
-    if (typeof firebase === 'undefined' || !firebase.apps.length) return baseViews;
+
+    if (typeof firebase === 'undefined' || !firebase.apps.length) {
+        return baseViews;
+    }
 
     const safeVideoId = String(videoId).replace(/[^a-zA-Z0-9_-]/g, '_');
     const viewsRef = firebase.database().ref('video_views/' + safeVideoId);
@@ -272,10 +279,17 @@ function getActiveLiveViewers() {
 
 function updateActiveLiveViewersDisplay() {
     const count = getActiveLiveViewers();
+
     const homeBadge = document.getElementById('kick-home-badge');
-    if (homeBadge) homeBadge.innerText = `🔴 SEDANG LIVE (${count} Penonton)`;
+    if (homeBadge) {
+        homeBadge.innerText = `🔴 SEDANG LIVE (${count} Penonton)`;
+    }
+
     const watchBadge = document.getElementById('kick-watch-badge');
-    if (watchBadge) watchBadge.innerText = `🔴 SEDANG LIVE (${count} Penonton)`;
+    if (watchBadge) {
+        watchBadge.innerText = `🔴 SEDANG LIVE (${count} Penonton)`;
+    }
+
     const liveViewerElement = document.getElementById('live-viewers-count-text');
     if (liveViewerElement) {
         liveViewerElement.innerHTML = `👁️ <span style="color: #53fc18;">${count} Orang</span> Sedang Menonton Saat Ini`;
@@ -283,20 +297,24 @@ function updateActiveLiveViewersDisplay() {
 }
 
 window.addEventListener('storage', (e) => {
-    if (e.key === 'active_live_viewers') updateActiveLiveViewersDisplay();
+    if (e.key === 'active_live_viewers') {
+        updateActiveLiveViewersDisplay();
+    }
 });
 
 // ==========================================
-// 3. FUNGSI RENDER REKOMENDASI
+// 3. FUNGSI RENDER REKOMENDASI (GLOBAL VIEWS & TANGGAL KARTU)
 // ==========================================
 
 async function updateKickBadgeStatus(badgeId) {
     const badge = document.getElementById(badgeId);
     if (!badge) return;
+
     const kickUsername = "luthfi1234321"; 
     try {
         const res = await fetch(`https://kick.com/api/v2/channels/${kickUsername}`);
         const data = await res.json();
+
         if (data.livestream && data.livestream.is_live) {
             const viewers = data.livestream.viewer_count || 0;
             badge.innerText = `🔴 SEDANG LIVE (${viewers} Penonton)`;
@@ -311,11 +329,16 @@ async function updateKickBadgeStatus(badgeId) {
     }
 }
 
+// Render Slider di Halaman Utama (index.html)
 function renderSliderRecommendations(containerId, list = videoList) {
     const container = document.getElementById(containerId);
     if (!container) return;
-    const sortedList = [...list].sort((a, b) => (b.defaultViews || 0) - (a.defaultViews || 0)).slice(0, 4);
 
+    // === INI KODE TAMBAHAN UNTUK MEMFILTER TOP 4 VIEWS TERTINGGI ===
+    const sortedList = [...list].sort((a, b) => (b.defaultViews || 0) - (a.defaultViews || 0)).slice(0, 4);
+    // ==============================================================
+
+    const liveCount = getActiveLiveViewers();
     let html = `
         <a href="livestream.html" class="slider-card featured-live">
             <div class="thumb-box">
@@ -340,25 +363,31 @@ function renderSliderRecommendations(containerId, list = videoList) {
             card.className = 'slider-card';
             const uploadTime = vid.uploadDate ? timeAgoFormated(vid.uploadDate) : '';
             card.innerHTML = `
-                <div class="thumb-box"><img src="${vid.thumb}" alt="${vid.title}"></div>
+                <div class="thumb-box">
+                    <img src="${vid.thumb}" alt="${vid.title}">
+                </div>
                 <div class="slider-details">
                     <h3>${vid.title}</h3>
                     <p><span id="view-count-slider-${vid.id}">👁️ Memuat...</span>${uploadTime ? ' • ' + uploadTime : ''}</p>
                 </div>
             `;
             container.appendChild(card);
+
             listenVideoViews(vid.id, vid.defaultViews || 0, (totalViews) => {
                 const el = document.getElementById(`view-count-slider-${vid.id}`);
                 if (el) el.innerText = `👁️ ${formatViews(totalViews)}`;
             });
         });
     }
+
     updateKickBadgeStatus('kick-home-badge');
 }
 
+// Render Grid di Halaman Nonton & Live Stream (watch.html & livestream.html)
 function renderGridRecommendations(containerId, list = videoList) {
     const container = document.getElementById(containerId);
     if (!container) return;
+
     const isLivePage = window.location.pathname.includes('livestream.html');
     let html = '';
 
@@ -376,31 +405,41 @@ function renderGridRecommendations(containerId, list = videoList) {
             </a>
         `;
     }
+
     container.innerHTML = html;
+
     list.forEach(vid => {
         const card = document.createElement('a');
         card.href = `watch.html?id=${vid.id}`;
         card.className = 'video-card';
         const uploadTime = vid.uploadDate ? timeAgoFormated(vid.uploadDate) : '';
         card.innerHTML = `
-            <div class="thumb-box"><img src="${vid.thumb}" alt="${vid.title}"></div>
+            <div class="thumb-box">
+                <img src="${vid.thumb}" alt="${vid.title}">
+            </div>
             <div class="video-details">
                 <h3>${vid.title}</h3>
                 <p>LUVIA STUDIO TV<br><span id="view-count-grid-${vid.id}">👁️ Memuat...</span>${uploadTime ? ' • ' + uploadTime : ''}</p>
             </div>
         `;
         container.appendChild(card);
+
         listenVideoViews(vid.id, vid.defaultViews || 0, (totalViews) => {
             const el = document.getElementById(`view-count-grid-${vid.id}`);
             if (el) el.innerText = `👁️ ${formatViews(totalViews)}`;
         });
     });
-    if (!isLivePage) updateKickBadgeStatus('kick-watch-badge');
+
+    if (!isLivePage) {
+        updateKickBadgeStatus('kick-watch-badge');
+    }
 }
 
+// === TAMBAHAN FUNGSI BARU KHUSUS UNTUK HALAMAN DAFTAR VIDEO (videos.html) ===
 function renderAllVideosPage(containerId, list = videoList) {
     const container = document.getElementById(containerId);
     if (!container) return;
+
     let html = `
         <a href="livestream.html" class="video-card featured-live-card">
             <div class="thumb-box">
@@ -413,36 +452,74 @@ function renderAllVideosPage(containerId, list = videoList) {
             </div>
         </a>
     `;
+
     container.innerHTML = html;
+
     list.forEach(vid => {
         const card = document.createElement('a');
         card.href = `watch.html?id=${vid.id}`;
         card.className = 'video-card';
         const uploadTime = vid.uploadDate ? timeAgoFormated(vid.uploadDate) : '';
         card.innerHTML = `
-            <div class="thumb-box"><img src="${vid.thumb}" alt="${vid.title}"></div>
+            <div class="thumb-box">
+                <img src="${vid.thumb}" alt="${vid.title}">
+            </div>
             <div class="video-details">
                 <h3>${vid.title}</h3>
                 <p>LUVIA STUDIO TV<br><span id="view-count-all-${vid.id}">👁️ Memuat...</span>${uploadTime ? ' • ' + uploadTime : ''}</p>
             </div>
         `;
         container.appendChild(card);
+
         listenVideoViews(vid.id, vid.defaultViews || 0, (totalViews) => {
             const el = document.getElementById(`view-count-all-${vid.id}`);
             if (el) el.innerText = `👁️ ${formatViews(totalViews)}`;
         });
     });
+
     updateKickBadgeStatus('kick-all-badge');
 }
+// ==============================================================================
 
 
 // ==========================================
-// 4. SISTEM PENCARIAN (UPDATE LOGIKA)
+// 4. SISTEM PENCARIAN
 // ==========================================
+document.addEventListener('DOMContentLoaded', () => {
+    const searchForms = document.querySelectorAll('.nav-search');
+
+    searchForms.forEach(form => {
+        form.addEventListener('submit', (e) => {
+            e.preventDefault();
+            const input = form.querySelector('input');
+            const query = input ? input.value.trim() : '';
+            if (!query) return;
+
+            const isHomePage = window.location.pathname.endsWith('videos.html') || window.location.pathname === '/' || window.location.pathname.endsWith('/');
+
+            if (isHomePage) {
+                executeSearchOnHome(query);
+            } else {
+                window.location.href = `videos.html?search=${encodeURIComponent(query)}`;
+            }
+        });
+    });
+
+    const urlParams = new URLSearchParams(window.location.search);
+    const searchQuery = urlParams.get('search');
+    const isHomePage = window.location.pathname.endsWith('videos.html') || window.location.pathname === '/' || window.location.pathname.endsWith('/');
+
+    if (searchQuery && isHomePage) {
+        const input = document.querySelector('.nav-search input');
+        if (input) input.value = searchQuery;
+        executeSearchOnHome(searchQuery);
+    }
+});
+
 function executeSearchOnHome(query) {
     const q = query.toLowerCase();
     
-    // UPDATE: Sekarang filter mengecek Judul, Genre, Tanggal, dan Deskripsi
+    // UPDATE: Sekarang pencarian akan mengecek Judul, Genre, Tanggal, dan Deskripsi
     const filteredVideos = videoList.filter(vid => 
         (vid.title && vid.title.toLowerCase().includes(q)) || 
         (vid.genre && vid.genre.toLowerCase().includes(q)) ||
