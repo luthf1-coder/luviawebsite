@@ -18,9 +18,13 @@
                 <button onclick="history.back()" class="btn-nav-history" title="Kembali">←</button>
                 <button onclick="history.forward()" class="btn-nav-history" title="Maju">→</button>
             </div>
-            <form class="nav-search" onsubmit="return false;">
-                <input type="text" placeholder="Cari video..." aria-label="Cari">
+            <!-- FORM PENCARIAN BARU -->
+            <form class="nav-search" id="navSearchForm" onsubmit="return false;">
+                <input type="text" id="navSearchInput" placeholder="Cari video..." aria-label="Cari" autocomplete="off">
                 <button type="submit">🔍</button>
+                
+                <!-- Boks Dropdown Hasil Pencarian Langsung (Menimpa Konten) -->
+                <div class="search-dropdown-list" id="searchDropdownList"></div>
             </form>
         </div>
     </nav>
