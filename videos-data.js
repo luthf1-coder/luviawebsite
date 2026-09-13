@@ -21,20 +21,6 @@ if (typeof firebase !== 'undefined' && !firebase.apps.length) {
 // Pusat Data Video
 const videoList = [
     {
-    "id": "kick_vod_127079161",
-    "title": "VOD PLAY LIVE STREAMING LUVIA STUDIO TV",
-    "defaultViews": 0,
-    "thumb": "Asset Foto/Thumbnimail_VOD_LIVE.png",
-    "sources": [],
-    "driveEmbed": "https://drive.google.com/file/d/1zFxcyc92W6BTjeGdB6T0w46fseEGdVSO/preview",
-    "youtubeId": "",
-    "rumbleEmbed": "",
-    "downloadUrl": "https://drive.google.com/uc?export=download&id=1zFxcyc92W6BTjeGdB6T0w46fseEGdVSO",
-    "description": "VOD LS TV pada 13 September 2026. Perhatian! Untuk menonton VOD, Disarankan untuk opsi Menonton full screen. Agar Kontrol Video tidak terhalang Oleh Bingkai Player!!!. Report di kolom komentar Jika ada error atau Video tidak dapat Diputar!!.",
-    "genre": "Video On Demand",
-    "uploadDate": "2026-09-13"
-},
-    {
     "id": "kick_vod_126911541",
     "title": "BIOSKOP LIBURAN: DETECTIVE CONAN OVA 12: THE MIRACLE OF EXCALIBUR - VOD PLAY LIVE STREAMING LUVIA STUDIO TV",
     "defaultViews": 0,
