@@ -426,11 +426,18 @@ function renderSliderRecommendations(containerId, list = videoList) {
     updateKickBadgeStatus('kick-home-badge');
 }
 
-// Render Grid di Halaman Nonton & Live Stream (watch.html & livestream.html)
+// 2. Render Grid di Halaman Nonton & Live Stream (watch.html & livestream.html)
 function renderGridRecommendations(containerId, list = videoList) {
     const container = document.getElementById(containerId);
     if (!container) return;
+
     const isLivePage = window.location.pathname.includes('livestream.html');
+    
+    // URUTKAN BERDASARKAN VIEWS TERTINGGI & AMBIL HANYA 8 VIDEO TERATAS
+    const sortedList = [...list]
+        .sort((a, b) => (b.defaultViews || 0) - (a.defaultViews || 0))
+        .slice(0, 8); // Dibatasi maksimal 8 kartu
+
     let html = '';
 
     if (!isLivePage) {
@@ -442,39 +449,50 @@ function renderGridRecommendations(containerId, list = videoList) {
                 </div>
                 <div class="video-details">
                     <h3>LIVE STREAMING LUVIA STUDIO TV</h3>
-                    <p>
-                        <span class="card-genre-btn" onclick="event.preventDefault(); window.location.href='videos.html?genre=Live%20Stream'">LIVE STREAM</span><br>
-                        LUVIA STUDIO TV • LIVE
-                    </p>
+                    <p>LUVIA STUDIO TV • LIVE</p>
                 </div>
             </a>
         `;
     }
+
     container.innerHTML = html;
-    list.forEach(vid => {
+
+    sortedList.forEach(vid => {
         const card = document.createElement('a');
         card.href = `watch.html?id=${vid.id}`;
         card.className = 'video-card';
-        const uploadTime = vid.uploadDate ? timeAgoFormated(vid.uploadDate) : '';
-        
-        // PERUBAHAN: Memasukkan tombol genre aktif pengganti LUVIA STUDIO TV
         card.innerHTML = `
-            <div class="thumb-box"><img src="${vid.thumb}" alt="${vid.title}"></div>
+            <div class="thumb-box">
+                <img src="${vid.thumb}" alt="${vid.title}">
+            </div>
             <div class="video-details">
                 <h3>${vid.title}</h3>
-                <p>
-                    <span class="card-genre-btn" onclick="event.preventDefault(); window.location.href='videos.html?genre=${encodeURIComponent(vid.genre || 'Umum')}'">${vid.genre || 'Umum'}</span><br>
-                    <span id="view-count-grid-${vid.id}">👁️ Memuat...</span>${uploadTime ? ' • ' + uploadTime : ''}
-                </p>
+                <p>LUVIA STUDIO TV • <span id="view-count-grid-${vid.id}">👁️ Memuat...</span></p>
             </div>
         `;
         container.appendChild(card);
+
         listenVideoViews(vid.id, vid.defaultViews || 0, (totalViews) => {
             const el = document.getElementById(`view-count-grid-${vid.id}`);
             if (el) el.innerText = `👁️ ${formatViews(totalViews)}`;
         });
     });
-    if (!isLivePage) updateKickBadgeStatus('kick-watch-badge');
+
+    // Menambahkan Tombol "Lihat Video Lainnya" di bagian paling bawah
+    const btnContainer = document.createElement('div');
+    btnContainer.style.textAlign = 'center';
+    btnContainer.style.marginTop = '30px';
+    btnContainer.style.gridColumn = '1 / -1'; // Memastikan tombol memanjang di tengah grid
+    btnContainer.innerHTML = `
+        <a href="videos.html" class="btn-watch-hero" style="font-size: 15px; padding: 12px 30px;">
+            Lihat Video Lainnya ❯
+        </a>
+    `;
+    container.appendChild(btnContainer);
+
+    if (!isLivePage) {
+        updateKickBadgeStatus('kick-watch-badge');
+    }
 }
 
 // Fungsi Render Khusus Halaman Daftar Video (videos.html)
