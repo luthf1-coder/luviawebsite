@@ -84,7 +84,19 @@
             </div>
         </section>
 
-        <section class="other-videos-section">
+       <section class="other-videos-section">
+            <!-- FITUR AUTOPLAY -->
+            <div class="autoplay-header">
+                <span>Putar Otomatis Video Berikutnya</span>
+                <label class="switch">
+                    <input type="checkbox" id="autoplay-toggle" checked>
+                    <span class="slider-toggle"></span>
+                </label>
+            </div>
+            <div id="autoplay-countdown" class="countdown-box">
+                Memutar video selanjutnya dalam <span id="countdown-timer">20</span> detik...
+            </div>
+            
             <h2>Video Lainnya</h2>
             <div class="video-grid" id="watch-recommendations-grid"></div>
         </section>
@@ -144,7 +156,8 @@
        } else {
             playerWrapper.innerHTML = `<video id="plyr-player" controls playsinline poster="${currentVid.thumb || ''}"><source src="${currentVid.archiveSrc || ''}" type="video/mp4" /></video>`;
             if (document.getElementById('plyr-player') && typeof Plyr !== 'undefined') {
-                new Plyr('#plyr-player', { 
+                // MASUKKAN PLYR KE DALAM VARIABEL WINDOW.PLAYER
+                window.player = new Plyr('#plyr-player', { 
                     settings: ['quality', 'speed'],
                     seekTime: 10,
                     controls: [
@@ -162,6 +175,82 @@
                     ]
                 });
             }
+        }
+
+        // ==========================================
+        // FITUR KETUK 2X UNTUK SKIP 10 DETIK (KHUSUS HP)
+        // ==========================================
+        let lastTap = 0;
+        const playerContainer = document.querySelector('.plyr-wrapper');
+        
+        if (playerContainer) {
+            playerContainer.addEventListener('touchend', (e) => {
+                if (!window.player) return; // Pastikan player sudah siap
+
+                const currentTime = new Date().getTime();
+                const tapLength = currentTime - lastTap;
+                
+                // Jika jarak ketukan kurang dari 300ms (Ketuk 2x)
+                if (tapLength < 300 && tapLength > 0) {
+                    const screenWidth = window.innerWidth;
+                    const clickX = e.changedTouches[0].clientX;
+                    
+                    // Cek jika ketukan ada di bagian kanan layar (Setengah layar ke kanan)
+                    if (clickX > screenWidth / 2) {
+                        window.player.forward(10); // Lewati 10 detik
+                    } else {
+                        window.player.rewind(10); // Opsional: Lewati mundur 10 detik jika di kiri
+                    }
+                }
+                lastTap = currentTime;
+            });
+        }
+
+        // ==========================================
+        // FITUR AUTOPLAY 20 DETIK
+        // ==========================================
+        let countdownInterval;
+        
+        // Pastikan event berjalan jika player menggunakan Plyr
+        if (window.player) {
+            window.player.on('ended', () => {
+                const autoplayToggle = document.getElementById('autoplay-toggle');
+                
+                // Cek apakah tombol autoplay menyala (checked)
+                if (autoplayToggle && autoplayToggle.checked) {
+                    const countdownEl = document.getElementById('autoplay-countdown');
+                    const timerEl = document.getElementById('countdown-timer');
+                    
+                    countdownEl.style.display = 'block'; // Tampilkan kotak hitung mundur
+                    let timeLeft = 20;
+                    timerEl.innerText = timeLeft;
+                    
+                    // Mulai hitung mundur
+                    countdownInterval = setInterval(() => {
+                        timeLeft -= 1;
+                        timerEl.innerText = timeLeft;
+                        
+                        if (timeLeft <= 0) {
+                            clearInterval(countdownInterval);
+                            
+                            // Ambil video urutan ke-1 dari daftar rekomendasi (Views Tertinggi)
+                            if (typeof videoList !== 'undefined') {
+                                const sortedList = [...videoList].sort((a, b) => (b.defaultViews || 0) - (a.defaultViews || 0));
+                                if(sortedList.length > 0) {
+                                    window.location.href = `watch.html?id=${sortedList[0].id}`;
+                                }
+                            }
+                        }
+                    }, 1000); // 1 detik
+                }
+            });
+
+            // BATALKAN AUTOPLAY JIKA USER MEMUTAR ULANG VIDEO
+            window.player.on('play', () => {
+                clearInterval(countdownInterval);
+                const countdownEl = document.getElementById('autoplay-countdown');
+                if(countdownEl) countdownEl.style.display = 'none';
+            });
         }
 
         if (typeof incrementVideoViewsAsync === 'function') {
