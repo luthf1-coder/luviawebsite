@@ -1775,6 +1775,111 @@ a.carousel-badge:hover {
     border: 1px solid rgba(255,255,255,0.3);
 }
 
+/* ==========================================
+   PERBAIKAN PLYR.IO (ASPEK RASIO BIOSKOP & KONTROL HP)
+   ========================================== */
+.plyr-wrapper,
+.video-container {
+    aspect-ratio: auto !important; /* Membiarkan player menyesuaikan rasio asli video */
+    min-height: 250px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    background: #000000;
+}
+
+.plyr {
+    width: 100%;
+    height: 100%;
+}
+
+.plyr__video-wrapper {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: #000000;
+}
+
+/* Penyesuaian khusus layar HP untuk Progress Bar & Volume */
+@media (max-width: 768px) {
+    /* Paksa tampilkan durasi & progress bar (seek bar) di HP */
+    .plyr__controls .plyr__progress,
+    .plyr__controls .plyr__time {
+        display: flex !important;
+    }
+    
+    /* Sembunyikan garis volume (biarkan hanya ikon speakernya saja) di HP */
+    .plyr__controls .plyr__volume input[type="range"] {
+        display: none !important;
+    }
+}
+
+/* ==========================================
+   TOMBOL TOGGLE AUTOPLAY
+   ========================================== */
+.autoplay-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background: rgba(255, 255, 255, 0.1);
+    padding: 12px 18px;
+    border-radius: 12px;
+    margin-bottom: 20px;
+    border: 1px solid rgba(255, 255, 255, 0.2);
+}
+.autoplay-header span {
+    font-weight: bold;
+    font-size: 0.95rem;
+}
+/* Desain Switch Toggle */
+.switch {
+    position: relative;
+    display: inline-block;
+    width: 46px;
+    height: 24px;
+}
+.switch input { 
+    opacity: 0;
+    width: 0;
+    height: 0;
+}
+.slider-toggle {
+    position: absolute;
+    cursor: pointer;
+    top: 0; left: 0; right: 0; bottom: 0;
+    background-color: #666;
+    transition: .4s;
+    border-radius: 24px;
+}
+.slider-toggle:before {
+    position: absolute;
+    content: "";
+    height: 18px;
+    width: 18px;
+    left: 3px;
+    bottom: 3px;
+    background-color: white;
+    transition: .4s;
+    border-radius: 50%;
+}
+input:checked + .slider-toggle {
+    background: linear-gradient(45deg, #8c52ff, #ff914d);
+}
+input:checked + .slider-toggle:before {
+    transform: translateX(22px);
+}
+/* Kotak Notifikasi Hitung Mundur */
+.countdown-box {
+    display: none;
+    background: rgba(0, 0, 0, 0.8);
+    color: #ff914d;
+    padding: 15px;
+    border-radius: 12px;
+    text-align: center;
+    font-weight: bold;
+    margin-bottom: 20px;
+    border: 1px solid #ff914d;
+}
 .card-genre-btn:hover {
     transform: scale(1.05);
     box-shadow: 0 4px 8px rgba(0,0,0,0.3);
