@@ -187,7 +187,22 @@ const videoList = [
         description: "Shock Wave adalah film Hong kong produksi tahun 2017 bergenre laga thriller yang disutradarai sekaligus ditulis skenarionya oleh Herman Yau, diproduseri dan dibintangi oleh Andy Lau. Film ini menandai kerja sama ketiga antara Yau dan Lau setelah film Don't Fool Me dan Fascination Amour.",
         genre: "Film Action",
         uploadDate: "2026-09-05"
-    }
+    },
+  {
+        id: "video9",
+        title: "Vanguard (2020) Dubbing Indonesia - HD Remastered",
+        defaultViews: 0,
+        thumb: "https://static.promediateknologi.id/crop/0x0:0x0/1200x0/webp/photo/p1/04/2024/07/29/Mega-Film-Asia-Indosiar-Sinopsis-Vanguard-2020-Pertempuran-Jackie-Chan-Melawan-Organisasi-Kriminal-Internasional-950592356.jpg",
+        archiveSrc: "https://cdn.dubbindo.site/dubbing/upload/videos/2026/09/QPgr7Fb9Rgrpfj2yHisI_13_a2f89b7c09d8a56e798d6de374cc2334_video_720p_converted.mp4",
+        driveEmbed: "",
+        youtubeId: "",
+        rumbleEmbed: "",
+        customEmbed: "",
+        downloadUrl: "https://play.indodub.my.id/d/dmjxkA",
+        description: "Seorang akuntan menaruh harapan kepada organisasi misterius bernama Vanguard setelah dirinya menjadi sasaran kelompok paling mematikan di dunia.",
+        genre: "Film Action",
+        uploadDate: "2026-09-17"
+    },
 ];
 
 
