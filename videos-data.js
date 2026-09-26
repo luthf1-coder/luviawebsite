@@ -87,7 +87,7 @@ const videoList = [
         rumbleEmbed: "",
         downloadUrl: "https://www.ssyoutube.com/watch?v=U6N_8dUF30g", 
         description: "Semua tentang sebuah Kebersamaan dan Kebahagiaan Angkatan 7 (SMPIQu) & dan Angkatan 1 (SMAIQu) di LPD Al-Bahjah Cianjur",
-        genre: "Dokumenter",
+        genre: "MVS - AL-BAHJAH CIANJUR",
         uploadDate: "2026-07-15"
     },
     {
@@ -101,7 +101,7 @@ const videoList = [
         rumbleEmbed: "",
         downloadUrl: "https://www.ssyoutube.com/watch?v=sUNYcOKjw-w",
         description: "Semua tentang sebuah Kebersamaan dan Kebahagiaan Angkatan 7 (SMPIQu) & dan Angkatan 1 (SMAIQu) di LPD Al-Bahjah Cianjur",
-        genre: "Dokumenter",
+        genre: "MVS - AL-BAHJAH CIANJUR",
         uploadDate: "2026-07-20"
     },
     // {
@@ -202,6 +202,21 @@ const videoList = [
         description: "Seorang akuntan menaruh harapan kepada organisasi misterius bernama Vanguard setelah dirinya menjadi sasaran kelompok paling mematikan di dunia.",
         genre: "Film Action",
         uploadDate: "2026-09-17"
+    },
+    {
+        id: "video10",
+        title: "AFTERMOVIE - TASYAKUR KELULUSAN SANTRI SMPIQu & SMAIQu AL-BAHJAH CIANJUR (2023-2026) | LUVIA TV",
+        defaultViews: 0,
+        thumb: "https://img.youtube.com/vi/vJgtIa4FtCE/maxresdefault.jpg",
+        archiveSrc: "",
+        driveEmbed: "",
+        youtubeId: "vJgtIa4FtCE",
+        rumbleEmbed: "",
+        customEmbed: "",
+        downloadUrl: "",
+        description: "Credit/Property: TIM DAKWAH (MEDIA) AL-BAHJAH CIANJUR ©2026 - TIM DAKWAH AL-BAHJAH CIANJUR & LUVIA TV | MOVAST MEDIA",
+        genre: "MVS - AL-BAHJAH CIANJUR",
+        uploadDate: "2026-09-26"
     },
 ];
 
