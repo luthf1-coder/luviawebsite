@@ -781,11 +781,10 @@ footer {
         padding-bottom: 0 !important;
     }
 
-    .plyr-wrapper iframe.drive-iframe {
-        width: 200% !important;
-        height: 200% !important;
-        transform: scale(0.5);
-        transform-origin: top left;
+   .plyr-wrapper iframe.drive-iframe {
+        width: 100% !important;
+        height: 100% !important;
+        transform: none; /* Hapus scale(0.5) karena ini yang membuat area sentuh tombol play bergeser di HP */
     }
 
     .contact-links {
@@ -1780,12 +1779,10 @@ a.carousel-badge:hover {
    ========================================== */
 .plyr-wrapper,
 .video-container {
-    aspect-ratio: auto !important; /* Membiarkan player menyesuaikan rasio asli video */
-    min-height: 250px;
-    display: flex;
-    justify-content: center;
-    align-items: center;
+    aspect-ratio: 16 / 9 !important; /* Wajib pakai 16:9 agar frame YouTube & Drive tidak gepeng/terpotong */
     background: #000000;
+    width: 100%;
+    /* Hapus min-height, display flex, dll karena merusak susunan posisi absolut dari iframe */
 }
 
 .plyr {
