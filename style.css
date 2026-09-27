@@ -772,19 +772,28 @@ footer {
         margin-top: 170px !important; 
     }
 
-    .plyr-wrapper,
+   .plyr-wrapper,
     .video-container {
         width: 100% !important;
         aspect-ratio: 16 / 9 !important;
         position: relative !important;
+        overflow: hidden !important; /* Tambahan wajib agar iframe yg di-zoom tidak meluber */
         height: auto !important;
         padding-bottom: 0 !important;
     }
 
-   .plyr-wrapper iframe.drive-iframe {
-        width: 100% !important;
-        height: 100% !important;
-        transform: none; /* Hapus scale(0.5) karena ini yang membuat area sentuh tombol play bergeser di HP */
+    /* Kembalikan ilusi layar laptop untuk Google Drive di HP agar tidak zoom in */
+    .plyr-wrapper iframe.drive-iframe,
+    .video-container iframe[src*="drive.google.com"] {
+        width: 200% !important;
+        height: 200% !important;
+        transform: scale(0.5) !important;
+        transform-origin: top left !important;
+        position: absolute !important; /* Mengunci posisi agar sentuhan/klik tidak meleset */
+        top: 0 !important;
+        left: 0 !important;
+        border: none !important;
+        pointer-events: auto !important;
     }
 
     .contact-links {
