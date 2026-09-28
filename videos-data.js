@@ -629,3 +629,47 @@ function executeSearchOnHome(query) {
         recSection.scrollIntoView({ behavior: 'smooth' });
     }
 }
+
+// =================================================================
+// KODE TAMBAHAN UNTUK JALUR HYBRID (BOT GITHUB + ADMIN FIREBASE)
+// =================================================================
+
+// 1. Simpan salinan video dari bot
+const botVideos = [...videoList]; 
+
+// 2. Fungsi untuk menarik video manual dari Admin Panel Firebase
+function muatDataDariFirebase() {
+    if (typeof firebase === 'undefined') return;
+    
+    // A. Tarik Data Video Manual
+    firebase.database().ref('videos_manual').on('value', (snapshot) => {
+        let adminVideos = [];
+        if (snapshot.exists()) {
+            const data = snapshot.val();
+            adminVideos = Object.keys(data).map(key => data[key]);
+        }
+        
+        // Gabungkan video dari Bot (GitHub) + Admin (Firebase)
+        videoList.length = 0; 
+        videoList.push(...botVideos, ...adminVideos); 
+        
+        // Beri sinyal ke website untuk memperbarui tampilan video
+        window.dispatchEvent(new Event('videoDataReady'));
+    });
+}
+
+// Jalankan sistem hybrid
+muatDataDariFirebase();
+
+// 3. Update tampilan otomatis saat data siap
+window.addEventListener('videoDataReady', () => {
+    if (typeof renderSliderRecommendations === 'function' && document.getElementById('home-recommendations-slider')) {
+        renderSliderRecommendations('home-recommendations-slider', videoList);
+    }
+    if (typeof renderGridRecommendations === 'function' && document.getElementById('watch-recommendations-grid')) {
+        renderGridRecommendations('watch-recommendations-grid', videoList);
+    }
+    if (typeof initVideosPage === 'function' && document.getElementById('all-videos-container')) {
+        initVideosPage();
+    }
+});
