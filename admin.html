@@ -1,0 +1,187 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>LUVIA STUDIO - ADMIN PANEL</title>
+    <link rel="stylesheet" href="style.css" />
+    <link rel="icon" type="image/png" href="Asset Foto/Thumbnimail .png">
+    
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-database-compat.js"></script>
+    <script src="videos-data.js"></script>
+
+    <style>
+        body { background-color: #0f0f0f; color: #fff; margin: 0; font-family: sans-serif; }
+        #login-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0, 0, 0, 0.95); z-index: 9999; display: flex; align-items: center; justify-content: center; }
+        .login-box { background: #1a1a1a; padding: 40px; border-radius: 12px; text-align: center; width: 90%; max-width: 400px; border: 1px solid #333; }
+        .login-box h2 { color: #ff914d; }
+        .login-box input, .admin-form-group input, .admin-form-group textarea, .admin-form-group select {
+            width: 100%; padding: 12px; margin-bottom: 15px; background: #2a2a2a; border: 1px solid #444; color: white; border-radius: 6px; box-sizing: border-box;
+        }
+        .login-box button, .btn-submit-comment { width: 100%; padding: 12px; background: linear-gradient(45deg, #8c52ff, #ff914d); border: none; color: white; font-weight: bold; border-radius: 6px; cursor: pointer; }
+        
+        #admin-dashboard { display: none; padding: 20px; max-width: 800px; margin: 0 auto; margin-top: 20px; }
+        .tab-container { display: flex; gap: 10px; margin-bottom: 20px; flex-wrap: wrap; }
+        .tab-btn { padding: 10px 15px; background: #222; border: 1px solid #444; color: white; cursor: pointer; border-radius: 6px; }
+        .tab-btn.active { background: #ff914d; color: #000; font-weight: bold; border-color: #ff914d; }
+        .panel { background: #1a1a1a; padding: 25px; border-radius: 12px; border: 1px solid #333; display: none; }
+        .panel.active { display: block; }
+        .admin-form-group label { display: block; margin-bottom: 5px; font-weight: bold; color: #bbb; }
+    </style>
+</head>
+<body>
+
+    <div id="login-overlay">
+        <div class="login-box">
+            <h2>LUVIA STUDIO ADMIN</h2>
+            <input type="password" id="admin-password" placeholder="Kata Sandi..." onkeypress="if(event.key === 'Enter') checkLogin()">
+            <button onclick="checkLogin()">Masuk</button>
+        </div>
+    </div>
+
+    <div id="admin-dashboard">
+        <div style="display: flex; justify-content: space-between; border-bottom: 1px solid #333; padding-bottom: 15px; margin-bottom: 20px;">
+            <h2 style="margin:0; color:#ff914d;">Control Panel</h2>
+            <a href="index.html" style="color: #bbb; text-decoration: none;">❮ Ke Website</a>
+        </div>
+
+        <div class="tab-container">
+            <button class="tab-btn active" onclick="switchTab('tab-video', this)">➕ Tambah Video</button>
+            <button class="tab-btn" onclick="switchTab('tab-buat-program', this)">📺 Buat Program TV Baru</button>
+            <button class="tab-btn" onclick="switchTab('tab-isi-program', this)">📂 Masukkan Video ke Program</button>
+        </div>
+
+        <!-- 1. TAMBAH VIDEO -->
+        <div id="tab-video" class="panel active">
+            <h3 style="margin-top:0;">Tambah Video Manual</h3>
+            <div class="admin-form-group"><label>Judul</label><input type="text" id="vid-title" placeholder="Judul video..."></div>
+            <div class="admin-form-group"><label>Link Thumbnail</label><input type="text" id="vid-thumb" placeholder="https://..."></div>
+            <div class="admin-form-group"><label>Link Video (Drive/Archive)</label><input type="text" id="vid-url" placeholder="https://..."></div>
+            <div class="admin-form-group"><label>Genre</label><input type="text" id="vid-genre" placeholder="Anime, Film..."></div>
+            <div class="admin-form-group"><label>Deskripsi</label><textarea id="vid-desc"></textarea></div>
+            <button class="btn-submit-comment" onclick="simpanVideo()">Upload Video</button>
+        </div>
+
+        <!-- 2. BUAT PROGRAM TV BARU -->
+        <div id="tab-buat-program" class="panel">
+            <h3 style="margin-top:0;">Buat Program TV (Halaman Khusus)</h3>
+            <div class="admin-form-group">
+                <label>ID Program (Harus Unik, tanpa spasi. cth: bioskop_malam)</label>
+                <input type="text" id="prog-id" placeholder="bioskop_malam">
+            </div>
+            <div class="admin-form-group"><label>Nama Program TV</label><input type="text" id="prog-title" placeholder="Bioskop Malam Liburan..."></div>
+            <div class="admin-form-group"><label>Link Banner (Gambar Lebar)</label><input type="text" id="prog-banner" placeholder="https://..."></div>
+            <div class="admin-form-group"><label>Jadwal Tayang</label><input type="text" id="prog-schedule" placeholder="Setiap Sabtu, Pukul 19:00 WIB"></div>
+            <div class="admin-form-group"><label>Deskripsi Program</label><textarea id="prog-desc"></textarea></div>
+            <button class="btn-submit-comment" onclick="buatProgramBaru()">Buat Program TV</button>
+        </div>
+
+        <!-- 3. ISI VIDEO KE PROGRAM TV -->
+        <div id="tab-isi-program" class="panel">
+            <h3 style="margin-top:0;">Atur Playlist Program TV</h3>
+            <div class="admin-form-group">
+                <label>Pilih Program TV</label>
+                <select id="select-prog"><option>Memuat...</option></select>
+            </div>
+            <div class="admin-form-group">
+                <label>Pilih Video</label>
+                <select id="select-vid"><option>Memuat...</option></select>
+            </div>
+            <button class="btn-submit-comment" onclick="masukkanVideoKeProgram()">Tambahkan ke Playlist</button>
+        </div>
+    </div>
+
+    <script>
+        const passwordAdmin = "adminlstv2026"; // Silakan ganti sandinya di sini
+
+        function checkLogin() {
+            if (document.getElementById('admin-password').value === passwordAdmin) {
+                document.getElementById('login-overlay').style.display = 'none';
+                document.getElementById('admin-dashboard').style.display = 'block';
+                setTimeout(muatPilihanDropdown, 1500); // Muat data select
+            } else { alert("Sandi salah!"); }
+        }
+
+        function switchTab(tabId, btn) {
+            document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
+            document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+            document.getElementById(tabId).classList.add('active');
+            btn.classList.add('active');
+        }
+
+        function simpanVideo() {
+            const title = document.getElementById('vid-title').value;
+            const url = document.getElementById('vid-url').value;
+            if(!title || !url) { alert("Judul dan link wajib diisi!"); return; }
+            
+            const id = "vid_" + Date.now();
+            let driveEmbed = url.includes("drive.google.com") ? url : "";
+            let archiveSrc = url.includes("drive.google.com") ? "" : url;
+            
+            const data = {
+                id: id, title: title, thumb: document.getElementById('vid-thumb').value,
+                archiveSrc: archiveSrc, driveEmbed: driveEmbed, youtubeId: "", downloadUrl: archiveSrc || driveEmbed,
+                description: document.getElementById('vid-desc').value, genre: document.getElementById('vid-genre').value,
+                uploadDate: new Date().toISOString().split('T')[0], defaultViews: 0
+            };
+            
+            firebase.database().ref('videos_manual/' + id).set(data).then(() => {
+                alert('Video berhasil diupload!'); document.getElementById('vid-title').value = '';
+                muatPilihanDropdown();
+            });
+        }
+
+        function buatProgramBaru() {
+            const id = document.getElementById('prog-id').value.replace(/\s+/g, '_').toLowerCase();
+            const title = document.getElementById('prog-title').value;
+            if(!id || !title) { alert("ID dan Nama Program wajib diisi!"); return; }
+
+            const data = {
+                id: id, title: title, banner: document.getElementById('prog-banner').value,
+                schedule: document.getElementById('prog-schedule').value, desc: document.getElementById('prog-desc').value
+            };
+
+            firebase.database().ref('programs_info/' + id).set(data).then(() => {
+                alert('Program TV berhasil dibuat!'); 
+                document.getElementById('prog-id').value = ''; document.getElementById('prog-title').value = '';
+                muatPilihanDropdown();
+            });
+        }
+
+        function muatPilihanDropdown() {
+            // Muat Pilihan Video
+            const selectVid = document.getElementById('select-vid');
+            if (typeof videoList !== 'undefined') {
+                selectVid.innerHTML = '<option value="">-- Pilih Video --</option>';
+                [...videoList].reverse().forEach(v => {
+                    selectVid.innerHTML += `<option value="${v.id}">${v.title}</option>`;
+                });
+            }
+            
+            // Muat Pilihan Program
+            const selectProg = document.getElementById('select-prog');
+            firebase.database().ref('programs_info').once('value', snap => {
+                selectProg.innerHTML = '<option value="">-- Pilih Program TV --</option>';
+                if(snap.exists()) {
+                    const progs = snap.val();
+                    Object.keys(progs).forEach(k => {
+                        selectProg.innerHTML += `<option value="${k}">${progs[k].title}</option>`;
+                    });
+                }
+            });
+        }
+
+        function masukkanVideoKeProgram() {
+            const progId = document.getElementById('select-prog').value;
+            const vidId = document.getElementById('select-vid').value;
+            if(!progId || !vidId) { alert("Pilih program dan videonya!"); return; }
+
+            // Menyimpan daftar video (playlist) ke dalam program TV
+            firebase.database().ref('program_playlists/' + progId + '/' + vidId).set(true).then(() => {
+                alert('Video berhasil dimasukkan ke Program TV!');
+            });
+        }
+    </script>
+</body>
+</html>
