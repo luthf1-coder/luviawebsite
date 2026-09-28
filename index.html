@@ -155,11 +155,140 @@
         </div>
     </section>
 
-    <section class="section-cv">
-        <div class="download-cv">
-            <a href="CV LUVIA STUDIO TV.pdf" download class="btn-cv">Download CV</a>
+<!-- ================= AREA KOMPLAIN WA STYLE ================= -->
+    <style>
+        .wa-container { max-width: 500px; margin: 0 auto; background: #0b141a; border-radius: 12px; overflow: hidden; border: 1px solid #2a2f32; box-shadow: 0 10px 20px rgba(0,0,0,0.5); margin-bottom: 30px; }
+        .wa-header { background: #202c33; padding: 12px 15px; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #333;}
+        .wa-header-left { display: flex; align-items: center; gap: 12px; }
+        .wa-header-left img { width: 40px; height: 40px; border-radius: 50%; object-fit: cover; }
+        .wa-header-left h4 { margin: 0; color: #e9edef; font-size: 15px; }
+        .wa-header-left p { margin: 0; color: #8696a0; font-size: 12px; }
+        .wa-header-right { position: relative; cursor: pointer; font-size: 20px; }
+        .bell-dot { display: none; position: absolute; top: -2px; right: -2px; width: 10px; height: 10px; background: #ff4d4d; border-radius: 50%; box-shadow: 0 0 5px #ff4d4d; }
+        
+        .wa-body { background: #0b141a; padding: 20px; min-height: 200px; max-height: 300px; overflow-y: auto; display: flex; flex-direction: column; gap: 10px; }
+        .wa-bubble { max-width: 85%; padding: 8px 12px; border-radius: 8px; font-size: 14px; line-height: 1.4; position: relative; }
+        .wa-admin { background: #202c33; color: #e9edef; align-self: flex-start; border-top-left-radius: 0; }
+        .wa-user { background: #005c4b; color: #e9edef; align-self: flex-end; border-top-right-radius: 0; }
+        
+        .wa-footer { background: #202c33; padding: 10px; display: flex; gap: 10px; align-items: center; }
+        .wa-footer input { background: #2a2f32; border: none; color: #e9edef; padding: 12px; border-radius: 8px; outline: none; }
+        .wa-send-btn { background: #00a884; color: white; border: none; width: 45px; height: 45px; border-radius: 50%; cursor: pointer; font-size: 18px; display: flex; align-items: center; justify-content: center; }
+        
+        /* Modal Notifikasi Jawaban */
+        .modal-notif-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); z-index: 9999; display: flex; align-items: center; justify-content: center; }
+        .modal-notif-box { background: #1a1a1a; width: 90%; max-width: 500px; border-radius: 12px; padding: 20px; border: 1px solid #333; }
+        .jawab-item { background: #222; padding: 12px; border-radius: 8px; margin-bottom: 10px; border-left: 4px solid #00a884; }
+        .jawab-nama { font-weight: bold; color: #ff914d; font-size: 13px; margin-bottom: 5px; }
+        .jawab-tanya { color: #bbb; font-size: 13px; font-style: italic; margin-bottom: 8px; }
+        .jawab-admin { color: #fff; font-size: 14px; }
+    </style>
+
+    <section class="section" id="layanan-support">
+        <div class="container">
+            <h2 style="text-align: center; margin-bottom: 20px;">Live Support & Komplain</h2>
+            <div class="wa-container">
+                <div class="wa-header">
+                    <div class="wa-header-left">
+                        <img src="Asset Foto/Thumbnimail .png" alt="Avatar">
+                        <div>
+                            <h4>CS LUVIA STUDIO</h4>
+                            <p>Online</p>
+                        </div>
+                    </div>
+                    <div class="wa-header-right" onclick="bukaNotifKomplain()" title="Lihat Papan Jawaban">
+                        🔔 <span id="bell-dot" class="bell-dot"></span>
+                    </div>
+                </div>
+                <div class="wa-body" id="wa-chat-history">
+                    <div class="wa-bubble wa-admin">Halo! Ada komplain, saran, atau pertanyaan tentang video? Kirim di sini, Admin akan merespons! ⬇️</div>
+                </div>
+                <div class="wa-footer">
+                    <input type="text" id="wa-nama" placeholder="Nama..." style="width: 30%;" required>
+                    <input type="text" id="wa-isi" placeholder="Ketik komplain/pesan..." style="flex: 1;" required onkeypress="if(event.key === 'Enter') kirimKomplain()">
+                    <button class="wa-send-btn" onclick="kirimKomplain()">➤</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Pop Up Notifikasi Jawaban Umum -->
+        <div id="modal-notif" class="modal-notif-overlay" style="display:none;">
+            <div class="modal-notif-box">
+                <div style="display:flex; justify-content:space-between; align-items:center; border-bottom:1px solid #333; padding-bottom:10px; margin-bottom:15px;">
+                    <h3 style="margin:0; color:#ff914d;">Papan Jawaban Admin</h3>
+                    <button onclick="document.getElementById('modal-notif').style.display='none'" style="background:none; border:none; color:white; font-size:20px; cursor:pointer;">✖</button>
+                </div>
+                <div id="list-jawaban-umum" style="max-height: 400px; overflow-y: auto;">
+                    <p style="color:#bbb; text-align:center;">Memuat jawaban...</p>
+                </div>
+            </div>
         </div>
     </section>
+
+    <script>
+        document.addEventListener("DOMContentLoaded", function() {
+            if(typeof firebase !== 'undefined') {
+                firebase.database().ref('complaints').on('value', snap => {
+                    const data = snap.val();
+                    let belumDibaca = false;
+                    let htmlList = '';
+
+                    if(data) {
+                        const keys = Object.keys(data).reverse(); 
+                        keys.forEach(k => {
+                            const c = data[k];
+                            // Jika Admin sudah menjawab
+                            if(c.jawaban_admin) {
+                                htmlList += `
+                                <div class="jawab-item">
+                                    <div class="jawab-nama">Menjawab pertanyaan dari @${c.nama} :</div>
+                                    <div class="jawab-tanya">"${c.isi}"</div>
+                                    <div class="jawab-admin"><strong>Admin:</strong> ${c.jawaban_admin}</div>
+                                </div>`;
+                                
+                                const lastRead = localStorage.getItem('last_read_complaints') || 0;
+                                if(c.answered_at > lastRead) belumDibaca = true;
+                            }
+                        });
+                    }
+                    
+                    document.getElementById('list-jawaban-umum').innerHTML = htmlList || '<p style="text-align:center; color:#bbb;">Belum ada jawaban dari Admin.</p>';
+                    document.getElementById('bell-dot').style.display = belumDibaca ? 'block' : 'none';
+                });
+            }
+        });
+
+        function bukaNotifKomplain() {
+            document.getElementById('modal-notif').style.display = 'flex';
+            document.getElementById('bell-dot').style.display = 'none';
+            localStorage.setItem('last_read_complaints', Date.now());
+        }
+
+        function kirimKomplain() {
+            const nama = document.getElementById('wa-nama').value.trim();
+            const isi = document.getElementById('wa-isi').value.trim();
+            if(!nama || !isi) return;
+
+            const chatHistory = document.getElementById('wa-chat-history');
+            chatHistory.innerHTML += `<div class="wa-bubble wa-user">${isi}</div>`;
+            chatHistory.scrollTop = chatHistory.scrollHeight;
+            
+            const id = "comp_" + Date.now();
+            firebase.database().ref('complaints/' + id).set({
+                nama: nama, isi: isi, timestamp: Date.now(), jawaban_admin: ""
+            });
+
+            // Kirim notif ke database agar HP Admin berbunyi
+            if(typeof firebase !== 'undefined') {
+                firebase.database().ref('admin_notifications').push({
+                    tipe: "Komplain Masuk",
+                    pesan: `Ada komplain baru dari ${nama}: "${isi}"`,
+                    timestamp: Date.now(), read: false
+                });
+            }
+            document.getElementById('wa-isi').value = ''; 
+        }
+    </script>
 
     <footer>
         <div class="container">
