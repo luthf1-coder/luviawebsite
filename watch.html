@@ -372,31 +372,52 @@
             }
         });
 
-        document.getElementById('comment-form').addEventListener('submit', (e) => {
+       document.getElementById('comment-form').addEventListener('submit', (e) => {
             e.preventDefault();
             const nameInput = document.getElementById('comment-name');
             const textInput = document.getElementById('comment-text');
             if (nameInput.value && textInput.value) {
+                
+                const isiKomen = textInput.value;
+                const nama = nameInput.value;
+
                 commentsRef.push({
-                    name: nameInput.value,
-                    text: textInput.value,
-                    timestamp: firebase.database.ServerValue.TIMESTAMP,
-                    likes: 0
+                    name: nama, text: isiKomen, timestamp: firebase.database.ServerValue.TIMESTAMP, likes: 0
                 });
+
+                // DETEKSI MENTION UNTUK HP ADMIN
+                let tipeNotif = "Komentar Baru";
+                if(isiKomen.includes('@admin') || isiKomen.includes('@luvia')) {
+                    tipeNotif = "Mention Admin 🔔";
+                } else if (isiKomen.includes('@')) {
+                    tipeNotif = "Mention Antar Penonton";
+                }
+
+                firebase.database().ref('admin_notifications').push({
+                    tipe: tipeNotif,
+                    pesan: `${nama} berkomentar di video "${currentVid.title}": "${isiKomen}"`,
+                    timestamp: Date.now(), read: false
+                });
+
                 textInput.value = '';
             }
         });
 
+        // LAKUKAN HAL YANG SAMA UNTUK BALASAN (REPLY) KOMENTAR
         window.submitReply = function(parentId) {
             const nameVal = document.getElementById(`reply-name-${parentId}`).value;
             const textVal = document.getElementById(`reply-text-${parentId}`).value;
             if(nameVal && textVal) {
                 commentsRef.child(parentId).child('replies').push({
-                    name: nameVal,
-                    text: textVal,
-                    timestamp: firebase.database.ServerValue.TIMESTAMP,
-                    likes: 0
+                    name: nameVal, text: textVal, timestamp: firebase.database.ServerValue.TIMESTAMP, likes: 0
                 });
+
+                firebase.database().ref('admin_notifications').push({
+                    tipe: "Balasan Komentar",
+                    pesan: `${nameVal} membalas komentar di video "${currentVid.title}": "${textVal}"`,
+                    timestamp: Date.now(), read: false
+                });
+
                 document.getElementById(`reply-text-${parentId}`).value = '';
                 toggleReplyForm(parentId);
             }
