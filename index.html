@@ -89,20 +89,36 @@
     <section id="projects" class="section gray">
         <div class="container">
             <h2> Program TV</h2>
-            <div class="projects">
-                <a href="program-livemusic.html" class="card">
-                    <h3>LIVE MUSIC</h3>
-                    <p>Klik untuk melihat detail & tayangan lengkap program Live Music.</p>
-                </a>
-                <a href="program-bioskop.html" class="card">
-                    <h3>BIOSKOP LIBURAN</h3>
-                    <p>Klik untuk melihat detail & jadwal tayang Bioskop Liburan.</p>
-                </a>
-                <a href="program-maulid.html" class="card">
-                    <h3>NEW MAULID NABI MUHAMMAD SAW</h3>
-                    <p>Klik untuk melihat informasi lengkap & playlist keagamaan.</p>
-                </a>
-            </div>
+            <div class="projects" id="dynamic-programs-container">
+    <p style="color:#bbb; text-align:center;">Memuat Program TV...</p>
+</div>
+
+<!-- Tambahkan script ini tepat di bawah div di atas -->
+<script>
+    document.addEventListener("DOMContentLoaded", function() {
+        if(typeof firebase !== 'undefined') {
+            firebase.database().ref('programs_info').on('value', snap => {
+                const container = document.getElementById('dynamic-programs-container');
+                if(snap.exists()) {
+                    const progs = snap.val();
+                    let html = '';
+                    Object.keys(progs).forEach(id => {
+                        const p = progs[id];
+                        // Link otomatis akan mengarah ke program.html?id=...
+                        html += `
+                        <a href="program.html?id=${id}" class="card">
+                            <h3>${p.title.toUpperCase()}</h3>
+                            <p>${p.desc.substring(0, 70)}...</p>
+                        </a>`;
+                    });
+                    container.innerHTML = html;
+                } else {
+                    container.innerHTML = '<p style="text-align:center; color:#bbb;">Belum ada Program TV yang dibuat dari Admin.</p>';
+                }
+            });
+        }
+    });
+</script>
 
             <div id="livestreaming" class="livestream-section">
                 <h2>Live Streaming</h2>
