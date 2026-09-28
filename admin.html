@@ -16,12 +16,10 @@
         #login-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0, 0, 0, 0.95); z-index: 9999; display: flex; align-items: center; justify-content: center; }
         .login-box { background: #1a1a1a; padding: 40px; border-radius: 12px; text-align: center; width: 90%; max-width: 400px; border: 1px solid #333; }
         .login-box h2 { color: #ff914d; }
-        .login-box input, .admin-form-group input, .admin-form-group textarea, .admin-form-group select {
-            width: 100%; padding: 12px; margin-bottom: 15px; background: #2a2a2a; border: 1px solid #444; color: white; border-radius: 6px; box-sizing: border-box;
-        }
+        .login-box input, .admin-form-group input, .admin-form-group textarea, .admin-form-group select { width: 100%; padding: 12px; margin-bottom: 15px; background: #2a2a2a; border: 1px solid #444; color: white; border-radius: 6px; box-sizing: border-box; }
         .login-box button, .btn-submit-comment { width: 100%; padding: 12px; background: linear-gradient(45deg, #8c52ff, #ff914d); border: none; color: white; font-weight: bold; border-radius: 6px; cursor: pointer; }
         
-        #admin-dashboard { display: none; padding: 20px; max-width: 800px; margin: 0 auto; margin-top: 20px; }
+        #admin-dashboard { display: none; padding: 20px; max-width: 900px; margin: 0 auto; margin-top: 20px; }
         .tab-container { display: flex; gap: 10px; margin-bottom: 20px; flex-wrap: wrap; }
         .tab-btn { padding: 10px 15px; background: #222; border: 1px solid #444; color: white; cursor: pointer; border-radius: 6px; }
         .tab-btn.active { background: #ff914d; color: #000; font-weight: bold; border-color: #ff914d; }
@@ -37,6 +35,7 @@
             <h2>LUVIA STUDIO ADMIN</h2>
             <input type="password" id="admin-password" placeholder="Kata Sandi..." onkeypress="if(event.key === 'Enter') checkLogin()">
             <button onclick="checkLogin()">Masuk</button>
+            <p id="login-error" style="color:#ff4d4d; font-size:13px; display:none;">Sandi Salah!</p>
         </div>
     </div>
 
@@ -48,59 +47,95 @@
 
         <div class="tab-container">
             <button class="tab-btn active" onclick="switchTab('tab-video', this)">➕ Tambah Video</button>
-            <button class="tab-btn" onclick="switchTab('tab-buat-program', this)">📺 Buat Program TV Baru</button>
-            <button class="tab-btn" onclick="switchTab('tab-isi-program', this)">📂 Masukkan Video ke Program</button>
+            <button class="tab-btn" onclick="switchTab('tab-buat-program', this)">📺 Buat Program Baru</button>
+            <button class="tab-btn" onclick="switchTab('tab-isi-program', this)">📂 Video ke Program</button>
+            <button class="tab-btn" onclick="switchTab('tab-komplain', this)">💬 Support & Notif (HP)</button>
         </div>
 
         <!-- 1. TAMBAH VIDEO -->
         <div id="tab-video" class="panel active">
             <h3 style="margin-top:0;">Tambah Video Manual</h3>
-            <div class="admin-form-group"><label>Judul</label><input type="text" id="vid-title" placeholder="Judul video..."></div>
+            <div class="admin-form-group"><label>Judul</label><input type="text" id="vid-title" placeholder="Judul..."></div>
             <div class="admin-form-group"><label>Link Thumbnail</label><input type="text" id="vid-thumb" placeholder="https://..."></div>
-            <div class="admin-form-group"><label>Link Video (Drive/Archive)</label><input type="text" id="vid-url" placeholder="https://..."></div>
-            <div class="admin-form-group"><label>Genre</label><input type="text" id="vid-genre" placeholder="Anime, Film..."></div>
+            <div class="admin-form-group"><label>Link Video</label><input type="text" id="vid-url" placeholder="https://..."></div>
+            <div class="admin-form-group"><label>Genre</label><input type="text" id="vid-genre" placeholder="Anime..."></div>
             <div class="admin-form-group"><label>Deskripsi</label><textarea id="vid-desc"></textarea></div>
             <button class="btn-submit-comment" onclick="simpanVideo()">Upload Video</button>
         </div>
 
-        <!-- 2. BUAT PROGRAM TV BARU -->
+        <!-- 2. BUAT PROGRAM -->
         <div id="tab-buat-program" class="panel">
-            <h3 style="margin-top:0;">Buat Program TV (Halaman Khusus)</h3>
-            <div class="admin-form-group">
-                <label>ID Program (Harus Unik, tanpa spasi. cth: bioskop_malam)</label>
-                <input type="text" id="prog-id" placeholder="bioskop_malam">
-            </div>
-            <div class="admin-form-group"><label>Nama Program TV</label><input type="text" id="prog-title" placeholder="Bioskop Malam Liburan..."></div>
-            <div class="admin-form-group"><label>Link Banner (Gambar Lebar)</label><input type="text" id="prog-banner" placeholder="https://..."></div>
-            <div class="admin-form-group"><label>Jadwal Tayang</label><input type="text" id="prog-schedule" placeholder="Setiap Sabtu, Pukul 19:00 WIB"></div>
-            <div class="admin-form-group"><label>Deskripsi Program</label><textarea id="prog-desc"></textarea></div>
+            <div class="admin-form-group"><label>ID Program (tanpa spasi)</label><input type="text" id="prog-id" placeholder="bioskop_malam"></div>
+            <div class="admin-form-group"><label>Nama Program</label><input type="text" id="prog-title" placeholder="Bioskop Liburan..."></div>
+            <div class="admin-form-group"><label>Link Banner</label><input type="text" id="prog-banner" placeholder="https://..."></div>
+            <div class="admin-form-group"><label>Jadwal</label><input type="text" id="prog-schedule"></div>
+            <div class="admin-form-group"><label>Deskripsi</label><textarea id="prog-desc"></textarea></div>
             <button class="btn-submit-comment" onclick="buatProgramBaru()">Buat Program TV</button>
         </div>
 
-        <!-- 3. ISI VIDEO KE PROGRAM TV -->
+        <!-- 3. ISI KE PROGRAM -->
         <div id="tab-isi-program" class="panel">
-            <h3 style="margin-top:0;">Atur Playlist Program TV</h3>
-            <div class="admin-form-group">
-                <label>Pilih Program TV</label>
-                <select id="select-prog"><option>Memuat...</option></select>
-            </div>
-            <div class="admin-form-group">
-                <label>Pilih Video</label>
-                <select id="select-vid"><option>Memuat...</option></select>
-            </div>
+            <div class="admin-form-group"><label>Pilih Program</label><select id="select-prog"></select></div>
+            <div class="admin-form-group"><label>Pilih Video</label><select id="select-vid"></select></div>
             <button class="btn-submit-comment" onclick="masukkanVideoKeProgram()">Tambahkan ke Playlist</button>
+        </div>
+
+        <!-- 4. SUPPORT & NOTIF -->
+        <div id="tab-komplain" class="panel">
+            <h3 style="margin-top:0;">Pusat Notifikasi HP & Komplain</h3>
+            <div style="display:flex; gap:20px; flex-wrap:wrap;">
+                <div style="flex:1; min-width:300px;">
+                    <h4 style="color:#ff914d;">Daftar Komplain</h4>
+                    <div id="admin-complaint-list" style="max-height:400px; overflow-y:auto;">Memuat...</div>
+                </div>
+                <div style="flex:1; min-width:300px; background:#111; padding:15px; border-radius:8px;">
+                    <h4 style="color:#53fc18;">🔔 Aktivitas Penonton</h4>
+                    <div id="admin-notif-list" style="max-height:350px; overflow-y:auto;">Memuat...</div>
+                    <button onclick="tandaiSemuaDibaca()" style="background:#333; color:white; border:none; padding:8px; width:100%; margin-top:10px;">Tandai Semua Dibaca</button>
+                </div>
+            </div>
         </div>
     </div>
 
+    <!-- SCRIPT UTAMA -->
     <script>
-        const passwordAdmin = "adminlstv2026"; // Silakan ganti sandinya di sini
+        const passwordAdmin = "adminlstv2026"; 
+        let waktuLoginAdmin = 0;
+
+        // DAFTARKAN MESIN NOTIFIKASI BROWSER HP (sw.js)
+        if ('serviceWorker' in navigator) {
+            navigator.serviceWorker.register('sw.js');
+        }
+
+        function mintaIzinNotifikasi() {
+            if ("Notification" in window && Notification.permission !== "granted" && Notification.permission !== "denied") {
+                Notification.requestPermission().then(permission => {
+                    if (permission === "granted") {
+                        munculkanNotifHP("Notifikasi Aktif!", "Anda akan menerima notif komplain di sini.");
+                    }
+                });
+            }
+        }
+
+        function munculkanNotifHP(judul, isi) {
+            if (Notification.permission === "granted") {
+                navigator.serviceWorker.ready.then(reg => {
+                    reg.showNotification(judul, { body: isi, icon: "Asset Foto/Thumbnimail .png", badge: "Asset Foto/Thumbnimail .png", vibrate: [200, 100, 200] });
+                });
+            }
+        }
 
         function checkLogin() {
             if (document.getElementById('admin-password').value === passwordAdmin) {
                 document.getElementById('login-overlay').style.display = 'none';
                 document.getElementById('admin-dashboard').style.display = 'block';
-                setTimeout(muatPilihanDropdown, 1500); // Muat data select
-            } else { alert("Sandi salah!"); }
+                
+                waktuLoginAdmin = Date.now();
+                mintaIzinNotifikasi(); // Minta izin Notif saat berhasil login
+                
+                setTimeout(muatPilihanDropdown, 1500); 
+                jalankanPantauanNotif();
+            } else { document.getElementById('login-error').style.display = 'block'; }
         }
 
         function switchTab(tabId, btn) {
@@ -110,76 +145,121 @@
             btn.classList.add('active');
         }
 
+        // FUNGSI UPLOAD VIDEO & PROGRAM (Sama dengan sebelumnya)
         function simpanVideo() {
             const title = document.getElementById('vid-title').value;
             const url = document.getElementById('vid-url').value;
-            if(!title || !url) { alert("Judul dan link wajib diisi!"); return; }
-            
-            const id = "vid_" + Date.now();
+            if(!title || !url) return;
+            const id = "manual_" + Date.now();
             let driveEmbed = url.includes("drive.google.com") ? url : "";
             let archiveSrc = url.includes("drive.google.com") ? "" : url;
             
-            const data = {
-                id: id, title: title, thumb: document.getElementById('vid-thumb').value,
-                archiveSrc: archiveSrc, driveEmbed: driveEmbed, youtubeId: "", downloadUrl: archiveSrc || driveEmbed,
-                description: document.getElementById('vid-desc').value, genre: document.getElementById('vid-genre').value,
-                uploadDate: new Date().toISOString().split('T')[0], defaultViews: 0
-            };
-            
-            firebase.database().ref('videos_manual/' + id).set(data).then(() => {
-                alert('Video berhasil diupload!'); document.getElementById('vid-title').value = '';
-                muatPilihanDropdown();
-            });
+            firebase.database().ref('videos_manual/' + id).set({
+                id: id, title: title, thumb: document.getElementById('vid-thumb').value, archiveSrc: archiveSrc, driveEmbed: driveEmbed, youtubeId: "", downloadUrl: archiveSrc || driveEmbed, description: document.getElementById('vid-desc').value, genre: document.getElementById('vid-genre').value, uploadDate: new Date().toISOString().split('T')[0], defaultViews: 0
+            }).then(() => { alert('Upload Sukses!'); muatPilihanDropdown(); });
         }
 
         function buatProgramBaru() {
             const id = document.getElementById('prog-id').value.replace(/\s+/g, '_').toLowerCase();
-            const title = document.getElementById('prog-title').value;
-            if(!id || !title) { alert("ID dan Nama Program wajib diisi!"); return; }
-
-            const data = {
-                id: id, title: title, banner: document.getElementById('prog-banner').value,
-                schedule: document.getElementById('prog-schedule').value, desc: document.getElementById('prog-desc').value
-            };
-
-            firebase.database().ref('programs_info/' + id).set(data).then(() => {
-                alert('Program TV berhasil dibuat!'); 
-                document.getElementById('prog-id').value = ''; document.getElementById('prog-title').value = '';
-                muatPilihanDropdown();
-            });
+            firebase.database().ref('programs_info/' + id).set({
+                id: id, title: document.getElementById('prog-title').value, banner: document.getElementById('prog-banner').value, schedule: document.getElementById('prog-schedule').value, desc: document.getElementById('prog-desc').value
+            }).then(() => alert('Program Dibuat!'));
         }
 
         function muatPilihanDropdown() {
-            // Muat Pilihan Video
-            const selectVid = document.getElementById('select-vid');
-            if (typeof videoList !== 'undefined') {
-                selectVid.innerHTML = '<option value="">-- Pilih Video --</option>';
-                [...videoList].reverse().forEach(v => {
-                    selectVid.innerHTML += `<option value="${v.id}">${v.title}</option>`;
-                });
+            const selVid = document.getElementById('select-vid');
+            if(typeof videoList !== 'undefined') {
+                selVid.innerHTML = ''; [...videoList].reverse().forEach(v => selVid.innerHTML += `<option value="${v.id}">${v.title}</option>`);
             }
-            
-            // Muat Pilihan Program
-            const selectProg = document.getElementById('select-prog');
             firebase.database().ref('programs_info').once('value', snap => {
-                selectProg.innerHTML = '<option value="">-- Pilih Program TV --</option>';
+                const selProg = document.getElementById('select-prog');
+                selProg.innerHTML = '';
                 if(snap.exists()) {
-                    const progs = snap.val();
-                    Object.keys(progs).forEach(k => {
-                        selectProg.innerHTML += `<option value="${k}">${progs[k].title}</option>`;
-                    });
+                    const progs = snap.val(); Object.keys(progs).forEach(k => selProg.innerHTML += `<option value="${k}">${progs[k].title}</option>`);
                 }
             });
         }
 
         function masukkanVideoKeProgram() {
-            const progId = document.getElementById('select-prog').value;
-            const vidId = document.getElementById('select-vid').value;
-            if(!progId || !vidId) { alert("Pilih program dan videonya!"); return; }
+            firebase.database().ref('program_playlists/' + document.getElementById('select-prog').value + '/' + document.getElementById('select-vid').value).set(true).then(() => alert('Dimasukkan ke Playlist!'));
+        }
 
-            // Menyimpan daftar video (playlist) ke dalam program TV
-            firebase.database().ref('program_playlists/' + progId + '/' + vidId).set(true).then(() => {
-                alert('Video berhasil dimasukkan ke Program TV!');
+        // ==========================================
+        // PANTAUAN SUPPORT & NOTIFIKASI REALTIME
+        // ==========================================
+        function jalankanPantauanNotif() {
+            // Pantau Komplain
+            firebase.database().ref('complaints').on('value', snap => {
+                const data = snap.val();
+                let html = '';
+                if(data) {
+                    Object.keys(data).reverse().forEach(k => {
+                        const c = data[k];
+                        if(!c.jawaban_admin) {
+                            html += `
+                            <div style="background:#222; padding:12px; margin-bottom:10px; border-left:4px solid #ff914d;">
+                                <div style="color:#bbb; font-size:12px;">Dari: <strong>${c.nama}</strong></div>
+                                <div style="margin:8px 0;">"${c.isi}"</div>
+                                <div style="display:flex; gap:10px;">
+                                    <input type="text" id="jawab-${k}" placeholder="Tulis jawaban..." style="flex:1; padding:8px; background:#111; color:white;">
+                                    <button onclick="jawabKomplain('${k}')" style="background:#00a884; border:none; color:white; padding:0 15px;">Balas</button>
+                                </div>
+                            </div>`;
+                        }
+                    });
+                }
+                document.getElementById('admin-complaint-list').innerHTML = html || 'Tidak ada komplain.';
+            });
+
+            // Pantau Pop-up Notif Komplain di Layar HP
+            firebase.database().ref('complaints').on('child_added', snap => {
+                const c = snap.val();
+                if (c.timestamp > waktuLoginAdmin && !c.jawaban_admin) {
+                    munculkanNotifHP("Komplain dari " + c.nama, c.isi);
+                }
+            });
+
+            // Pantau Daftar Aktivitas (Komentar/Mention)
+            firebase.database().ref('admin_notifications').on('value', snap => {
+                const data = snap.val();
+                let html = '';
+                if(data) {
+                    Object.keys(data).reverse().forEach(k => {
+                        const n = data[k];
+                        const dot = n.read ? '' : '<span style="color:#ff4d4d; font-size:20px; line-height:0;">•</span>';
+                        html += `
+                        <div style="padding:10px; border-bottom:1px solid #222; opacity: ${n.read ? '0.5' : '1'};">
+                            <div style="font-size:12px; color:#ff914d;">${n.tipe} ${dot}</div>
+                            <div style="font-size:13px; margin-top:4px;">${n.pesan}</div>
+                        </div>`;
+                    });
+                }
+                document.getElementById('admin-notif-list').innerHTML = html || 'Belum ada.';
+            });
+
+            // Pantau Pop-up Notif Komentar di Layar HP
+            firebase.database().ref('admin_notifications').on('child_added', snap => {
+                const n = snap.val();
+                if (n.timestamp > waktuLoginAdmin && !n.read) {
+                    munculkanNotifHP("LUVIA: " + n.tipe, n.pesan);
+                }
+            });
+        }
+
+        function jawabKomplain(id) {
+            const j = document.getElementById(`jawab-${id}`).value;
+            if(!j) return;
+            firebase.database().ref('complaints/' + id).update({ jawaban_admin: j, answered_at: Date.now() });
+        }
+
+        function tandaiSemuaDibaca() {
+            firebase.database().ref('admin_notifications').once('value', snap => {
+                const data = snap.val();
+                if(data) {
+                    let updates = {};
+                    Object.keys(data).forEach(k => { updates[k + '/read'] = true; });
+                    firebase.database().ref('admin_notifications').update(updates);
+                }
             });
         }
     </script>
