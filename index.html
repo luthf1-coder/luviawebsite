@@ -225,34 +225,36 @@
         </div>
     </section>
 
-    <script>
+<script>
         document.addEventListener("DOMContentLoaded", function() {
             if(typeof firebase !== 'undefined') {
+                // Dengarkan data dari Firebase secara realtime
                 firebase.database().ref('complaints').on('value', snap => {
                     const data = snap.val();
                     let belumDibaca = false;
                     let htmlList = '';
 
                     if(data) {
-                        const keys = Object.keys(data).reverse(); 
+                        const keys = Object.keys(data).reverse(); // Urutkan terbaru di atas
                         keys.forEach(k => {
                             const c = data[k];
-                            // Jika Admin sudah menjawab
+                            // TAMPILKAN PERMANEN JIKA ADMIN SUDAH MENJAWAB
                             if(c.jawaban_admin) {
                                 htmlList += `
                                 <div class="jawab-item">
                                     <div class="jawab-nama">Menjawab pertanyaan dari @${c.nama} :</div>
                                     <div class="jawab-tanya">"${c.isi}"</div>
-                                    <div class="jawab-admin"><strong>Admin:</strong> ${c.jawaban_admin}</div>
+                                    <div class="jawab-admin"><strong>Admin LUVIA STUDIO:</strong> ${c.jawaban_admin}</div>
                                 </div>`;
                                 
+                                // Cek titik merah notifikasi
                                 const lastRead = localStorage.getItem('last_read_complaints') || 0;
                                 if(c.answered_at > lastRead) belumDibaca = true;
                             }
                         });
                     }
                     
-                    document.getElementById('list-jawaban-umum').innerHTML = htmlList || '<p style="text-align:center; color:#bbb;">Belum ada jawaban dari Admin.</p>';
+                    document.getElementById('list-jawaban-umum').innerHTML = htmlList || '<p style="text-align:center; color:#bbb;">Belum ada jawaban dari Admin. Jawaban akan tampil di sini secara permanen.</p>';
                     document.getElementById('bell-dot').style.display = belumDibaca ? 'block' : 'none';
                 });
             }
@@ -261,6 +263,7 @@
         function bukaNotifKomplain() {
             document.getElementById('modal-notif').style.display = 'flex';
             document.getElementById('bell-dot').style.display = 'none';
+            // Tandai sudah dibaca agar titik merah hilang di HP user
             localStorage.setItem('last_read_complaints', Date.now());
         }
 
@@ -278,11 +281,10 @@
                 nama: nama, isi: isi, timestamp: Date.now(), jawaban_admin: ""
             });
 
-            // Kirim notif ke database agar HP Admin berbunyi
             if(typeof firebase !== 'undefined') {
                 firebase.database().ref('admin_notifications').push({
                     tipe: "Komplain Masuk",
-                    pesan: `Ada komplain baru dari ${nama}: "${isi}"`,
+                    pesan: `Laporan/Komplain dari ${nama}: "${isi}"`,
                     timestamp: Date.now(), read: false
                 });
             }
