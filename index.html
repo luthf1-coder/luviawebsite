@@ -226,35 +226,33 @@
     </section>
 
 <script>
-        document.addEventListener("DOMContentLoaded", function() {
+document.addEventListener("DOMContentLoaded", function() {
             if(typeof firebase !== 'undefined') {
-                // Dengarkan data dari Firebase secara realtime
                 firebase.database().ref('complaints').on('value', snap => {
                     const data = snap.val();
                     let belumDibaca = false;
                     let htmlList = '';
 
                     if(data) {
-                        const keys = Object.keys(data).reverse(); // Urutkan terbaru di atas
+                        const keys = Object.keys(data).reverse(); 
                         keys.forEach(k => {
                             const c = data[k];
-                            // TAMPILKAN PERMANEN JIKA ADMIN SUDAH MENJAWAB
+                            // TAMPILKAN PERMANEN JIKA SUDAH DIJAWAB
                             if(c.jawaban_admin) {
                                 htmlList += `
                                 <div class="jawab-item">
                                     <div class="jawab-nama">Menjawab pertanyaan dari @${c.nama} :</div>
                                     <div class="jawab-tanya">"${c.isi}"</div>
-                                    <div class="jawab-admin"><strong>Admin LUVIA STUDIO:</strong> ${c.jawaban_admin}</div>
+                                    <div class="jawab-admin"><strong>Admin LUVIA:</strong> ${c.jawaban_admin}</div>
                                 </div>`;
                                 
-                                // Cek titik merah notifikasi
                                 const lastRead = localStorage.getItem('last_read_complaints') || 0;
                                 if(c.answered_at > lastRead) belumDibaca = true;
                             }
                         });
                     }
                     
-                    document.getElementById('list-jawaban-umum').innerHTML = htmlList || '<p style="text-align:center; color:#bbb;">Belum ada jawaban dari Admin. Jawaban akan tampil di sini secara permanen.</p>';
+                    document.getElementById('list-jawaban-umum').innerHTML = htmlList || '<p style="text-align:center; color:#bbb;">Belum ada jawaban dari Admin. Jawaban akan tampil di sini selamanya kecuali dihapus admin.</p>';
                     document.getElementById('bell-dot').style.display = belumDibaca ? 'block' : 'none';
                 });
             }
