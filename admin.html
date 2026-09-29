@@ -61,12 +61,27 @@
         <!-- 1. TAMBAH VIDEO -->
         <div id="tab-video" class="panel active">
             <h3 style="margin-top:0;">Tambah Video Manual</h3>
-            <div class="admin-form-group"><label>Judul</label><input type="text" id="vid-title" placeholder="Judul..."></div>
+            <div class="admin-form-group"><label>ID Video (opsional, cth: vid_spesial_1)</label><input type="text" id="vid-id" placeholder="Biarkan kosong untuk ID otomatis..."></div>
+            <div class="admin-form-group"><label>Judul Video</label><input type="text" id="vid-title" placeholder="Judul..."></div>
             <div class="admin-form-group"><label>Link Thumbnail</label><input type="text" id="vid-thumb" placeholder="https://..."></div>
-            <div class="admin-form-group"><label>Link Video</label><input type="text" id="vid-url" placeholder="https://..."></div>
-            <div class="admin-form-group"><label>Genre</label><input type="text" id="vid-genre" placeholder="Anime..."></div>
-            <div class="admin-form-group"><label>Deskripsi</label><textarea id="vid-desc"></textarea></div>
+            
+            <div class="admin-form-group">
+                <label>Sumber / Jenis Video</label>
+                <select id="vid-type" style="width: 100%; padding: 12px; margin-bottom: 15px; background: #2a2a2a; border: 1px solid #444; color: white; border-radius: 6px;">
+                    <option value="youtube">YouTube (Cukup masukkan Link YT / ID)</option>
+                    <option value="drive">Google Drive (Link Preview/View)</option>
+                    <option value="rumble">Rumble (Link Embed)</option>
+                    <option value="other">Bebas / Archive.org (Link Direct MP4)</option>
+                </select>
+            </div>
+            
+            <div class="admin-form-group"><label>Link Video / ID</label><input type="text" id="vid-url" placeholder="Tempel link atau ID di sini..."></div>
+            <div class="admin-form-group"><label>Link Download (Opsional)</label><input type="text" id="vid-download" placeholder="https://..."></div>
+            <div class="admin-form-group"><label>Genre</label><input type="text" id="vid-genre" placeholder="Anime, Film Komedi..."></div>
+            <div class="admin-form-group"><label>Deskripsi</label><textarea id="vid-desc" placeholder="Tulis deskripsi..."></textarea></div>
             <button class="btn-submit-comment" onclick="simpanVideo()">Upload Video</button>
+            
+            <div id="list-hapus-vid"></div> <!-- Tempat daftar video untuk dihapus -->
         </div>
 
         <!-- 2. BUAT PROGRAM -->
@@ -146,41 +161,126 @@
             btn.classList.add('active');
         }
 
-        // ==========================================
-        // FITUR 1: TAMBAH VIDEO (DETEKSI LINK OTOMATIS)
-        // ==========================================
+    // FUNGSI UPLOAD VIDEO (AUTO DETEKSI LINK)
         function simpanVideo() {
-            const title = document.getElementById('vid-title').value;
-            const url = document.getElementById('vid-url').value;
-            if(!title || !url) { alert("Judul dan Link wajib diisi!"); return; }
+            const title = document.getElementById('vid-title').value.trim();
+            let url = document.getElementById('vid-url').value.trim();
+            if(!title || !url) { alert("Judul dan Link Video wajib diisi!"); return; }
 
-            const id = "manual_" + Date.now();
-            let ytId = "", driveEmbed = "", archiveSrc = "";
+            const id = document.getElementById('vid-id').value.trim() || "manual_" + Date.now();
+            const type = document.getElementById('vid-type').value;
+            const downloadUrl = document.getElementById('vid-download').value.trim();
+            
+            let ytId = "", driveEmbed = "", rumbleEmbed = "", archiveSrc = "";
 
-            // LOGIKA CERDAS IDENTIFIKASI LINK
-            if (url.includes("youtube.com") || url.includes("youtu.be")) {
+            // LOGIKA PEMBAGIAN SUMBER LINK
+            if (type === "youtube") {
                 const regExp = /^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|\&v=)([^#\&\?]*).*/;
                 const match = url.match(regExp);
-                ytId = (match && match[2].length === 11) ? match[2] : url;
-            } else if (url.includes("drive.google.com")) {
+                ytId = (match && match[2].length === 11) ? match[2] : url; // Ambil ID otomatis
+            } else if (type === "drive") {
                 driveEmbed = url;
+            } else if (type === "rumble") {
+                rumbleEmbed = url;
             } else {
-                archiveSrc = url; // Dianggap direct MP4 / Archive
+                archiveSrc = url; // Untuk archive.org / mp4 bebas
             }
             
-            firebase.database().ref('videos_manual/' + id).set({
+            const newData = {
                 id: id, title: title, thumb: document.getElementById('vid-thumb').value, 
-                archiveSrc: archiveSrc, driveEmbed: driveEmbed, youtubeId: ytId, 
-                downloadUrl: archiveSrc || driveEmbed || url, 
-                description: document.getElementById('vid-desc').value, 
-                genre: document.getElementById('vid-genre').value, 
+                sources: [], driveEmbed: driveEmbed, youtubeId: ytId, rumbleEmbed: rumbleEmbed, archiveSrc: archiveSrc, 
+                downloadUrl: downloadUrl || archiveSrc || driveEmbed, 
+                description: document.getElementById('vid-desc').value, genre: document.getElementById('vid-genre').value, 
                 uploadDate: new Date().toISOString().split('T')[0], defaultViews: 0
-            }).then(() => { 
-                alert('Video Berhasil Ditambahkan ke Database!'); 
-                document.getElementById('vid-title').value = ''; 
-                document.getElementById('vid-url').value = ''; 
-                muatPilihanDropdown(); 
-                muatDaftarHapus(); 
+            };
+
+            firebase.database().ref('videos_manual/' + id).set(newData).then(() => { 
+                alert('Upload Sukses! Struktur data sudah sesuai.'); 
+                document.getElementById('vid-title').value = ''; document.getElementById('vid-url').value = ''; 
+                muatPilihanDropdown(); muatDaftarHapus();
+            });
+        }
+
+        // FUNGSI HAPUS DATA ADMIN
+        function hapusData(path) {
+            if(confirm("Yakin ingin menghapus data ini secara permanen dari website?")) {
+                firebase.database().ref(path).remove().then(() => alert("Berhasil dihapus!"));
+            }
+        }
+
+        // ==========================================
+        // PANTAUAN SUPPORT, NOTIFIKASI & FITUR HAPUS
+        // ==========================================
+        function jalankanPantauanNotif() {
+            // Tampilkan Komplain dengan Tombol Hapus
+            firebase.database().ref('complaints').on('value', snap => {
+                const data = snap.val();
+                let html = '';
+                if(data) {
+                    Object.keys(data).reverse().forEach(k => {
+                        const c = data[k];
+                        const borderWarna = c.jawaban_admin ? '#53fc18' : '#ff914d';
+                        
+                        html += `
+                        <div style="background:#222; padding:12px; margin-bottom:10px; border-left:4px solid ${borderWarna}; position:relative;">
+                            <button style="position:absolute; right:10px; top:10px; background:#ff4d4d; color:white; border:none; padding:4px 8px; border-radius:4px; cursor:pointer;" onclick="hapusData('complaints/${k}')">Hapus</button>
+                            <div style="color:#bbb; font-size:12px;">Dari: <strong>${c.nama}</strong></div>
+                            <div style="margin:8px 0;">"${c.isi}"</div>`;
+                            
+                        if(!c.jawaban_admin) {
+                            html += `
+                            <div style="display:flex; gap:10px;">
+                                <input type="text" id="jawab-${k}" placeholder="Tulis jawaban admin..." style="flex:1; padding:8px; background:#111; color:white;">
+                                <button onclick="jawabKomplain('${k}')" style="background:#00a884; border:none; color:white; padding:0 15px; cursor:pointer;">Balas</button>
+                            </div>`;
+                        } else {
+                            html += `<div style="background:#111; padding:8px; color:#53fc18; font-size:13px;">Dijawab: ${c.jawaban_admin}</div>`;
+                        }
+                        html += `</div>`;
+                    });
+                }
+                document.getElementById('admin-complaint-list').innerHTML = html || 'Tidak ada komplain.';
+            });
+
+            // Tampilkan Notifikasi dengan Tombol Silang Hapus
+            firebase.database().ref('admin_notifications').on('value', snap => {
+                const data = snap.val();
+                let html = '';
+                if(data) {
+                    Object.keys(data).reverse().forEach(k => {
+                        const n = data[k];
+                        const dot = n.read ? '' : '<span style="color:#ff4d4d; font-size:20px; line-height:0;">•</span>';
+                        html += `
+                        <div style="padding:10px; border-bottom:1px solid #222; opacity: ${n.read ? '0.5' : '1'}; position:relative;">
+                            <button style="position:absolute; right:5px; top:5px; background:transparent; color:#ff4d4d; border:none; cursor:pointer;" onclick="hapusData('admin_notifications/${k}')">✖</button>
+                            <div style="font-size:12px; color:#ff914d;">${n.tipe} ${dot}</div>
+                            <div style="font-size:13px; margin-top:4px;">${n.pesan}</div>
+                        </div>`;
+                    });
+                }
+                document.getElementById('admin-notif-list').innerHTML = html || 'Belum ada.';
+            });
+
+            // Pop-up Notif HP
+            firebase.database().ref('complaints').on('child_added', snap => {
+                const c = snap.val();
+                if (c.timestamp > waktuLoginAdmin && !c.jawaban_admin) { munculkanNotifHP("Komplain dari " + c.nama, c.isi); }
+            });
+            firebase.database().ref('admin_notifications').on('child_added', snap => {
+                const n = snap.val();
+                if (n.timestamp > waktuLoginAdmin && !n.read) { munculkanNotifHP("LUVIA: " + n.tipe, n.pesan); }
+            });
+        }
+        
+        // Memuat Daftar Video untuk Dihapus
+        function muatDaftarHapus() {
+            firebase.database().ref('videos_manual').on('value', snap => {
+                let html = '<h4 style="color:#ff4d4d; margin-top:20px;">Hapus Video (Upload Manual)</h4>';
+                if(snap.exists()) {
+                    const data = snap.val();
+                    Object.keys(data).forEach(k => { html += `<div style="display:flex; justify-content:space-between; background:#222; padding:10px; margin-bottom:5px;"><span>${data[k].title}</span> <button style="background:#ff4d4d; color:white; border:none; padding:4px 8px; cursor:pointer;" onclick="hapusData('videos_manual/${k}')">Hapus</button></div>`; });
+                }
+                document.getElementById('list-hapus-vid').innerHTML = html;
             });
         }
 
