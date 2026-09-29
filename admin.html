@@ -11,21 +11,27 @@
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-database-compat.js"></script>
     <script src="videos-data.js"></script>
 
-    <style>
+<style>
+        /* TEMA SESUAI WEBSITE UTAMA */
         body { background-color: #0f0f0f; color: #fff; margin: 0; font-family: sans-serif; }
         #login-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0, 0, 0, 0.95); z-index: 9999; display: flex; align-items: center; justify-content: center; }
-        .login-box { background: #1a1a1a; padding: 40px; border-radius: 12px; text-align: center; width: 90%; max-width: 400px; border: 1px solid #333; }
+        .login-box { background: #1a1a1a; padding: 40px; border-radius: 12px; text-align: center; width: 90%; max-width: 400px; border: 1px solid #333; box-shadow: 0 4px 15px rgba(255, 145, 77, 0.2); }
         .login-box h2 { color: #ff914d; }
-        .login-box input, .admin-form-group input, .admin-form-group textarea, .admin-form-group select { width: 100%; padding: 12px; margin-bottom: 15px; background: #2a2a2a; border: 1px solid #444; color: white; border-radius: 6px; box-sizing: border-box; }
-        .login-box button, .btn-submit-comment { width: 100%; padding: 12px; background: linear-gradient(45deg, #8c52ff, #ff914d); border: none; color: white; font-weight: bold; border-radius: 6px; cursor: pointer; }
+        .login-box input, .admin-form-group input, .admin-form-group textarea, .admin-form-group select { width: 100%; padding: 12px; margin-bottom: 15px; background: #222; border: 1px solid #444; color: white; border-radius: 6px; box-sizing: border-box; }
+        .login-box button, .btn-submit-comment { width: 100%; padding: 12px; background: linear-gradient(45deg, #8c52ff, #ff914d); border: none; color: white; font-weight: bold; border-radius: 6px; cursor: pointer; transition: 0.3s; }
+        .btn-submit-comment:hover { opacity: 0.8; }
         
-        #admin-dashboard { display: none; padding: 20px; max-width: 900px; margin: 0 auto; margin-top: 20px; }
+        #admin-dashboard { display: none; padding: 20px; max-width: 1000px; margin: 0 auto; margin-top: 20px; }
         .tab-container { display: flex; gap: 10px; margin-bottom: 20px; flex-wrap: wrap; }
         .tab-btn { padding: 10px 15px; background: #222; border: 1px solid #444; color: white; cursor: pointer; border-radius: 6px; }
-        .tab-btn.active { background: #ff914d; color: #000; font-weight: bold; border-color: #ff914d; }
+        .tab-btn.active { background: linear-gradient(45deg, #8c52ff, #ff914d); color: #fff; font-weight: bold; border: none; }
         .panel { background: #1a1a1a; padding: 25px; border-radius: 12px; border: 1px solid #333; display: none; }
         .panel.active { display: block; }
-        .admin-form-group label { display: block; margin-bottom: 5px; font-weight: bold; color: #bbb; }
+        .admin-form-group label { display: block; margin-bottom: 5px; font-weight: bold; color: #ff914d; font-size: 14px;}
+        
+        /* DESAIN LIST & TOMBOL HAPUS */
+        .list-item { background: #222; padding: 12px; border-radius: 8px; margin-bottom: 10px; display: flex; justify-content: space-between; align-items: center; border-left: 3px solid #8c52ff; }
+        .btn-delete { background: #ff4d4d; color: white; border: none; padding: 6px 12px; border-radius: 4px; cursor: pointer; font-size: 12px; font-weight:bold; }
     </style>
 </head>
 <body>
@@ -98,21 +104,17 @@
     </div>
 
     <!-- SCRIPT UTAMA -->
-    <script>
+<script>
         const passwordAdmin = "luthfi"; 
         let waktuLoginAdmin = 0;
 
         // DAFTARKAN MESIN NOTIFIKASI BROWSER HP (sw.js)
-        if ('serviceWorker' in navigator) {
-            navigator.serviceWorker.register('sw.js');
-        }
+        if ('serviceWorker' in navigator) { navigator.serviceWorker.register('sw.js'); }
 
         function mintaIzinNotifikasi() {
             if ("Notification" in window && Notification.permission !== "granted" && Notification.permission !== "denied") {
                 Notification.requestPermission().then(permission => {
-                    if (permission === "granted") {
-                        munculkanNotifHP("Notifikasi Aktif!", "Anda akan menerima notif komplain di sini.");
-                    }
+                    if (permission === "granted") { munculkanNotifHP("Notifikasi Aktif!", "Siap menerima laporan penonton."); }
                 });
             }
         }
@@ -129,12 +131,11 @@
             if (document.getElementById('admin-password').value === passwordAdmin) {
                 document.getElementById('login-overlay').style.display = 'none';
                 document.getElementById('admin-dashboard').style.display = 'block';
-                
                 waktuLoginAdmin = Date.now();
-                mintaIzinNotifikasi(); // Minta izin Notif saat berhasil login
-                
+                mintaIzinNotifikasi();
                 setTimeout(muatPilihanDropdown, 1500); 
                 jalankanPantauanNotif();
+                muatDaftarHapus(); // Tampilkan data untuk bisa dihapus
             } else { document.getElementById('login-error').style.display = 'block'; }
         }
 
@@ -145,25 +146,56 @@
             btn.classList.add('active');
         }
 
-        // FUNGSI UPLOAD VIDEO & PROGRAM (Sama dengan sebelumnya)
+        // ==========================================
+        // FITUR 1: TAMBAH VIDEO (DETEKSI LINK OTOMATIS)
+        // ==========================================
         function simpanVideo() {
             const title = document.getElementById('vid-title').value;
             const url = document.getElementById('vid-url').value;
-            if(!title || !url) return;
+            if(!title || !url) { alert("Judul dan Link wajib diisi!"); return; }
+
             const id = "manual_" + Date.now();
-            let driveEmbed = url.includes("drive.google.com") ? url : "";
-            let archiveSrc = url.includes("drive.google.com") ? "" : url;
+            let ytId = "", driveEmbed = "", archiveSrc = "";
+
+            // LOGIKA CERDAS IDENTIFIKASI LINK
+            if (url.includes("youtube.com") || url.includes("youtu.be")) {
+                const regExp = /^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|\&v=)([^#\&\?]*).*/;
+                const match = url.match(regExp);
+                ytId = (match && match[2].length === 11) ? match[2] : url;
+            } else if (url.includes("drive.google.com")) {
+                driveEmbed = url;
+            } else {
+                archiveSrc = url; // Dianggap direct MP4 / Archive
+            }
             
             firebase.database().ref('videos_manual/' + id).set({
-                id: id, title: title, thumb: document.getElementById('vid-thumb').value, archiveSrc: archiveSrc, driveEmbed: driveEmbed, youtubeId: "", downloadUrl: archiveSrc || driveEmbed, description: document.getElementById('vid-desc').value, genre: document.getElementById('vid-genre').value, uploadDate: new Date().toISOString().split('T')[0], defaultViews: 0
-            }).then(() => { alert('Upload Sukses!'); muatPilihanDropdown(); });
+                id: id, title: title, thumb: document.getElementById('vid-thumb').value, 
+                archiveSrc: archiveSrc, driveEmbed: driveEmbed, youtubeId: ytId, 
+                downloadUrl: archiveSrc || driveEmbed || url, 
+                description: document.getElementById('vid-desc').value, 
+                genre: document.getElementById('vid-genre').value, 
+                uploadDate: new Date().toISOString().split('T')[0], defaultViews: 0
+            }).then(() => { 
+                alert('Video Berhasil Ditambahkan ke Database!'); 
+                document.getElementById('vid-title').value = ''; 
+                document.getElementById('vid-url').value = ''; 
+                muatPilihanDropdown(); 
+                muatDaftarHapus(); 
+            });
         }
 
+        // ==========================================
+        // FITUR 2: BUAT PROGRAM & MASUKKAN VIDEO
+        // ==========================================
         function buatProgramBaru() {
             const id = document.getElementById('prog-id').value.replace(/\s+/g, '_').toLowerCase();
+            if(!id) return alert("ID Program wajib diisi!");
             firebase.database().ref('programs_info/' + id).set({
-                id: id, title: document.getElementById('prog-title').value, banner: document.getElementById('prog-banner').value, schedule: document.getElementById('prog-schedule').value, desc: document.getElementById('prog-desc').value
-            }).then(() => alert('Program Dibuat!'));
+                id: id, title: document.getElementById('prog-title').value, 
+                banner: document.getElementById('prog-banner').value, 
+                schedule: document.getElementById('prog-schedule').value, 
+                desc: document.getElementById('prog-desc').value
+            }).then(() => { alert('Program Berhasil Dibuat!'); muatPilihanDropdown(); muatDaftarHapus(); });
         }
 
         function muatPilihanDropdown() {
@@ -181,45 +213,96 @@
         }
 
         function masukkanVideoKeProgram() {
-            firebase.database().ref('program_playlists/' + document.getElementById('select-prog').value + '/' + document.getElementById('select-vid').value).set(true).then(() => alert('Dimasukkan ke Playlist!'));
+            const prog = document.getElementById('select-prog').value;
+            const vid = document.getElementById('select-vid').value;
+            firebase.database().ref('program_playlists/' + prog + '/' + vid).set(true).then(() => alert('Berhasil Dimasukkan ke Playlist Program TV!'));
         }
 
         // ==========================================
-        // PANTAUAN SUPPORT & NOTIFIKASI REALTIME
+        // FITUR 3: HAPUS VIDEO, PROGRAM, DAN KOMPLAIN
+        // ==========================================
+        // Tambahkan div ini secara virtual di bawah form input pada admin.html menggunakan JS (tanpa ubah HTML)
+        function muatDaftarHapus() {
+            // Hapus Video Manual
+            firebase.database().ref('videos_manual').on('value', snap => {
+                let html = '<h4 style="color:#ff4d4d; border-top:1px solid #333; margin-top:20px; padding-top:10px;">Hapus Video Manual</h4>';
+                if(snap.exists()) {
+                    const data = snap.val();
+                    Object.keys(data).forEach(k => {
+                        html += `<div class="list-item"><span>${data[k].title}</span> <button class="btn-delete" onclick="hapusData('videos_manual/${k}')">Hapus</button></div>`;
+                    });
+                }
+                if(!document.getElementById('list-hapus-vid')) {
+                    const div = document.createElement('div'); div.id = 'list-hapus-vid'; document.getElementById('tab-video').appendChild(div);
+                }
+                document.getElementById('list-hapus-vid').innerHTML = html;
+            });
+
+            // Hapus Program TV
+            firebase.database().ref('programs_info').on('value', snap => {
+                let html = '<h4 style="color:#ff4d4d; border-top:1px solid #333; margin-top:20px; padding-top:10px;">Hapus Program TV</h4>';
+                if(snap.exists()) {
+                    const data = snap.val();
+                    Object.keys(data).forEach(k => {
+                        html += `<div class="list-item"><span>${data[k].title}</span> <button class="btn-delete" onclick="hapusData('programs_info/${k}'); hapusData('program_playlists/${k}')">Hapus</button></div>`;
+                    });
+                }
+                if(!document.getElementById('list-hapus-prog')) {
+                    const div = document.createElement('div'); div.id = 'list-hapus-prog'; document.getElementById('tab-buat-program').appendChild(div);
+                }
+                document.getElementById('list-hapus-prog').innerHTML = html;
+            });
+        }
+
+        function hapusData(path) {
+            if(confirm("Yakin ingin menghapus ini secara permanen?")) {
+                firebase.database().ref(path).remove().then(() => alert("Berhasil dihapus!"));
+            }
+        }
+
+        // ==========================================
+        // FITUR 4: SUPPORT (KOMPLAIN) PERMANEN & BISA DIHAPUS ADMIN
         // ==========================================
         function jalankanPantauanNotif() {
-            // Pantau Komplain
             firebase.database().ref('complaints').on('value', snap => {
                 const data = snap.val();
                 let html = '';
                 if(data) {
                     Object.keys(data).reverse().forEach(k => {
                         const c = data[k];
+                        const warnaBorder = c.jawaban_admin ? '#00a884' : '#ff914d';
+                        const status = c.jawaban_admin ? '(Telah Dijawab)' : '(Menunggu)';
+                        
+                        html += `
+                        <div style="background:#222; padding:12px; margin-bottom:10px; border-left:4px solid ${warnaBorder}; position:relative;">
+                            <button class="btn-delete" style="position:absolute; right:10px; top:10px;" onclick="hapusData('complaints/${k}')">Hapus</button>
+                            <div style="color:#bbb; font-size:12px;">Dari: <strong>${c.nama}</strong> <span style="color:${warnaBorder}">${status}</span></div>
+                            <div style="margin:8px 0; font-style:italic;">"${c.isi}"</div>
+                        `;
+                        
+                        // Form Balas (jika belum dibalas) atau Teks Jawaban (jika sudah dibalas)
                         if(!c.jawaban_admin) {
                             html += `
-                            <div style="background:#222; padding:12px; margin-bottom:10px; border-left:4px solid #ff914d;">
-                                <div style="color:#bbb; font-size:12px;">Dari: <strong>${c.nama}</strong></div>
-                                <div style="margin:8px 0;">"${c.isi}"</div>
-                                <div style="display:flex; gap:10px;">
-                                    <input type="text" id="jawab-${k}" placeholder="Tulis jawaban..." style="flex:1; padding:8px; background:#111; color:white;">
-                                    <button onclick="jawabKomplain('${k}')" style="background:#00a884; border:none; color:white; padding:0 15px;">Balas</button>
-                                </div>
+                            <div style="display:flex; gap:10px; margin-top:10px;">
+                                <input type="text" id="jawab-${k}" placeholder="Tulis jawaban resmi admin..." style="flex:1; padding:8px; background:#111; color:white; border:1px solid #444; border-radius:4px;">
+                                <button onclick="jawabKomplain('${k}')" style="background:linear-gradient(45deg, #8c52ff, #ff914d); border:none; color:white; padding:0 15px; border-radius:4px; font-weight:bold; cursor:pointer;">Kirim Balasan</button>
                             </div>`;
+                        } else {
+                            html += `<div style="background:#111; padding:8px; border-radius:4px; color:#53fc18; font-size:13px;"><strong>Admin:</strong> ${c.jawaban_admin}</div>`;
                         }
+                        html += `</div>`;
                     });
                 }
-                document.getElementById('admin-complaint-list').innerHTML = html || 'Tidak ada komplain.';
+                document.getElementById('admin-complaint-list').innerHTML = html || 'Tidak ada komplain masuk.';
             });
 
-            // Pantau Pop-up Notif Komplain di Layar HP
+            // Pantau Pop-up Notif Komplain HP
             firebase.database().ref('complaints').on('child_added', snap => {
                 const c = snap.val();
-                if (c.timestamp > waktuLoginAdmin && !c.jawaban_admin) {
-                    munculkanNotifHP("Komplain dari " + c.nama, c.isi);
-                }
+                if (c.timestamp > waktuLoginAdmin && !c.jawaban_admin) { munculkanNotifHP("Komplain dari " + c.nama, c.isi); }
             });
-
-            // Pantau Daftar Aktivitas (Komentar/Mention)
+            
+            // Notifikasi Lain (Mention dll) - Tetap sama
             firebase.database().ref('admin_notifications').on('value', snap => {
                 const data = snap.val();
                 let html = '';
@@ -227,8 +310,7 @@
                     Object.keys(data).reverse().forEach(k => {
                         const n = data[k];
                         const dot = n.read ? '' : '<span style="color:#ff4d4d; font-size:20px; line-height:0;">•</span>';
-                        html += `
-                        <div style="padding:10px; border-bottom:1px solid #222; opacity: ${n.read ? '0.5' : '1'};">
+                        html += `<div style="padding:10px; border-bottom:1px solid #222; opacity: ${n.read ? '0.5' : '1'};">
                             <div style="font-size:12px; color:#ff914d;">${n.tipe} ${dot}</div>
                             <div style="font-size:13px; margin-top:4px;">${n.pesan}</div>
                         </div>`;
@@ -236,19 +318,12 @@
                 }
                 document.getElementById('admin-notif-list').innerHTML = html || 'Belum ada.';
             });
-
-            // Pantau Pop-up Notif Komentar di Layar HP
-            firebase.database().ref('admin_notifications').on('child_added', snap => {
-                const n = snap.val();
-                if (n.timestamp > waktuLoginAdmin && !n.read) {
-                    munculkanNotifHP("LUVIA: " + n.tipe, n.pesan);
-                }
-            });
         }
 
         function jawabKomplain(id) {
             const j = document.getElementById(`jawab-${id}`).value;
             if(!j) return;
+            // Ini akan mengupdate Firebase, otomatis tayang permanen di index.html penonton
             firebase.database().ref('complaints/' + id).update({ jawaban_admin: j, answered_at: Date.now() });
         }
 
