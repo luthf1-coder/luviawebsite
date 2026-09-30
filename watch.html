@@ -107,11 +107,12 @@
     <script src="https://cdn.plyr.io/3.7.8/plyr.js"></script>
     <script src="videos-data.js"></script>
 
-    <script>
-        const urlParams = new URLSearchParams(window.location.search);
-        const currentVideoId = urlParams.get('id') || 'video1';
-        const currentVid = (typeof videoList !== 'undefined' && videoList.find(v => v.id === currentVideoId)) || {
-            id: currentVideoId, title: 'Video Tidak Ditemukan', description: 'Maaf, video ini tidak tersedia.', defaultViews: 0
+   <script>
+        function jalankanPemutarVideo() {
+            const urlParams = new URLSearchParams(window.location.search);
+            const currentVideoId = urlParams.get('id') || 'video1';
+            const currentVid = (typeof videoList !== 'undefined' && videoList.find(v => v.id === currentVideoId)) || {
+                id: currentVideoId, title: 'Video Tidak Ditemukan', description: 'Maaf, video ini tidak tersedia.', defaultViews: 0
         };
 
         document.getElementById('player-title').innerText = currentVid.title;
@@ -446,17 +447,22 @@
         };
 
         window.deleteComment = function(commentId, parentId, isReply) {
-            const pw = prompt("Masukkan password tersebut jika anda adalah admin!");
-            if (pw === adminPassword) {
-                let targetRef = isReply 
-                    ? commentsRef.child(parentId).child('replies').child(commentId)
-                    : commentsRef.child(commentId);
+                const pw = prompt("Masukkan password tersebut jika anda adalah admin!");
+                if (pw === adminPassword) {
+                    let targetRef = isReply 
+                        ? commentsRef.child(parentId).child('replies').child(commentId)
+                        : commentsRef.child(commentId);
 
-                targetRef.remove().then(() => alert("Komentar berhasil dihapus."));
-            } else if (pw !== null) {
-                alert("Password Salah! Anda tidak memiliki izin.");
-            }
-        };
+                    targetRef.remove().then(() => alert("Komentar berhasil dihapus."));
+                } else if (pw !== null) {
+                    alert("Password Salah! Anda tidak memiliki izin.");
+                }
+            };
+        } // <--- INI PENUTUP FUNGSI (SANGAT PENTING)
+
+        // INI PERINTAH UNTUK MENUNGGU DATA FIREBASE SIAP
+        window.addEventListener('videoDataReady', jalankanPemutarVideo);
+
 // SISTEM PENCARIAN LIVE (AUTOCOMPLETE) 
 document.addEventListener('DOMContentLoaded', () => {
     const searchInput = document.getElementById('navSearchInput');
