@@ -638,26 +638,33 @@ function executeSearchOnHome(query) {
 const botVideos = [...videoList]; 
 
 // 2. Fungsi untuk menarik video manual dari Admin Panel Firebase
+// 2. Fungsi untuk menarik video manual dari Admin Panel Firebase
 function muatDataDariFirebase() {
     if (typeof firebase === 'undefined') return;
     
-    // A. Tarik Data Video Manual
     firebase.database().ref('videos_manual').on('value', (snapshot) => {
         let adminVideos = [];
+        let adminIds = []; // Simpan ID dari Firebase
+        
         if (snapshot.exists()) {
             const data = snapshot.val();
-            adminVideos = Object.keys(data).map(key => data[key]);
+            Object.keys(data).forEach(key => {
+                adminVideos.push(data[key]);
+                adminIds.push(data[key].id);
+            });
         }
         
-        // Gabungkan video dari Bot (GitHub) + Admin (Firebase)
+        // PENTING: Ambil video Bot yang ID-nya TIDAK ADA di Firebase (Mencegah Duplikat)
+        const filteredBotVideos = botVideos.filter(v => !adminIds.includes(v.id));
+        
+        // Gabungkan video Bot (yang tidak diedit) + Video Admin (Firebase)
         videoList.length = 0; 
-        videoList.push(...botVideos, ...adminVideos); 
+        videoList.push(...filteredBotVideos, ...adminVideos); 
         
         // Beri sinyal ke website untuk memperbarui tampilan video
         window.dispatchEvent(new Event('videoDataReady'));
     });
 }
-
 // Jalankan sistem hybrid
 muatDataDariFirebase();
 
