@@ -181,17 +181,26 @@
             }
         }
 
-        function checkLogin() {
-            if (document.getElementById('admin-password').value === passwordAdmin) {
+        function checkLogin(isAuto = false) {
+            const inputPass = document.getElementById('admin-password').value;
+            if (isAuto || inputPass === passwordAdmin) {
+                sessionStorage.setItem('admin_logged_in', 'true'); // Simpan sesi login
                 document.getElementById('login-overlay').style.display = 'none';
                 document.getElementById('admin-dashboard').style.display = 'block';
                 waktuLoginAdmin = Date.now();
                 mintaIzinNotifikasi();
                 setTimeout(muatPilihanDropdown, 1500); 
                 jalankanPantauanNotif();
-                muatDaftarHapus(); // Tampilkan data untuk bisa dihapus
+                muatDaftarHapus(); 
             } else { document.getElementById('login-error').style.display = 'block'; }
         }
+
+        // Cek otomatis saat halaman direfresh
+        document.addEventListener('DOMContentLoaded', () => {
+            if(sessionStorage.getItem('admin_logged_in') === 'true') {
+                checkLogin(true);
+            }
+        });
 
         function switchTab(tabId, btn) {
             document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
@@ -241,10 +250,16 @@
         }
 
         // 2. FUNGSI KLIK EDIT VIDEO
-        function editVideoManual(id) {
+ function editVideoManual(id) {
             firebase.database().ref('videos_manual/' + id).once('value').then(snap => {
-                const v = snap.val();
-                if(!v) return;
+                let v = snap.val();
+                
+                // Jika tidak ada di Firebase, cari di data Bot (GitHub)
+                if(!v && typeof botVideos !== 'undefined') {
+                    v = botVideos.find(bot => bot.id === id);
+                }
+                
+                if(!v) return alert("Data video tidak ditemukan!");
                 
                 document.getElementById('edit-mode-id').value = id;
                 document.getElementById('vid-id').value = id;
@@ -342,15 +357,45 @@
         // ==========================================
         // FITUR 2: BUAT PROGRAM & MASUKKAN VIDEO
         // ==========================================
+        // FITUR BUAT DAN EDIT PROGRAM TV
         function buatProgramBaru() {
-            const id = document.getElementById('prog-id').value.replace(/\s+/g, '_').toLowerCase();
+            const idInput = document.getElementById('prog-id').value.trim();
+            const id = idInput.replace(/\s+/g, '_').toLowerCase();
             if(!id) return alert("ID Program wajib diisi!");
+            
             firebase.database().ref('programs_info/' + id).set({
-                id: id, title: document.getElementById('prog-title').value, 
+                id: id, 
+                title: document.getElementById('prog-title').value, 
                 banner: document.getElementById('prog-banner').value, 
                 schedule: document.getElementById('prog-schedule').value, 
                 desc: document.getElementById('prog-desc').value
-            }).then(() => { alert('Program Berhasil Dibuat!'); muatPilihanDropdown(); muatDaftarHapus(); });
+            }).then(() => { 
+                alert('Program Berhasil Disimpan!'); 
+                document.getElementById('prog-id').disabled = false; // Buka kunci ID
+                document.querySelector('#tab-buat-program .btn-submit-comment').innerText = "Buat Program TV Baru";
+                muatPilihanDropdown(); 
+            });
+        }
+
+        // FUNGSI MEMUAT DATA PROGRAM KE FORM EDIT
+        function editProgram(id) {
+            firebase.database().ref('programs_info/' + id).once('value').then(snap => {
+                const p = snap.val();
+                if(!p) return;
+                
+                document.getElementById('prog-id').value = p.id;
+                document.getElementById('prog-id').disabled = true; // Kunci ID agar tidak berubah
+                document.getElementById('prog-title').value = p.title || '';
+                document.getElementById('prog-banner').value = p.banner || '';
+                document.getElementById('prog-schedule').value = p.schedule || '';
+                document.getElementById('prog-desc').value = p.desc || '';
+                
+                document.querySelector('#tab-buat-program .btn-submit-comment').innerText = "💾 Simpan Perubahan Program";
+                
+                // Pindah ke tab Buat Program
+                document.querySelectorAll('.tab-btn')[1].click(); 
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+            });
         }
 
         function muatPilihanDropdown() {
@@ -379,31 +424,45 @@
         // Tambahkan div ini secara virtual di bawah form input pada admin.html menggunakan JS (tanpa ubah HTML)
         // 3. UPDATE: DAFTAR VIDEO DENGAN THUMBNAIL & TOMBOL ANALITIK
         function muatDaftarHapus() {
+            // A. DAFTAR SEMUA VIDEO (GABUNGAN BOT & FIREBASE)
             firebase.database().ref('videos_manual').on('value', snap => {
-                let html = '<h4 style="color:#ff4d4d; border-top:1px solid #333; margin-top:20px; padding-top:10px;">Daftar Video di Website</h4>';
-                if(snap.exists()) {
-                    const data = snap.val();
-                    Object.keys(data).reverse().forEach(k => { 
-                        const v = data[k];
-                        const visStatus = v.visibility === 'pribadi' ? '🔒 Pribadi' : (v.visibility === 'unlisted' ? '🔗 Tdk Publik' : '🌍 Publik');
-                        const thumbImg = v.thumb ? v.thumb : 'Asset Foto/Thumbnimail .png';
-                        const safeTitle = v.title.replace(/'/g, "\\'");
-                        
-                        html += `
-                        <div class="admin-list-item">
-                            <img src="${thumbImg}" class="admin-list-thumb">
-                            <div class="admin-list-info">
-                                <div style="font-weight:bold; font-size:14px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">${v.title}</div>
-                                <div style="font-size:11px; color:#bbb; margin-top:4px;">${visStatus} • ID: ${k}</div>
-                            </div>
-                            <div class="admin-list-actions">
-                                <button class="btn-stats" onclick="bukaAnalitik('${k}', '${safeTitle}')">📊 Analitik</button>
-                                <button class="btn-edit" onclick="editVideoManual('${k}')">✎ Edit</button>
-                                <button class="btn-delete" onclick="hapusData('videos_manual/${k}')">🗑️ Hapus</button>
-                            </div>
-                        </div>`; 
+                let html = '<h4 style="color:#ff4d4d; border-top:1px solid #333; margin-top:20px; padding-top:10px;">Daftar Semua Video</h4>';
+                
+                const adminData = snap.exists() ? snap.val() : {};
+                let allVideos = [];
+                
+                // Masukkan data dari Firebase (Admin)
+                Object.keys(adminData).forEach(k => allVideos.push({ key: k, data: adminData[k], source: 'firebase' }));
+                
+                // Masukkan data dari Bot (GitHub) yang belum disentuh Admin
+                if(typeof botVideos !== 'undefined') {
+                    botVideos.forEach(bv => {
+                        if(!adminData[bv.id]) allVideos.push({ key: bv.id, data: bv, source: 'bot' });
                     });
                 }
+                
+                // Render tampilannya ke HTML
+                allVideos.reverse().forEach(item => {
+                    const k = item.key; const v = item.data;
+                    const visStatus = v.visibility === 'pribadi' ? '🔒 Pribadi' : (v.visibility === 'unlisted' ? '🔗 Tdk Publik' : '🌍 Publik');
+                    const thumbImg = v.thumb ? v.thumb : 'Asset Foto/Thumbnimail .png';
+                    const safeTitle = v.title.replace(/'/g, "\\'");
+                    const badgeBot = item.source === 'bot' ? '<span style="background:#8c52ff; color:white; padding:2px 5px; border-radius:3px; font-size:9px; margin-left:5px;">🤖 BOT</span>' : '<span style="background:#ff914d; color:white; padding:2px 5px; border-radius:3px; font-size:9px; margin-left:5px;">🔥 ADMIN</span>';
+                    
+                    html += `
+                    <div class="admin-list-item">
+                        <img src="${thumbImg}" class="admin-list-thumb">
+                        <div class="admin-list-info">
+                            <div style="font-weight:bold; font-size:14px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">${v.title}</div>
+                            <div style="font-size:11px; color:#bbb; margin-top:4px;">${visStatus} ${badgeBot} • ID: ${k}</div>
+                        </div>
+                        <div class="admin-list-actions">
+                            <button class="btn-stats" onclick="bukaAnalitik('${k}', '${safeTitle}')">📊</button>
+                            <button class="btn-edit" onclick="editVideoManual('${k}')">✎ Edit</button>
+                            <button class="btn-delete" onclick="hapusData('videos_manual/${k}')">🗑️</button>
+                        </div>
+                    </div>`; 
+                });
                 
                 if(!document.getElementById('list-hapus-vid')) {
                     const div = document.createElement('div'); div.id = 'list-hapus-vid'; document.getElementById('tab-video').appendChild(div);
@@ -411,12 +470,21 @@
                 document.getElementById('list-hapus-vid').innerHTML = html;
             });
 
-            // Hapus Program UI
+            // B. DAFTAR PROGRAM TV (DENGAN TOMBOL EDIT)
             firebase.database().ref('programs_info').on('value', snap => {
-                let html = '<h4 style="color:#ff4d4d; border-top:1px solid #333; margin-top:20px; padding-top:10px;">Hapus Program TV</h4>';
+                let html = '<h4 style="color:#ff4d4d; border-top:1px solid #333; margin-top:20px; padding-top:10px;">Daftar Program TV</h4>';
                 if(snap.exists()) {
                     const data = snap.val();
-                    Object.keys(data).forEach(k => { html += `<div class="list-item"><span>📺 ${data[k].title}</span> <button class="btn-delete" onclick="hapusData('programs_info/${k}'); hapusData('program_playlists/${k}')">Hapus</button></div>`; });
+                    Object.keys(data).forEach(k => { 
+                        html += `
+                        <div class="list-item">
+                            <span>📺 ${data[k].title}</span> 
+                            <div>
+                                <button class="btn-edit" onclick="editProgram('${k}')">✎ Edit</button>
+                                <button class="btn-delete" onclick="hapusData('programs_info/${k}'); hapusData('program_playlists/${k}')">🗑️ Hapus</button>
+                            </div>
+                        </div>`; 
+                    });
                 }
                 if(!document.getElementById('list-hapus-prog')) {
                     const div = document.createElement('div'); div.id = 'list-hapus-prog'; document.getElementById('tab-buat-program').appendChild(div);
@@ -424,7 +492,7 @@
                 document.getElementById('list-hapus-prog').innerHTML = html;
             });
         }
-
+    
         // 4. FUNGSI KELOLA PLAYLIST DI DALAM PROGRAM (Bisa Hapus Video di Program)
         function muatIsiProgramPlaylist() {
             const prog = document.getElementById('select-prog').value;
