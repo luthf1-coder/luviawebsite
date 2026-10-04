@@ -75,7 +75,7 @@
                 }
             });
 
-            // 2. Ambil Daftar Videonya dari Program Playlist
+// 2. Ambil Daftar Videonya dari Program Playlist
             firebase.database().ref('program_playlists/' + progId).on('value', snap => {
                 const container = document.getElementById('playlist-container');
                 if (snap.exists()) {
@@ -86,22 +86,37 @@
                     videoIds.reverse().forEach(id => {
                         const vid = videoList.find(v => v.id === id);
                         if(vid) {
+                            const uploadTime = vid.uploadDate ? timeAgoFormated(vid.uploadDate) : ''; // Fitur kalkulasi waktu
                             html += `
                             <a href="watch.html?id=${vid.id}" class="video-card">
                                 <div class="thumb-box"><img src="${vid.thumb}"></div>
                                 <div class="video-details">
                                     <h3>${vid.title}</h3>
-                                    <p>LUVIA STUDIO TV</p>
+                                    <p>
+                                        <span class="card-genre-btn" onclick="event.preventDefault(); window.location.href='videos.html?genre=${encodeURIComponent(vid.genre || 'Umum')}'">${vid.genre || 'Umum'}</span><br>
+                                        <span id="view-count-prog-${vid.id}">👁️ Memuat...</span>${uploadTime ? ' • ' + uploadTime : ''}
+                                    </p>
                                 </div>
                             </a>`;
                         }
                     });
                     container.innerHTML = html || '<p>Belum ada video di program ini.</p>';
+                    
+                    // Aktifkan penghitung views real-time setelah elemen dirender
+                    videoIds.forEach(id => {
+                        const vid = videoList.find(v => v.id === id);
+                        if(vid) {
+                            listenVideoViews(vid.id, vid.defaultViews || 0, (totalViews) => {
+                                const el = document.getElementById(`view-count-prog-${vid.id}`);
+                                if (el) el.innerText = `👁️ ${formatViews(totalViews)}`;
+                            });
+                        }
+                    });
+                    
                 } else {
                     container.innerHTML = '<p style="color:#bbb;">Belum ada video di program ini.</p>';
                 }
             });
-        }
 
         // Tunggu sampai videoList di videos-data.js selesai dimuat
         if (typeof videoList !== 'undefined' && videoList.length > 0) {
