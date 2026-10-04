@@ -137,6 +137,18 @@
             transition: transform 0.2s;
         }
         .btn-send:active { transform: scale(0.95); }
+
+        /* Ikon Lonceng Papan Jawaban Umum */
+        .chat-header-right { font-size: 24px; cursor: pointer; position: relative; }
+        .bell-dot { display: none; position: absolute; top: -5px; right: -5px; width: 10px; height: 10px; background: #ff4d4d; border-radius: 50%; box-shadow: 0 0 5px #ff4d4d; }
+
+        /* Modal Papan Jawaban */
+        .modal-notif-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); z-index: 9999; display: flex; align-items: center; justify-content: center; }
+        .modal-notif-box { background: #1a1a1a; width: 90%; max-width: 500px; border-radius: 12px; padding: 20px; border: 1px solid #333; }
+        .jawab-item { background: #222; padding: 12px; border-radius: 8px; margin-bottom: 10px; border-left: 4px solid #8c52ff; }
+        .jawab-nama { font-weight: bold; color: #ff914d; font-size: 13px; margin-bottom: 5px; }
+        .jawab-tanya { color: #bbb; font-size: 13px; font-style: italic; margin-bottom: 8px; }
+        .jawab-admin { color: #fff; font-size: 14px; }
     </style>
 </head>
 <body>
@@ -163,12 +175,17 @@
     <!-- KONTEN UTAMA: KOTAK CHAT SUPPORT -->
     <div class="support-wrapper">
         <div class="chat-container">
-            <!-- Header Chat -->
+<!-- Header Chat dengan Lonceng -->
             <div class="chat-header">
-                <img src="Asset Foto/Thumbnimail .png" alt="Admin Luvia">
-                <div>
-                    <h3 class="chat-title">CS LUVIA STUDIO</h3>
-                    <p class="chat-status">Online - Siap Membantu</p>
+                <div style="display: flex; align-items: center; gap: 15px;">
+                    <img src="Asset Foto/Thumbnimail .png" alt="Admin Luvia">
+                    <div>
+                        <h3 class="chat-title">CS LUVIA STUDIO</h3>
+                        <p class="chat-status">Online - Siap Membantu</p>
+                    </div>
+                </div>
+                <div class="chat-header-right" onclick="bukaNotifKomplain()" title="Papan Jawaban Umum">
+                    🔔 <span id="bell-dot" class="bell-dot"></span>
                 </div>
             </div>
 
@@ -190,6 +207,19 @@
         </div>
     </div>
 
+<!-- Modal Papan Jawaban Umum -->
+    <div id="modal-notif" class="modal-notif-overlay" style="display:none;">
+        <div class="modal-notif-box">
+            <div style="display:flex; justify-content:space-between; align-items:center; border-bottom:1px solid #333; padding-bottom:10px; margin-bottom:15px;">
+                <h3 style="margin:0; color:#ff914d;">Papan Jawaban Admin</h3>
+                <button onclick="document.getElementById('modal-notif').style.display='none'" style="background:none; border:none; color:white; font-size:20px; cursor:pointer;">✖</button>
+            </div>
+            <div id="list-jawaban-umum" style="max-height: 400px; overflow-y: auto;">
+                <p style="text-align:center; color:#bbb;">Memuat jawaban...</p>
+            </div>
+        </div>
+    </div>
+    
     <!-- FOOTER STANDAR LUVIA STUDIO TV -->
     <footer style="margin-top: auto;">
         <div class="container">
@@ -208,19 +238,27 @@
 
     <!-- LOGIKA CHAT FIREBASE -->
     <script>
+// 1. BUAT ATAU AMBIL ID UNIK UNTUK HP INI
+        let deviceId = localStorage.getItem('luvia_device_id');
+        if (!deviceId) {
+            deviceId = 'dev_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);
+            localStorage.setItem('luvia_device_id', deviceId);
+        }
+
         document.addEventListener('DOMContentLoaded', () => {
             const chatBody = document.getElementById('chat-body');
             
-            // Mengambil Data dari Firebase secara Realtime
             if (typeof firebase !== 'undefined') {
                 const complaintsRef = firebase.database().ref('complaints');
                 
                 complaintsRef.on('value', snap => {
-                    chatBody.innerHTML = ''; // Bersihkan loading text
                     const data = snap.val();
+                    let chatHtml = '';
+                    let papanHtml = '';
+                    let adaPesanBaru = false;
                     
-                    // Pesan Pembuka Otomatis dari Bot
-                    chatBody.innerHTML += `
+                    // Pesan Pembuka di Chat Pribadi
+                    chatHtml += `
                         <div class="chat-bubble bubble-admin">
                             <span class="chat-name">CS LUVIA STUDIO</span>
                             Halo! Ada komplain, saran, atau pertanyaan tentang video? Kirim di sini, Admin akan segera merespons! 👇
@@ -228,41 +266,62 @@
                     `;
 
                     if(data) {
-                        // Looping pesan penonton dari database
-                        Object.keys(data).forEach(k => {
+                        const keys = Object.keys(data);
+                        
+                        // A. LOOPING UNTUK CHAT PRIBADI (Hanya muncul jika ID HP cocok)
+                        keys.forEach(k => {
                             const c = data[k];
-                            
-                            // Tampilkan Chat Penonton (Sebelah Kanan)
-                            chatBody.innerHTML += `
-                                <div class="chat-bubble bubble-user">
-                                    <span class="chat-name" style="color: #ff914d; text-align:right;">${c.nama}</span>
-                                    ${c.isi}
-                                </div>
-                            `;
-                            
-                            // Jika sudah dibalas, Tampilkan Chat Admin (Sebelah Kiri)
-                            if(c.jawaban_admin) {
-                                chatBody.innerHTML += `
-                                    <div class="chat-bubble bubble-admin">
-                                        <span class="chat-name" style="color: #ffe5d9;">CS LUVIA STUDIO (Admin)</span>
-                                        ${c.jawaban_admin}
+                            if (c.deviceId === deviceId) {
+                                chatHtml += `
+                                    <div class="chat-bubble bubble-user">
+                                        <span class="chat-name" style="color: #ff914d; text-align:right;">${c.nama}</span>
+                                        ${c.isi}
                                     </div>
                                 `;
+                                if(c.jawaban_admin) {
+                                    chatHtml += `
+                                        <div class="chat-bubble bubble-admin">
+                                            <span class="chat-name" style="color: #ffe5d9;">CS LUVIA STUDIO (Admin)</span>
+                                            ${c.jawaban_admin}
+                                        </div>
+                                    `;
+                                }
+                            }
+                        });
+
+                        // B. LOOPING UNTUK PAPAN JAWABAN UMUM (Muncul untuk semua orang)
+                        keys.reverse().forEach(k => {
+                            const c = data[k];
+                            if(c.jawaban_admin) {
+                                papanHtml += `
+                                <div class="jawab-item">
+                                    <div class="jawab-nama">Menjawab pertanyaan dari @${c.nama} :</div>
+                                    <div class="jawab-tanya">"${c.isi}"</div>
+                                    <div class="jawab-admin"><strong>Admin LUVIA:</strong> ${c.jawaban_admin}</div>
+                                </div>`;
+                                
+                                const lastRead = localStorage.getItem('last_read_complaints') || 0;
+                                if(c.answered_at > lastRead) adaPesanBaru = true;
                             }
                         });
                     }
                     
-                    // Otomatis scroll ke pesan paling bawah setiap ada pesan baru
-                    setTimeout(() => {
-                        chatBody.scrollTop = chatBody.scrollHeight;
-                    }, 100);
+                    // Render Hasil
+                    chatBody.innerHTML = chatHtml;
+                    document.getElementById('list-jawaban-umum').innerHTML = papanHtml || '<p style="text-align:center; color:#bbb;">Belum ada jawaban publik.</p>';
+                    document.getElementById('bell-dot').style.display = adaPesanBaru ? 'block' : 'none';
+                    
+                    setTimeout(() => { chatBody.scrollTop = chatBody.scrollHeight; }, 100);
                 });
-            } else {
-                chatBody.innerHTML = '<p style="text-align:center; color:#ff4d4d;">Sistem Database gagal dimuat.</p>';
             }
         });
 
-        // FUNGSI MENGIRIM PESAN
+        function bukaNotifKomplain() {
+            document.getElementById('modal-notif').style.display = 'flex';
+            document.getElementById('bell-dot').style.display = 'none';
+            localStorage.setItem('last_read_complaints', Date.now());
+        }
+
         function kirimPesan() {
             const nama = document.getElementById('chat-nama').value.trim();
             const isi = document.getElementById('chat-isi').value.trim();
@@ -270,23 +329,28 @@
             if(!nama) return alert("Mohon isi Nama Anda terlebih dahulu!");
             if(!isi) return alert("Pesan tidak boleh kosong!");
             
-            // Simpan ke Firebase Database
+            localStorage.setItem('luvia_chat_name', nama);
+
+            // Simpan data beserta deviceId
             firebase.database().ref('complaints').push({
                 nama: nama,
                 isi: isi,
+                deviceId: deviceId, // <--- Ini yang bikin pesannya jadi "private"
                 timestamp: firebase.database.ServerValue.TIMESTAMP
             }).then(() => {
-                // Notifikasi ke Admin Panel
                 firebase.database().ref('admin_notifications').push({
                     tipe: "Komplain Masuk 🔔",
                     pesan: `${nama} mengirim pesan: "${isi}"`,
                     timestamp: Date.now(), 
                     read: false
                 });
-
-                // Bersihkan kolom pesan setelah dikirim, tapi biarkan namanya tetap ada
                 document.getElementById('chat-isi').value = '';
             });
+        }
+
+        window.onload = function() {
+            const savedName = localStorage.getItem('luvia_chat_name');
+            if(savedName) document.getElementById('chat-nama').value = savedName;
         }
     </script>
 </body>
