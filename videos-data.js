@@ -478,7 +478,10 @@ function renderGridRecommendations(containerId, list = videoList) {
                 </div>
                 <div class="video-details">
                     <h3>LIVE STREAMING LUVIA STUDIO TV</h3>
-                    <p>LUVIA STUDIO TV • LIVE</p>
+                    <p>
+                        <span class="card-genre-btn" onclick="event.preventDefault(); window.location.href='videos.html?genre=Live%20Stream'">LIVE STREAM</span><br>
+                        LUVIA STUDIO TV • LIVE
+                    </p>
                 </div>
             </a>
         `;
@@ -490,13 +493,18 @@ function renderGridRecommendations(containerId, list = videoList) {
         const card = document.createElement('a');
         card.href = `watch.html?id=${vid.id}`;
         card.className = 'video-card';
+        const uploadTime = vid.uploadDate ? timeAgoFormated(vid.uploadDate) : ''; // Fitur kalkulasi waktu
+        
         card.innerHTML = `
             <div class="thumb-box">
                 <img src="${vid.thumb}" alt="${vid.title}">
             </div>
             <div class="video-details">
                 <h3>${vid.title}</h3>
-                <p>LUVIA STUDIO TV • <span id="view-count-grid-${vid.id}">👁️ Memuat...</span></p>
+                <p>
+                    <span class="card-genre-btn" onclick="event.preventDefault(); window.location.href='videos.html?genre=${encodeURIComponent(vid.genre || 'Umum')}'">${vid.genre || 'Umum'}</span><br>
+                    <span id="view-count-grid-${vid.id}">👁️ Memuat...</span>${uploadTime ? ' • ' + uploadTime : ''}
+                </p>
             </div>
         `;
         container.appendChild(card);
@@ -523,7 +531,6 @@ function renderGridRecommendations(containerId, list = videoList) {
         updateKickBadgeStatus('kick-watch-badge');
     }
 }
-
 // Fungsi Render Khusus Halaman Daftar Video (videos.html)
 function renderAllVideosPage(containerId, list = videoList) {
     const container = document.getElementById(containerId);
