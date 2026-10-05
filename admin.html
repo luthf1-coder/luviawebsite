@@ -80,6 +80,69 @@
         .notif-time { font-size: 11px; color: #888; margin-top: 4px; }
         .notif-delete { background: transparent; border: none; color: #ff4d4d; cursor: pointer; font-size: 16px; padding: 0 10px; font-weight: bold; }
         .notif-delete:hover { color: white; transform: scale(1.1); }
+
+    /* ================= TATA LETAK KHUSUS HP (RESPONSIF) ================= */
+        @media screen and (max-width: 768px) {
+            /* 1. Perbaikan Daftar Video & Program TV */
+            .admin-list-item {
+                flex-direction: column; /* Mengubah susunan menjadi atas-bawah */
+                align-items: flex-start;
+                gap: 10px;
+            }
+            .admin-list-thumb {
+                width: 100%; /* Gambar melebar penuh di dalam kotaknya */
+                height: auto;
+                aspect-ratio: 16/9; /* Menjaga proporsi gambar */
+            }
+            .admin-list-info {
+                width: 100%;
+            }
+            .admin-list-info div {
+                white-space: normal !important; /* Judul panjang akan turun ke bawah, tidak terpotong */
+            }
+            .admin-list-actions {
+                width: 100%;
+                justify-content: flex-start;
+                flex-wrap: wrap; /* Tombol akan rapi turun ke baris baru jika penuh */
+            }
+            .admin-list-actions button {
+                padding: 8px 12px; /* Memperbesar area sentuh tombol di HP */
+            }
+
+            /* 2. Perbaikan Ruang Chat & Support Admin */
+            .wa-admin-container {
+                flex-direction: column; /* Kontak dan Chat susun atas-bawah */
+                height: 85vh; 
+            }
+            .wa-admin-sidebar {
+                width: 100%;
+                height: 35%; /* Daftar kontak mengambil 35% tinggi layar */
+                border-right: none;
+                border-bottom: 2px solid #333;
+            }
+            .wa-admin-chat {
+                width: 100%;
+                height: 65%; /* Ruang obrolan mengambil 65% tinggi layar */
+            }
+            #wa-empty-state {
+                width: 100% !important;
+                height: 100%;
+            }
+            
+            /* Papan Log Notifikasi Bawah */
+            .notif-item {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 10px;
+            }
+            .notif-delete {
+                align-self: flex-end;
+                background: #ff4d4d;
+                color: white;
+                padding: 5px 15px;
+                border-radius: 4px;
+            }
+        }
     </style>
 </head>
 <body>
