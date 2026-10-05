@@ -143,6 +143,17 @@
                 border-radius: 4px;
             }
         }
+
+    /* Memperbaiki Tombol Kirim Gepeng di HP */
+        .wa-room-footer button {
+            flex-shrink: 0 !important; /* Mencegah tombol menyusut/gepeng */
+            width: 45px !important;
+            height: 45px !important;
+            min-width: 45px !important;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
     </style>
 </head>
 <body>
@@ -203,7 +214,10 @@
             <div class="admin-form-group"><label>Link Download (Opsional)</label><input type="text" id="vid-download" placeholder="https://..."></div>
             <div class="admin-form-group"><label>Genre</label><input type="text" id="vid-genre" placeholder="Anime, Film Komedi..."></div>
             <div class="admin-form-group"><label>Deskripsi</label><textarea id="vid-desc" placeholder="Tulis deskripsi..."></textarea></div>
-            <button id="btn-submit-video" class="btn-submit-comment" onclick="simpanVideo()">Upload Video</button>
+            <div style="display: flex; gap: 10px; margin-top: 10px;">
+                <button id="btn-submit-video" class="btn-submit-comment" style="flex: 1;" onclick="simpanVideo()">Upload Video</button>
+                <button id="btn-batal-edit" class="btn-submit-comment" style="background: #ff4d4d; display: none; padding: 10px 20px;" onclick="batalEditVideo()">✖ Batal</button>
+            </div>
             
             <div id="list-hapus-vid" style="margin-top: 30px;"></div>
         </div>
@@ -350,7 +364,10 @@
             btn.classList.add('active');
         }
 
-// 1. UPDATE: FUNGSI SIMPAN & EDIT VIDEO
+// VARIABEL PENYIMPAN DATA LAMA SAAT EDIT
+        let tempOldViews = 0;
+        let tempOldDate = "";
+
         function simpanVideo() {
             const title = document.getElementById('vid-title').value.trim();
             let url = document.getElementById('vid-url').value.trim();
@@ -372,38 +389,41 @@
               else if (type === "rumble") { rumbleEmbed = url; } 
               else { archiveSrc = url; }
             
+            // JIKA EDIT: Gunakan views & tanggal lama. JIKA BARU: Gunakan 0 & tanggal hari ini.
+            const finalViews = editId ? tempOldViews : 0;
+            const finalDate = (editId && tempOldDate) ? tempOldDate : new Date().toISOString().split('T')[0];
+
             const newData = {
                 id: id, title: title, thumb: document.getElementById('vid-thumb').value, visibility: visibility,
                 sources: [], driveEmbed: driveEmbed, youtubeId: ytId, rumbleEmbed: rumbleEmbed, archiveSrc: archiveSrc, 
                 downloadUrl: downloadUrl || archiveSrc || driveEmbed, 
                 description: document.getElementById('vid-desc').value, genre: document.getElementById('vid-genre').value, 
-                uploadDate: new Date().toISOString().split('T')[0], defaultViews: 0
+                uploadDate: finalDate, defaultViews: finalViews
             };
 
             firebase.database().ref('videos_manual/' + id).set(newData).then(() => { 
                 alert(editId ? 'Perubahan Video Disimpan!' : 'Video Baru Sukses Diupload!'); 
-                // Reset Form
-                document.getElementById('edit-mode-id').value = '';
-                document.getElementById('btn-submit-video').innerText = "Upload Video";
-                document.getElementById('vid-title').value = ''; document.getElementById('vid-url').value = ''; 
+                batalEditVideo(); // Reset form setelah sukses
                 muatPilihanDropdown(); muatDaftarHapus();
             });
         }
 
-        // 2. FUNGSI KLIK EDIT VIDEO
- function editVideoManual(id) {
+        function editVideoManual(id) {
             firebase.database().ref('videos_manual/' + id).once('value').then(snap => {
                 let v = snap.val();
                 
-                // Jika tidak ada di Firebase, cari di data Bot (GitHub)
                 if(!v && typeof botVideos !== 'undefined') {
                     v = botVideos.find(bot => bot.id === id);
                 }
-                
                 if(!v) return alert("Data video tidak ditemukan!");
                 
+                // SIMPAN DATA LAMA (Views & Tanggal) AGAR TIDAK HILANG
+                tempOldViews = v.defaultViews || 0;
+                tempOldDate = v.uploadDate || "";
+
                 document.getElementById('edit-mode-id').value = id;
                 document.getElementById('vid-id').value = id;
+                document.getElementById('vid-id').disabled = true; // Kunci ID agar tidak diubah
                 document.getElementById('vid-title').value = v.title;
                 document.getElementById('vid-thumb').value = v.thumb || '';
                 document.getElementById('vid-visibility').value = v.visibility || 'publik';
@@ -420,8 +440,31 @@
                 document.getElementById('vid-desc').value = v.description || "";
 
                 document.getElementById('btn-submit-video').innerText = "💾 Simpan Perubahan";
+                document.getElementById('btn-batal-edit').style.display = "block"; // Munculkan tombol batal
+                
+                // Pindah ke tab video
+                document.querySelectorAll('.tab-btn')[0].click();
                 window.scrollTo({ top: 0, behavior: 'smooth' });
             });
+        }
+
+        function batalEditVideo() {
+            document.getElementById('edit-mode-id').value = '';
+            document.getElementById('vid-id').value = '';
+            document.getElementById('vid-id').disabled = false;
+            
+            document.getElementById('vid-title').value = ''; 
+            document.getElementById('vid-url').value = ''; 
+            document.getElementById('vid-thumb').value = '';
+            document.getElementById('vid-desc').value = '';
+            document.getElementById('vid-genre').value = '';
+            document.getElementById('vid-download').value = '';
+            
+            document.getElementById('btn-submit-video').innerText = "Upload Video";
+            document.getElementById('btn-batal-edit').style.display = "none"; // Sembunyikan tombol batal
+            
+            tempOldViews = 0;
+            tempOldDate = "";
         }
     
         // FUNGSI HAPUS DATA ADMIN
