@@ -73,6 +73,13 @@
     .action-bar { font-size: 11px; margin-top: 5px; display: flex; gap: 10px; justify-content: flex-end; opacity: 0.8; }
         .action-btn-chat { background: none; border: none; color: #ff914d; cursor: pointer; padding: 0; font-size: 11px; font-weight: bold; }
         .msg-edited { font-size: 10px; font-style: italic; opacity: 0.6; margin-left: 5px; }
+
+    /* ================= DESAIN LOG NOTIFIKASI ================= */
+        .notif-item { background: #1a1a1a; padding: 12px; margin-bottom: 8px; border-radius: 6px; display: flex; justify-content: space-between; align-items: center; border-left: 4px solid #ff914d; font-size: 13px; }
+        .notif-info { flex: 1; color: #ddd; }
+        .notif-time { font-size: 11px; color: #888; margin-top: 4px; }
+        .notif-delete { background: transparent; border: none; color: #ff4d4d; cursor: pointer; font-size: 16px; padding: 0 10px; font-weight: bold; }
+        .notif-delete:hover { color: white; transform: scale(1.1); }
     </style>
 </head>
 <body>
@@ -203,6 +210,16 @@
                     <p>Pilih pesan di sebelah kiri untuk mulai membalas</p>
                 </div>
             </div>
+            <!-- ================= LOG NOTIFIKASI SISTEM ================= -->
+            <div style="margin-top: 30px; border-top: 1px solid #333; padding-top: 20px;">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
+                    <h3 style="margin: 0; color: #ff914d;">🔔 Log Notifikasi & Reaksi Penonton</h3>
+                    <button onclick="hapusSemuaNotif()" style="background: #ff4d4d; color: white; border: none; padding: 8px 12px; border-radius: 6px; cursor: pointer; font-weight: bold;">🗑️ Hapus Semua</button>
+                </div>
+                <div id="admin-notif-list" style="max-height: 250px; overflow-y: auto; background: #111; padding: 15px; border-radius: 8px; border: 1px solid #333;">
+                    <p style="text-align: center; color: #888;">Memuat notifikasi...</p>
+                </div>
+            </div>
         </div>
 
     <!-- HTML UNTUK MODAL ANALITIK -->
@@ -251,6 +268,7 @@
                 mintaIzinNotifikasi();
                 setTimeout(muatPilihanDropdown, 1500); 
                 jalankanPantauanNotif();
+                muatLogNotifikasi(); // <--- TAMBAHKAN BARIS INI
                 muatDaftarHapus(); 
             } else { document.getElementById('login-error').style.display = 'block'; }
         }
@@ -782,6 +800,50 @@
                     firebase.database().ref('admin_notifications').update(updates);
                 }
             });
+        }
+
+
+// ==========================================
+        // FITUR LOG NOTIFIKASI & HAPUS
+        // ==========================================
+        function muatLogNotifikasi() {
+            firebase.database().ref('admin_notifications').on('value', snap => {
+                const list = document.getElementById('admin-notif-list');
+                if (!snap.exists()) {
+                    list.innerHTML = '<p style="text-align:center; color:#888;">Tidak ada log notifikasi baru.</p>';
+                    return;
+                }
+                
+                const data = snap.val();
+                let html = '';
+                
+                // Balik urutan agar notifikasi terbaru ada di paling atas
+                Object.keys(data).reverse().forEach(k => {
+                    const n = data[k];
+                    const time = new Date(n.timestamp).toLocaleString('id-ID', {day:'numeric', month:'short', hour:'2-digit', minute:'2-digit'});
+                    
+                    html += `
+                    <div class="notif-item">
+                        <div class="notif-info">
+                            <strong style="color:white;">${n.tipe}</strong><br>
+                            ${n.pesan}
+                            <div class="notif-time">${time}</div>
+                        </div>
+                        <button class="notif-delete" onclick="hapusNotif('${k}')" title="Hapus Notif Ini">✖</button>
+                    </div>`;
+                });
+                list.innerHTML = html;
+            });
+        }
+
+        function hapusNotif(id) {
+            firebase.database().ref('admin_notifications/' + id).remove();
+        }
+
+        function hapusSemuaNotif() {
+            if(confirm("Yakin ingin menghapus SEMUA log notifikasi? Riwayat tidak bisa dikembalikan.")) {
+                firebase.database().ref('admin_notifications').remove();
+            }
         }
     </script>
 </body>
