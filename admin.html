@@ -46,6 +46,29 @@
         #stats-modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.9); z-index: 10000; justify-content: center; align-items: center; }
         .stats-box { background: #1a1a1a; padding: 25px; border-radius: 12px; width: 90%; max-width: 600px; border: 1px solid #444; color: white; position: relative; }
         .btn-close-modal { position: absolute; top: 15px; right: 20px; background: transparent; color: #ff4d4d; border: none; font-size: 20px; cursor: pointer; font-weight: bold; }
+
+    /* ================= WA WEB ADMIN STYLE ================= */
+        .wa-admin-container { display: flex; height: 75vh; min-height: 500px; background: #111; border-radius: 12px; overflow: hidden; border: 1px solid #333; }
+        .wa-admin-sidebar { width: 35%; background: #1a1a1a; border-right: 1px solid #333; display: flex; flex-direction: column; }
+        .wa-admin-chat { width: 65%; background: #0b141a; display: flex; flex-direction: column; position: relative; }
+        
+        .wa-contact-item { padding: 12px 15px; display: flex; gap: 12px; cursor: pointer; border-bottom: 1px solid #222; transition: 0.2s; align-items: center;}
+        .wa-contact-item:hover, .wa-contact-item.active { background: #2a2a2a; border-left: 4px solid #00a884;}
+        .wa-contact-img { width: 45px; height: 45px; border-radius: 50%; object-fit: cover; }
+        .wa-contact-info { flex: 1; overflow: hidden; }
+        .wa-contact-name { font-size: 14px; color: #fff; font-weight: bold; margin-bottom: 4px; display: flex; justify-content: space-between;}
+        .wa-contact-time { font-size: 11px; color: #888; font-weight: normal; }
+        .wa-contact-last { font-size: 12px; color: #aaa; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        
+        .wa-room-header { background: #202c33; padding: 10px 20px; display: flex; align-items: center; gap: 15px; border-bottom: 1px solid #333;}
+        .wa-room-body { flex: 1; padding: 20px; overflow-y: auto; display: flex; flex-direction: column; gap: 10px; background: #0b141a; }
+        .wa-room-footer { background: #202c33; padding: 15px; display: flex; flex-direction: column; gap: 10px; border-top: 1px solid #333;}
+        
+        .bubble-admin { background: #005c4b; color: #e9edef; align-self: flex-end; padding: 8px 12px; border-radius: 8px; border-top-right-radius: 0; max-width: 80%;}
+        .bubble-user { background: #202c33; color: #e9edef; align-self: flex-start; padding: 8px 12px; border-radius: 8px; border-top-left-radius: 0; max-width: 80%; cursor: pointer; transition: 0.2s;}
+        .bubble-user:hover { opacity: 0.8; box-shadow: 0 0 5px rgba(255, 145, 77, 0.5); }
+        
+        .quote-box { background: rgba(0,0,0,0.3); border-left: 4px solid #ff914d; padding: 8px; border-radius: 4px; margin-bottom: 5px; font-size: 12px; display: none;}
     </style>
 </head>
 <body>
@@ -128,22 +151,54 @@
             <div id="list-playlist-prog" style="margin-top:20px; border-top:1px solid #333; padding-top:15px;"></div>
         </div>
 
-        <!-- 4. SUPPORT & NOTIF -->
+<!-- 4. SUPPORT & NOTIF (WA WEB STYLE) -->
         <div id="tab-komplain" class="panel">
-            <h3 style="margin-top:0;">Pusat Notifikasi HP & Komplain</h3>
-            <div style="display:flex; gap:20px; flex-wrap:wrap;">
-                <div style="flex:1; min-width:300px;">
-                    <h4 style="color:#ff914d;">Daftar Komplain</h4>
-                    <div id="admin-complaint-list" style="max-height:400px; overflow-y:auto;">Memuat...</div>
+            <div class="wa-admin-container">
+                <!-- PANEL KIRI: DAFTAR KONTAK -->
+                <div class="wa-admin-sidebar">
+                    <div style="padding:15px; background:#202c33; font-weight:bold; color:white; border-bottom:1px solid #333;">💬 Obrolan Masuk</div>
+                    <div id="wa-contact-list" style="overflow-y:auto; flex:1;">
+                        <p style="text-align:center; color:#888; margin-top:20px;">Memuat chat...</p>
+                    </div>
                 </div>
-                <div style="flex:1; min-width:300px; background:#111; padding:15px; border-radius:8px;">
-                    <h4 style="color:#53fc18;">🔔 Aktivitas Penonton</h4>
-                    <div id="admin-notif-list" style="max-height:350px; overflow-y:auto;">Memuat...</div>
-                    <button onclick="tandaiSemuaDibaca()" style="background:#333; color:white; border:none; padding:8px; width:100%; margin-top:10px;">Tandai Semua Dibaca</button>
+                
+                <!-- PANEL KANAN: RUANG CHAT -->
+                <div class="wa-admin-chat" id="wa-chat-area" style="display:none;">
+                    <div class="wa-room-header">
+                        <img src="Asset Foto/Thumbnimail .png" class="wa-contact-img" id="wa-room-img">
+                        <div style="color:white; font-weight:bold;" id="wa-room-name">Nama Pengguna</div>
+                    </div>
+                    
+                    <div class="wa-room-body" id="wa-room-msgs">
+                        <!-- Chat bubbles akan muncul di sini -->
+                    </div>
+                    
+                    <div class="wa-room-footer">
+                        <div class="quote-box" id="quote-preview">
+                            <div style="color:#ff914d; font-weight:bold; margin-bottom:2px;">Membalas:</div>
+                            <div id="quote-text-preview" style="color:#ddd; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">...</div>
+                            <button onclick="batalQuote()" style="background:none; border:none; color:#ff4d4d; float:right; cursor:pointer; margin-top:-15px;">✖ Batal</button>
+                        </div>
+                        
+                        <div style="display:flex; gap:10px; align-items:center;">
+                            <input type="hidden" id="reply-to-id" value="">
+                            <input type="text" id="admin-chat-input" placeholder="Ketik balasan untuk pengguna ini..." style="flex:1; background:#2a2f32; border:none; color:white; padding:12px; border-radius:8px; outline:none;" onkeypress="if(event.key === 'Enter') kirimBalasanAdmin()">
+                            <button onclick="kirimBalasanAdmin()" style="background:#00a884; color:white; border:none; width:45px; height:45px; border-radius:50%; cursor:pointer; font-size:18px;">➤</button>
+                        </div>
+                        
+                        <label style="color:#bbb; font-size:12px; display:flex; align-items:center; gap:5px; cursor:pointer; margin-top:5px;">
+                            <input type="checkbox" id="check-publish-board"> ☑️ Kirim juga ke Papan Jawaban Admin (Agar dibaca publik)
+                        </label>
+                    </div>
+                </div>
+                
+                <!-- STATE KOSONG (Saat belum klik kontak) -->
+                <div id="wa-empty-state" style="width:65%; display:flex; align-items:center; justify-content:center; flex-direction:column; color:#888; background:#0b141a;">
+                    <h1 style="font-size:60px; margin:0; opacity:0.5;">📱</h1>
+                    <p>Pilih pesan di sebelah kiri untuk mulai membalas</p>
                 </div>
             </div>
         </div>
-    </div>
 
     <!-- HTML UNTUK MODAL ANALITIK -->
     <div id="stats-modal">
@@ -288,70 +343,6 @@
             if(confirm("Yakin ingin menghapus data ini secara permanen dari website?")) {
                 firebase.database().ref(path).remove().then(() => alert("Berhasil dihapus!"));
             }
-        }
-
-        // ==========================================
-        // PANTAUAN SUPPORT, NOTIFIKASI & FITUR HAPUS
-        // ==========================================
-        function jalankanPantauanNotif() {
-            // Tampilkan Komplain dengan Tombol Hapus
-            firebase.database().ref('complaints').on('value', snap => {
-                const data = snap.val();
-                let html = '';
-                if(data) {
-                    Object.keys(data).reverse().forEach(k => {
-                        const c = data[k];
-                        const borderWarna = c.jawaban_admin ? '#53fc18' : '#ff914d';
-                        
-                        html += `
-                        <div style="background:#222; padding:12px; margin-bottom:10px; border-left:4px solid ${borderWarna}; position:relative;">
-                            <button style="position:absolute; right:10px; top:10px; background:#ff4d4d; color:white; border:none; padding:4px 8px; border-radius:4px; cursor:pointer;" onclick="hapusData('complaints/${k}')">Hapus</button>
-                            <div style="color:#bbb; font-size:12px;">Dari: <strong>${c.nama}</strong></div>
-                            <div style="margin:8px 0;">"${c.isi}"</div>`;
-                            
-                        if(!c.jawaban_admin) {
-                            html += `
-                            <div style="display:flex; gap:10px;">
-                                <input type="text" id="jawab-${k}" placeholder="Tulis jawaban admin..." style="flex:1; padding:8px; background:#111; color:white;">
-                                <button onclick="jawabKomplain('${k}')" style="background:#00a884; border:none; color:white; padding:0 15px; cursor:pointer;">Balas</button>
-                            </div>`;
-                        } else {
-                            html += `<div style="background:#111; padding:8px; color:#53fc18; font-size:13px;">Dijawab: ${c.jawaban_admin}</div>`;
-                        }
-                        html += `</div>`;
-                    });
-                }
-                document.getElementById('admin-complaint-list').innerHTML = html || 'Tidak ada komplain.';
-            });
-
-            // Tampilkan Notifikasi dengan Tombol Silang Hapus
-            firebase.database().ref('admin_notifications').on('value', snap => {
-                const data = snap.val();
-                let html = '';
-                if(data) {
-                    Object.keys(data).reverse().forEach(k => {
-                        const n = data[k];
-                        const dot = n.read ? '' : '<span style="color:#ff4d4d; font-size:20px; line-height:0;">•</span>';
-                        html += `
-                        <div style="padding:10px; border-bottom:1px solid #222; opacity: ${n.read ? '0.5' : '1'}; position:relative;">
-                            <button style="position:absolute; right:5px; top:5px; background:transparent; color:#ff4d4d; border:none; cursor:pointer;" onclick="hapusData('admin_notifications/${k}')">✖</button>
-                            <div style="font-size:12px; color:#ff914d;">${n.tipe} ${dot}</div>
-                            <div style="font-size:13px; margin-top:4px;">${n.pesan}</div>
-                        </div>`;
-                    });
-                }
-                document.getElementById('admin-notif-list').innerHTML = html || 'Belum ada.';
-            });
-
-            // Pop-up Notif HP
-            firebase.database().ref('complaints').on('child_added', snap => {
-                const c = snap.val();
-                if (c.timestamp > waktuLoginAdmin && !c.jawaban_admin) { munculkanNotifHP("Komplain dari " + c.nama, c.isi); }
-            });
-            firebase.database().ref('admin_notifications').on('child_added', snap => {
-                const n = snap.val();
-                if (n.timestamp > waktuLoginAdmin && !n.read) { munculkanNotifHP("LUVIA: " + n.tipe, n.pesan); }
-            });
         }
         
         // ==========================================
@@ -553,73 +544,161 @@
             }
         }
 
+// ==========================================
+        // MESIN CHAT WA WEB & SISTEM QUOTE / FAQ
         // ==========================================
-        // FITUR 4: SUPPORT (KOMPLAIN) PERMANEN & BISA DIHAPUS ADMIN
-        // ==========================================
+        let allComplaints = {};
+        let activeDeviceId = null;
+        let activeDeviceName = "Pengguna";
+
         function jalankanPantauanNotif() {
             firebase.database().ref('complaints').on('value', snap => {
                 const data = snap.val();
-                let html = '';
-                if(data) {
-                    Object.keys(data).reverse().forEach(k => {
-                        const c = data[k];
-                        const warnaBorder = c.jawaban_admin ? '#00a884' : '#ff914d';
-                        const status = c.jawaban_admin ? '(Telah Dijawab)' : '(Menunggu)';
-                        
-                        html += `
-                        <div style="background:#222; padding:12px; margin-bottom:10px; border-left:4px solid ${warnaBorder}; position:relative;">
-                            <button class="btn-delete" style="position:absolute; right:10px; top:10px;" onclick="hapusData('complaints/${k}')">Hapus</button>
-                            <div style="color:#bbb; font-size:12px;">Dari: <strong>${c.nama}</strong> <span style="color:${warnaBorder}">${status}</span></div>
-                            <div style="margin:8px 0; font-style:italic;">"${c.isi}"</div>
-                        `;
-                        
-                        // Form Balas (jika belum dibalas) atau Teks Jawaban (jika sudah dibalas)
-                        if(!c.jawaban_admin) {
-                            html += `
-                            <div style="display:flex; gap:10px; margin-top:10px;">
-                                <input type="text" id="jawab-${k}" placeholder="Tulis jawaban resmi admin..." style="flex:1; padding:8px; background:#111; color:white; border:1px solid #444; border-radius:4px;">
-                                <button onclick="jawabKomplain('${k}')" style="background:linear-gradient(45deg, #8c52ff, #ff914d); border:none; color:white; padding:0 15px; border-radius:4px; font-weight:bold; cursor:pointer;">Kirim Balasan</button>
-                            </div>`;
-                        } else {
-                            html += `<div style="background:#111; padding:8px; border-radius:4px; color:#53fc18; font-size:13px;"><strong>Admin:</strong> ${c.jawaban_admin}</div>`;
-                        }
-                        html += `</div>`;
-                    });
-                }
-                document.getElementById('admin-complaint-list').innerHTML = html || 'Tidak ada komplain masuk.';
+                if(!data) { document.getElementById('wa-contact-list').innerHTML = '<div style="padding:20px; color:#888; text-align:center;">Belum ada pesan</div>'; return; }
+                
+                allComplaints = data;
+                let grouped = {};
+                
+                // 1. Kelompokkan chat berdasarkan ID Perangkat (Orang yg sama)
+                Object.keys(data).forEach(k => {
+                    const c = data[k];
+                    const did = c.deviceId || 'unknown'; // Cegah error pada data lama
+                    if(!grouped[did]) grouped[did] = { name: c.nama, messages: [], lastTime: 0, lastMsg: '' };
+                    grouped[did].messages.push({ id: k, ...c });
+                    grouped[did].lastTime = Math.max(grouped[did].lastTime, c.timestamp);
+                    grouped[did].lastMsg = c.is_admin ? "Anda: " + c.isi : c.isi; // Tampilkan "Anda: " jika pesan terakhir dari admin
+                });
+                
+                // 2. Urutkan Kontak (Yang terbaru chat di atas)
+                let sortedDevices = Object.keys(grouped).sort((a,b) => grouped[b].lastTime - grouped[a].lastTime);
+                
+                // 3. Cetak ke panel kiri
+                let listHtml = '';
+                sortedDevices.forEach(did => {
+                    if(did === 'unknown') return; 
+                    const g = grouped[did];
+                    const timeStr = new Date(g.lastTime).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
+                    const isActive = activeDeviceId === did ? 'active' : '';
+                    
+                    listHtml += `
+                    <div class="wa-contact-item ${isActive}" onclick="bukaChatRoom('${did}', '${g.name.replace(/'/g, "\\'")}')">
+                        <img src="Asset Foto/Thumbnimail .png" class="wa-contact-img">
+                        <div class="wa-contact-info">
+                            <div class="wa-contact-name">${g.name} <span class="wa-contact-time">${timeStr}</span></div>
+                            <div class="wa-contact-last">${g.lastMsg}</div>
+                        </div>
+                    </div>`;
+                });
+                document.getElementById('wa-contact-list').innerHTML = listHtml;
+                
+                // 4. Update Ruang Chat secara realtime jika sedang terbuka
+                if(activeDeviceId) renderChatRoom(activeDeviceId);
             });
+        }
 
-            // Pantau Pop-up Notif Komplain HP
-            firebase.database().ref('complaints').on('child_added', snap => {
-                const c = snap.val();
-                if (c.timestamp > waktuLoginAdmin && !c.jawaban_admin) { munculkanNotifHP("Komplain dari " + c.nama, c.isi); }
-            });
+        function bukaChatRoom(did, name) {
+            activeDeviceId = did;
+            activeDeviceName = name;
+            document.getElementById('wa-empty-state').style.display = 'none';
+            document.getElementById('wa-chat-area').style.display = 'flex';
+            document.getElementById('wa-room-name').innerText = name;
             
-            // Notifikasi Lain (Mention dll) - Tetap sama
-            firebase.database().ref('admin_notifications').on('value', snap => {
-                const data = snap.val();
-                let html = '';
-                if(data) {
-                    Object.keys(data).reverse().forEach(k => {
-                        const n = data[k];
-                        const dot = n.read ? '' : '<span style="color:#ff4d4d; font-size:20px; line-height:0;">•</span>';
-                        html += `<div style="padding:10px; border-bottom:1px solid #222; opacity: ${n.read ? '0.5' : '1'};">
-                            <div style="font-size:12px; color:#ff914d;">${n.tipe} ${dot}</div>
-                            <div style="font-size:13px; margin-top:4px;">${n.pesan}</div>
-                        </div>`;
-                    });
+            document.querySelectorAll('.wa-contact-item').forEach(el => el.classList.remove('active'));
+            if(event) event.currentTarget.classList.add('active');
+            
+            renderChatRoom(did);
+        }
+
+        function renderChatRoom(did) {
+            const room = document.getElementById('wa-room-msgs');
+            let html = '';
+            
+            // Urutkan waktu chat dari atas ke bawah
+            let msgs = Object.keys(allComplaints)
+                .map(k => ({ id: k, ...allComplaints[k] }))
+                .filter(m => m.deviceId === did)
+                .sort((a,b) => a.timestamp - b.timestamp);
+                
+            msgs.forEach(m => {
+                const time = new Date(m.timestamp).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
+                
+                // Chat dari PENONTON (Bisa diklik untuk balas/quote)
+                if (!m.is_admin) {
+                    html += `
+                    <div class="bubble-user" onclick="pilihQuote('${m.id}', '${m.isi.replace(/'/g, "\\'")}')" title="Klik chat ini untuk merespons spesifik">
+                        <div style="font-size:11px; color:#ff914d; font-weight:bold; margin-bottom:3px;">${m.nama}</div>
+                        ${m.isi}
+                        <div style="font-size:10px; color:#888; text-align:right; margin-top:4px;">${time}</div>
+                    </div>`;
                 }
-                document.getElementById('admin-notif-list').innerHTML = html || 'Belum ada.';
+                
+                // Chat lama (Sistem belum WA)
+                if (m.jawaban_admin && !m.is_admin) {
+                    html += `<div class="bubble-admin">${m.jawaban_admin}</div>`;
+                }
+                
+                // Chat dari ADMIN (Sistem WA)
+                if (m.is_admin) {
+                    let quoteHtml = m.quote_text ? `<div style="background:rgba(0,0,0,0.2); border-left:3px solid #00a884; padding:5px; margin-bottom:5px; font-size:11px; color:#ddd; border-radius:3px;">Membalas:<br>${m.quote_text}</div>` : '';
+                    html += `
+                    <div class="bubble-admin">
+                        ${quoteHtml}
+                        ${m.isi}
+                        <div style="font-size:10px; color:#93c5b5; text-align:right; margin-top:4px;">${time}</div>
+                    </div>`;
+                }
             });
+            room.innerHTML = html;
+            setTimeout(() => { room.scrollTop = room.scrollHeight; }, 50);
         }
 
-        function jawabKomplain(id) {
-            const j = document.getElementById(`jawab-${id}`).value;
-            if(!j) return;
-            // Ini akan mengupdate Firebase, otomatis tayang permanen di index.html penonton
-            firebase.database().ref('complaints/' + id).update({ jawaban_admin: j, answered_at: Date.now() });
+        function pilihQuote(msgId, text) {
+            document.getElementById('quote-preview').style.display = 'block';
+            document.getElementById('quote-text-preview').innerText = text;
+            document.getElementById('reply-to-id').value = msgId;
         }
 
+        function batalQuote() {
+            document.getElementById('quote-preview').style.display = 'none';
+            document.getElementById('reply-to-id').value = '';
+        }
+
+        function kirimBalasanAdmin() {
+            if(!activeDeviceId) return;
+            const input = document.getElementById('admin-chat-input');
+            const text = input.value.trim();
+            if(!text) return;
+            
+            const quoteId = document.getElementById('reply-to-id').value;
+            const quoteText = document.getElementById('quote-text-preview').innerText;
+            const isPublicFAQ = document.getElementById('check-publish-board').checked;
+            
+            // 1. Kirim Pesan ke Ruang Chat Pribadi Penonton
+            const payload = {
+                nama: "CS LUVIA STUDIO",
+                isi: text,
+                deviceId: activeDeviceId,
+                is_admin: true,
+                timestamp: Date.now()
+            };
+            if (quoteId) { payload.quote_id = quoteId; payload.quote_text = quoteText; }
+            firebase.database().ref('complaints').push(payload);
+            
+            // 2. Jika dicentang, update data lama agar masuk ke Papan Jawaban Publik (Lonceng)
+            if(isPublicFAQ && quoteId) {
+                firebase.database().ref('complaints/' + quoteId).update({
+                    jawaban_admin: text,
+                    answered_at: Date.now()
+                });
+            } else if (isPublicFAQ && !quoteId) {
+                alert("Info: Untuk mengirim ke Papan FAQ Publik, Anda harus meng-klik salah satu chat penonton (membalas spesifik) terlebih dahulu.");
+            }
+            
+            input.value = '';
+            batalQuote();
+            document.getElementById('check-publish-board').checked = false;
+        }
+    
         function tandaiSemuaDibaca() {
             firebase.database().ref('admin_notifications').once('value', snap => {
                 const data = snap.val();
