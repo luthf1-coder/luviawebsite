@@ -157,6 +157,15 @@
         
         .quote-preview { background: #222; border-left: 3px solid #ff914d; padding: 10px; margin-bottom: 10px; font-size: 12px; display: none; position: relative; border-radius: 4px; color: white;}
         .quote-bubble { background: rgba(255,255,255,0.1); border-left: 3px solid #ff914d; padding: 6px; margin-bottom: 6px; font-size: 12px; border-radius: 4px; }
+
+        /* Menu Titik Tiga & Dropdown */
+        .chat-header-right { font-size: 24px; cursor: pointer; position: relative; display: flex; align-items: center; gap: 15px; }
+        .dropdown-menu { display: none; position: absolute; right: 0; top: 35px; background: #222; border: 1px solid #444; border-radius: 8px; z-index: 1000; box-shadow: 0 5px 15px rgba(0,0,0,0.5); overflow: hidden; white-space: nowrap; }
+        .dropdown-menu a { display: block; padding: 12px 20px; color: white; text-decoration: none; font-size: 13px; border-bottom: 1px solid #333; }
+        .dropdown-menu a:hover { background: #333; }
+        
+        /* Sembunyikan tombol aksi secara default */
+        .action-bar { display: none; margin-top: 5px; }
     </style>
 </head>
 <body>
@@ -206,16 +215,26 @@
     <div class="support-wrapper">
         <div class="chat-container">
 <!-- Header Chat dengan Lonceng -->
+  <!-- Header Chat dengan Lonceng & Titik Tiga -->
             <div class="chat-header">
-                <div style="display: flex; align-items: center; gap: 15px;">
+                <div class="chat-header-left">
                     <img src="Asset Foto/Thumbnimail .png" alt="Admin Luvia">
                     <div>
                         <h3 class="chat-title">CS LUVIA STUDIO</h3>
                         <p class="chat-status">Online - Siap Membantu</p>
                     </div>
                 </div>
-                <div class="chat-header-right" onclick="bukaNotifKomplain()" title="Papan Jawaban Umum">
-                    🔔 <span id="bell-dot" class="bell-dot"></span>
+                <div class="chat-header-right">
+                    <div onclick="bukaNotifKomplain()" title="Papan Jawaban Umum" style="position:relative;">
+                        🔔 <span id="bell-dot" class="bell-dot"></span>
+                    </div>
+                    <div onclick="toggleDropdown()" style="padding: 0 5px;">⋮</div>
+                    
+                    <!-- Dropdown Menu -->
+                    <div id="header-dropdown" class="dropdown-menu">
+                        <a href="javascript:void(0)" onclick="aktifkanPilihChat()">✔️ Pilih Chat / Obrolan</a>
+                        <a href="javascript:void(0)" onclick="resetObrolanUser()" style="color:#ff4d4d;">🧹 Reset Obrolan</a>
+                    </div>
                 </div>
             </div>
 
@@ -297,6 +316,7 @@ let deviceId = localStorage.getItem('luvia_device_id');
         }
 
         let allMessages = {};
+        let isSelectMode = false;
 
         document.addEventListener('DOMContentLoaded', () => {
             const chatBody = document.getElementById('chat-body');
@@ -310,29 +330,25 @@ let deviceId = localStorage.getItem('luvia_device_id');
 
                     const keys = Object.keys(allMessages);
                     
-                    // A. RENDER RUANG CHAT PRIBADI
                     keys.forEach(k => {
                         const c = allMessages[k];
                         if (c.deviceId === deviceId) {
-                            // Sembunyikan jika user memilih "Hapus untuk saya"
-                            if (c.deleted_by_user) return; 
+                            // Cek jika pesan sudah di-reset oleh penonton
+                            if (c.deleted_by_user || c.hidden_by_user) return; 
 
                             const isDeletedAll = c.deleted_for_everyone;
-                            const textPesan = isDeletedAll ? "🚫 <i>Pesan ini telah dihapus</i>" : c.isi;
+                            const textPesan = isDeletedAll ? "🚫 <i>Pesan ini telah ditarik/dihapus</i>" : c.isi;
                             const editedTag = (c.is_edited && !isDeletedAll) ? `<span class="msg-edited">(diedit)</span>` : '';
                             
-                            // Hitung Umur Pesan (Milisec)
                             const ageMs = Date.now() - c.timestamp;
-                            const canEdit = ageMs <= 30 * 60 * 1000; // 30 Menit
-                            const canDeleteAll = ageMs <= 24 * 60 * 60 * 1000; // 24 Jam
+                            const canEdit = ageMs <= 30 * 60 * 1000;
+                            const canDeleteAll = ageMs <= 24 * 60 * 60 * 1000;
                             
-                            // Kotak Quote
                             let quoteHtml = (c.quote_text && !isDeletedAll) ? `<div class="quote-bubble">Membalas:<br>${c.quote_text}</div>` : '';
                             
-                            // Tombol Aksi
                             let actionBar = '';
                             if (!isDeletedAll) {
-                                actionBar += `<div class="action-bar"><button class="action-btn-chat" onclick="siapkanBalas('${k}')">Balas</button>`;
+                                actionBar += `<div class="action-bar" id="action-${k}"><button class="action-btn-chat" onclick="siapkanBalas('${k}')">Balas</button>`;
                                 if (!c.is_admin) {
                                     if (canEdit) actionBar += `<button class="action-btn-chat" onclick="siapkanEdit('${k}')">Edit</button>`;
                                     actionBar += `<button class="action-btn-chat" onclick="opsiHapus('${k}', ${canDeleteAll})">Hapus</button>`;
@@ -340,15 +356,17 @@ let deviceId = localStorage.getItem('luvia_device_id');
                                 actionBar += `</div>`;
                             }
 
+                            // Tambahkan fungsi klik pada bubble untuk memunculkan Action Bar
+                            const clickEvent = `onclick="handleBubbleClick('${k}')"`;
+
                             if (c.is_admin) {
-                                chatHtml += `<div class="chat-bubble bubble-admin"><span class="chat-name" style="color: #ffe5d9;">CS LUVIA STUDIO (Admin)</span>${quoteHtml}${textPesan}${editedTag}${actionBar}</div>`;
+                                chatHtml += `<div class="chat-bubble bubble-admin" ${clickEvent}><span class="chat-name" style="color: #ffe5d9;">CS LUVIA STUDIO (Admin)</span>${quoteHtml}${textPesan}${editedTag}${actionBar}</div>`;
                             } else {
-                                chatHtml += `<div class="chat-bubble bubble-user"><span class="chat-name" style="color: #ff914d; text-align:right;">${c.nama}</span>${quoteHtml}${textPesan}${editedTag}${actionBar}</div>`;
+                                chatHtml += `<div class="chat-bubble bubble-user" ${clickEvent}><span class="chat-name" style="color: #ff914d; text-align:right;">${c.nama}</span>${quoteHtml}${textPesan}${editedTag}${actionBar}</div>`;
                             }
                         }
                     });
 
-                    // B. RENDER PAPAN JAWABAN UMUM (Lonceng)
                     keys.reverse().forEach(k => {
                         const c = allMessages[k];
                         if(c.jawaban_admin && !c.deleted_for_everyone) {
@@ -371,13 +389,42 @@ let deviceId = localStorage.getItem('luvia_device_id');
             }
         });
 
+        // FUNGSI MENU TITIK TIGA
+        function toggleDropdown() {
+            const drop = document.getElementById('header-dropdown');
+            drop.style.display = drop.style.display === 'block' ? 'none' : 'block';
+        }
+
+        function aktifkanPilihChat() {
+            isSelectMode = !isSelectMode;
+            toggleDropdown();
+            alert(isSelectMode ? "Mode Pilih Aktif! \nSilakan ketuk (klik) pesan mana saja untuk memunculkan tombol Balas/Edit/Hapus." : "Mode Pilih Dinonaktifkan.");
+        }
+
+        function handleBubbleClick(id) {
+            if(!isSelectMode) return;
+            const bar = document.getElementById('action-' + id);
+            if(bar) bar.style.display = bar.style.display === 'flex' ? 'none' : 'flex';
+        }
+
+        function resetObrolanUser() {
+            if(confirm("Yakin ingin mereset/menghapus layar obrolan Anda?")) {
+                Object.keys(allMessages).forEach(k => {
+                    if(allMessages[k].deviceId === deviceId) {
+                        firebase.database().ref('complaints/' + k).update({ hidden_by_user: true });
+                    }
+                });
+                toggleDropdown();
+            }
+        }
+
+        // FUNGSI STANDAR (Balas, Edit, Kirim)
         function bukaNotifKomplain() {
             document.getElementById('modal-notif').style.display = 'flex';
             document.getElementById('bell-dot').style.display = 'none';
             localStorage.setItem('last_read_complaints', Date.now());
         }
 
-        // ================= FITUR QUOTE, EDIT, HAPUS =================
         function siapkanBalas(id) {
             const msg = allMessages[id];
             document.getElementById('quote-preview').style.display = 'block';
@@ -432,31 +479,20 @@ let deviceId = localStorage.getItem('luvia_device_id');
             
             localStorage.setItem('luvia_chat_name', nama);
 
-            // Jika Mode Edit
             if (editId) {
-                firebase.database().ref('complaints/' + editId).update({
-                    isi: isi, is_edited: true
-                });
+                firebase.database().ref('complaints/' + editId).update({ isi: isi, is_edited: true });
                 batalAksi();
                 return;
             }
 
-            // Jika Mode Kirim Baru / Balas
-            let payload = {
-                nama: nama, isi: isi, deviceId: deviceId,
-                timestamp: firebase.database.ServerValue.TIMESTAMP
-            };
-
-            if (replyId) {
-                payload.quote_id = replyId;
-                payload.quote_text = document.getElementById('quote-text').innerText;
-            }
+            let payload = { nama: nama, isi: isi, deviceId: deviceId, timestamp: firebase.database.ServerValue.TIMESTAMP };
+            if (replyId) { payload.quote_id = replyId; payload.quote_text = document.getElementById('quote-text').innerText; }
 
             firebase.database().ref('complaints').push(payload).then(() => {
                 firebase.database().ref('admin_notifications').push({
                     tipe: "Komplain Masuk 🔔", pesan: `${nama}: "${isi}"`, timestamp: Date.now(), read: false
                 });
-                batalAksi(); // Reset kolom
+                batalAksi(); 
             });
         }
 
