@@ -182,13 +182,13 @@
             <button class="close-btn" onclick="toggleSidebar()">×</button>
         </div>
         <div class="sidebar-links">
-            <a href="#" onclick="toggleSidebar()">Beranda</a>
+            <a href="index.html" onclick="toggleSidebar()">Beranda</a>
             <a href="videos.html" onclick="toggleSidebar()">Video</a>
-            <a href="#projects" onclick="toggleSidebar()">Program TV</a>
-            <a href="#livestreaming" onclick="toggleSidebar()">Live Streaming</a>
+            <a href="index.html#projects" onclick="toggleSidebar()">Program TV</a>
+            <a href="index.html#livestreaming" onclick="toggleSidebar()">Live Streaming</a>
             <a href="support.html">Live Support & CS</a> <!-- INI LINK BARUNYA -->
-            <a href="#about" onclick="toggleSidebar()">Tentang</a>
-            <a href="#contact" onclick="toggleSidebar()">Social Media</a>
+            <a href="index.html#about" onclick="toggleSidebar()">Tentang</a>
+            <a href="index.html#contact" onclick="toggleSidebar()">Social Media</a>
         </div>
         <div class="sidebar-footer">
             <p>&copy 2026 LUVIA STUDIO TV All Right Reserved</p>
@@ -308,13 +308,29 @@
                         keys.forEach(k => {
                             const c = data[k];
                             if (c.deviceId === deviceId) {
-                                chatHtml += `
-                                    <div class="chat-bubble bubble-user">
-                                        <span class="chat-name" style="color: #ff914d; text-align:right;">${c.nama}</span>
-                                        ${c.isi}
-                                    </div>
-                                `;
-                                if(c.jawaban_admin) {
+                                
+                                if (c.is_admin) {
+                                    // Chat Baru (Sistem Admin WA)
+                                    let quoteHtml = c.quote_text ? `<div style="background:rgba(255,255,255,0.2); border-left:3px solid #fff; padding:5px; margin-bottom:5px; font-size:11px; border-radius:4px;">Membalas: ${c.quote_text}</div>` : '';
+                                    chatHtml += `
+                                        <div class="chat-bubble bubble-admin">
+                                            <span class="chat-name" style="color: #ffe5d9;">CS LUVIA STUDIO (Admin)</span>
+                                            ${quoteHtml}
+                                            ${c.isi}
+                                        </div>
+                                    `;
+                                } else {
+                                    // Chat dari User Penonton
+                                    chatHtml += `
+                                        <div class="chat-bubble bubble-user">
+                                            <span class="chat-name" style="color: #ff914d; text-align:right;">${c.nama}</span>
+                                            ${c.isi}
+                                        </div>
+                                    `;
+                                }
+                                
+                                // Support data lama
+                                if(c.jawaban_admin && !c.is_admin) {
                                     chatHtml += `
                                         <div class="chat-bubble bubble-admin">
                                             <span class="chat-name" style="color: #ffe5d9;">CS LUVIA STUDIO (Admin)</span>
@@ -324,7 +340,6 @@
                                 }
                             }
                         });
-
                         // B. LOOPING UNTUK PAPAN JAWABAN UMUM (Muncul untuk semua orang)
                         keys.reverse().forEach(k => {
                             const c = data[k];
