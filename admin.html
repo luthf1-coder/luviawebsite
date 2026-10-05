@@ -69,6 +69,10 @@
         .bubble-user:hover { opacity: 0.8; box-shadow: 0 0 5px rgba(255, 145, 77, 0.5); }
         
         .quote-box { background: rgba(0,0,0,0.3); border-left: 4px solid #ff914d; padding: 8px; border-radius: 4px; margin-bottom: 5px; font-size: 12px; display: none;}
+
+    .action-bar { font-size: 11px; margin-top: 5px; display: flex; gap: 10px; justify-content: flex-end; opacity: 0.8; }
+        .action-btn-chat { background: none; border: none; color: #ff914d; cursor: pointer; padding: 0; font-size: 11px; font-weight: bold; }
+        .msg-edited { font-size: 10px; font-style: italic; opacity: 0.6; margin-left: 5px; }
     </style>
 </head>
 <body>
@@ -182,6 +186,7 @@
                         
                         <div style="display:flex; gap:10px; align-items:center;">
                             <input type="hidden" id="reply-to-id" value="">
+                            <input type="hidden" id="edit-id" value="">
                             <input type="text" id="admin-chat-input" placeholder="Ketik balasan untuk pengguna ini..." style="flex:1; background:#2a2f32; border:none; color:white; padding:12px; border-radius:8px; outline:none;" onkeypress="if(event.key === 'Enter') kirimBalasanAdmin()">
                             <button onclick="kirimBalasanAdmin()" style="background:#00a884; color:white; border:none; width:45px; height:45px; border-radius:50%; cursor:pointer; font-size:18px;">➤</button>
                         </div>
@@ -613,37 +618,62 @@
             const room = document.getElementById('wa-room-msgs');
             let html = '';
             
-            // Urutkan waktu chat dari atas ke bawah
             let msgs = Object.keys(allComplaints)
                 .map(k => ({ id: k, ...allComplaints[k] }))
                 .filter(m => m.deviceId === did)
                 .sort((a,b) => a.timestamp - b.timestamp);
                 
             msgs.forEach(m => {
+                // Jangan tampilkan jika Admin memilih "Hapus untuk Saya"
+                if (m.deleted_by_admin) return; 
+
+                const isDeletedAll = m.deleted_for_everyone;
+                const textPesan = isDeletedAll ? "🚫 <i>Pesan ini telah ditarik/dihapus</i>" : m.isi;
+                const editedTag = (m.is_edited && !isDeletedAll) ? `<span class="msg-edited">(diedit)</span>` : '';
                 const time = new Date(m.timestamp).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
                 
-                // Chat dari PENONTON (Bisa diklik untuk balas/quote)
+                // Hitung Umur Pesan
+                const ageMs = Date.now() - m.timestamp;
+                const canEdit = ageMs <= 30 * 60 * 1000; // 30 Menit
+                const canDeleteAll = ageMs <= 24 * 60 * 60 * 1000; // 24 Jam
+                
+                let actionBar = '';
+                if (!isDeletedAll) {
+                    actionBar += `<div class="action-bar"><button class="action-btn-chat" onclick="pilihQuote('${m.id}', '${m.isi.replace(/'/g, "\\'")}')">Balas</button>`;
+                    if (m.is_admin) { 
+                        // Jika pesan milik Admin
+                        if (canEdit) actionBar += `<button class="action-btn-chat" onclick="siapkanEditAdmin('${m.id}')">Edit</button>`;
+                        actionBar += `<button class="action-btn-chat" onclick="opsiHapusAdmin('${m.id}', ${canDeleteAll})">Hapus</button>`;
+                    } else {
+                        // Admin punya Kuasa menghapus pesan penonton (opsional)
+                        actionBar += `<button class="action-btn-chat" onclick="opsiHapusAdmin('${m.id}', true)">Hapus (Admin)</button>`;
+                    }
+                    actionBar += `</div>`;
+                }
+
                 if (!m.is_admin) {
+                    let quoteHtml = m.quote_text && !isDeletedAll ? `<div style="background:rgba(0,0,0,0.2); border-left:3px solid #ff914d; padding:5px; margin-bottom:5px; font-size:11px; color:#ddd; border-radius:3px;">Membalas:<br>${m.quote_text}</div>` : '';
                     html += `
-                    <div class="bubble-user" onclick="pilihQuote('${m.id}', '${m.isi.replace(/'/g, "\\'")}')" title="Klik chat ini untuk merespons spesifik">
+                    <div class="bubble-user">
                         <div style="font-size:11px; color:#ff914d; font-weight:bold; margin-bottom:3px;">${m.nama}</div>
-                        ${m.isi}
+                        ${quoteHtml}${textPesan}${editedTag}
+                        ${actionBar}
                         <div style="font-size:10px; color:#888; text-align:right; margin-top:4px;">${time}</div>
                     </div>`;
                 }
                 
-                // Chat lama (Sistem belum WA)
+                // Menangani data jawaban lama
                 if (m.jawaban_admin && !m.is_admin) {
                     html += `<div class="bubble-admin">${m.jawaban_admin}</div>`;
                 }
                 
-                // Chat dari ADMIN (Sistem WA)
                 if (m.is_admin) {
-                    let quoteHtml = m.quote_text ? `<div style="background:rgba(0,0,0,0.2); border-left:3px solid #00a884; padding:5px; margin-bottom:5px; font-size:11px; color:#ddd; border-radius:3px;">Membalas:<br>${m.quote_text}</div>` : '';
+                    let quoteHtml = m.quote_text && !isDeletedAll ? `<div style="background:rgba(0,0,0,0.2); border-left:3px solid #00a884; padding:5px; margin-bottom:5px; font-size:11px; color:#ddd; border-radius:3px;">Membalas:<br>${m.quote_text}</div>` : '';
                     html += `
                     <div class="bubble-admin">
                         ${quoteHtml}
-                        ${m.isi}
+                        ${textPesan}${editedTag}
+                        ${actionBar}
                         <div style="font-size:10px; color:#93c5b5; text-align:right; margin-top:4px;">${time}</div>
                     </div>`;
                 }
@@ -654,13 +684,48 @@
 
         function pilihQuote(msgId, text) {
             document.getElementById('quote-preview').style.display = 'block';
+            document.querySelector('#quote-preview div').innerText = "Membalas:";
+            document.getElementById('quote-preview').style.borderLeftColor = '#ff914d';
             document.getElementById('quote-text-preview').innerText = text;
             document.getElementById('reply-to-id').value = msgId;
+            document.getElementById('edit-id').value = '';
+            document.getElementById('admin-chat-input').focus();
+        }
+
+        function siapkanEditAdmin(id) {
+            const msg = allComplaints[id];
+            document.getElementById('quote-preview').style.display = 'block';
+            document.querySelector('#quote-preview div').innerText = "Mengedit Pesan:";
+            document.getElementById('quote-preview').style.borderLeftColor = '#8c52ff'; 
+            document.getElementById('quote-text-preview').innerText = msg.isi;
+            document.getElementById('edit-id').value = id;
+            document.getElementById('reply-to-id').value = '';
+            
+            const inputChat = document.getElementById('admin-chat-input');
+            inputChat.value = msg.isi;
+            inputChat.focus();
         }
 
         function batalQuote() {
             document.getElementById('quote-preview').style.display = 'none';
             document.getElementById('reply-to-id').value = '';
+            document.getElementById('edit-id').value = '';
+            document.getElementById('admin-chat-input').value = '';
+            document.querySelector('#quote-preview div').innerText = "Membalas:";
+            document.getElementById('quote-preview').style.borderLeftColor = '#ff914d';
+        }
+
+        function opsiHapusAdmin(id, canDeleteAll) {
+            const pesan = canDeleteAll 
+                ? "Pilih opsi hapus:\nKetik '1' = Hapus Untuk Saya (Hanya hilang di Admin)\nKetik '2' = Hapus Untuk Semua Orang (Ditarik dari penonton)" 
+                : "Waktu tarik pesan > 24 Jam.\nKetik '1' jika ingin Hapus Untuk Saya saja.";
+            
+            const respon = prompt(pesan);
+            if (respon === '1') {
+                firebase.database().ref('complaints/' + id).update({ deleted_by_admin: true });
+            } else if (respon === '2' && canDeleteAll) {
+                firebase.database().ref('complaints/' + id).update({ deleted_for_everyone: true });
+            }
         }
 
         function kirimBalasanAdmin() {
@@ -671,27 +736,36 @@
             
             const quoteId = document.getElementById('reply-to-id').value;
             const quoteText = document.getElementById('quote-text-preview').innerText;
+            const editId = document.getElementById('edit-id').value;
             const isPublicFAQ = document.getElementById('check-publish-board').checked;
             
-            // 1. Kirim Pesan ke Ruang Chat Pribadi Penonton
+            // JIKA SEDANG MODE EDIT
+            if (editId) {
+                firebase.database().ref('complaints/' + editId).update({
+                    isi: text, is_edited: true
+                });
+                batalQuote();
+                return;
+            }
+            
+            // JIKA MODE KIRIM BARU / QUOTE
             const payload = {
-                nama: "CS LUVIA STUDIO",
-                isi: text,
-                deviceId: activeDeviceId,
-                is_admin: true,
-                timestamp: Date.now()
+                nama: "CS LUVIA STUDIO", isi: text, deviceId: activeDeviceId,
+                is_admin: true, timestamp: Date.now()
             };
             if (quoteId) { payload.quote_id = quoteId; payload.quote_text = quoteText; }
-            firebase.database().ref('complaints').push(payload);
             
-            // 2. Jika dicentang, update data lama agar masuk ke Papan Jawaban Publik (Lonceng)
-            if(isPublicFAQ && quoteId) {
-                firebase.database().ref('complaints/' + quoteId).update({
-                    jawaban_admin: text,
-                    answered_at: Date.now()
-                });
-            } else if (isPublicFAQ && !quoteId) {
-                alert("Info: Untuk mengirim ke Papan FAQ Publik, Anda harus meng-klik salah satu chat penonton (membalas spesifik) terlebih dahulu.");
+            firebase.database().ref('complaints').push(payload).then(() => {
+                // LOGIKA LEMPAR KE PAPAN FAQ: Harus merupakan respons terhadap pertanyaan User
+                if(isPublicFAQ && quoteId) {
+                    firebase.database().ref('complaints/' + quoteId).update({
+                        jawaban_admin: text, answered_at: Date.now()
+                    });
+                }
+            });
+            
+            if(isPublicFAQ && !quoteId) {
+                alert("Info: Untuk mengirim ke Papan FAQ Publik, Anda harus membalas (klik tombol 'Balas') pada spesifik pesan penonton terlebih dahulu.");
             }
             
             input.value = '';
