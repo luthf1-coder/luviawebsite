@@ -252,9 +252,21 @@
                 
                 <!-- PANEL KANAN: RUANG CHAT -->
                 <div class="wa-admin-chat" id="wa-chat-area" style="display:none;">
-                    <div class="wa-room-header">
-                        <img src="Asset Foto/Thumbnimail .png" class="wa-contact-img" id="wa-room-img">
-                        <div style="color:white; font-weight:bold;" id="wa-room-name">Nama Pengguna</div>
+                    <div class="wa-room-header" style="justify-content: space-between;">
+                        <div style="display:flex; align-items:center; gap:15px;">
+                            <img src="Asset Foto/Thumbnimail .png" class="wa-contact-img" id="wa-room-img">
+                            <div style="color:white; font-weight:bold;" id="wa-room-name">Nama Pengguna</div>
+                        </div>
+                        
+                        <!-- Menu Titik Tiga Admin -->
+                        <div style="position:relative;">
+                            <div onclick="toggleAdminDropdown()" style="cursor:pointer; font-size:24px; color:white; padding: 0 10px;">⋮</div>
+                            <div id="admin-dropdown" class="dropdown-menu">
+                                <a href="javascript:void(0)" onclick="aktifkanPilihChatAdmin()">✔️ Pilih Chat / Obrolan</a>
+                                <a href="javascript:void(0)" onclick="resetObrolanAdmin()" style="color:#ff914d;">📥 Arsipkan Obrolan</a>
+                                <a href="javascript:void(0)" onclick="hapusPermanenObrolan()" style="color:#ff4d4d;">🗑️ Hapus Permanen</a>
+                            </div>
+                        </div>
                     </div>
                     
                     <div class="wa-room-body" id="wa-room-msgs">
@@ -680,6 +692,8 @@
         let activeDeviceId = null;
         let activeDeviceName = "Pengguna";
 
+        let isAdminSelectMode = false;
+
         function jalankanPantauanNotif() {
             firebase.database().ref('complaints').on('value', snap => {
                 const data = snap.val();
@@ -688,26 +702,36 @@
                 allComplaints = data;
                 let grouped = {};
                 
-                // 1. Kelompokkan chat berdasarkan ID Perangkat (Orang yg sama)
                 Object.keys(data).forEach(k => {
                     const c = data[k];
-                    const did = c.deviceId || 'unknown'; // Cegah error pada data lama
-                    if(!grouped[did]) grouped[did] = { name: c.nama, messages: [], lastTime: 0, lastMsg: '' };
+                    const did = c.deviceId || 'unknown';
+                    if(!grouped[did]) grouped[did] = { name: c.nama, messages: [], lastTime: 0, lastMsg: '', isArchived: true, archiveTime: 0 };
+                    
                     grouped[did].messages.push({ id: k, ...c });
                     grouped[did].lastTime = Math.max(grouped[did].lastTime, c.timestamp);
-                    grouped[did].lastMsg = c.is_admin ? "Anda: " + c.isi : c.isi; // Tampilkan "Anda: " jika pesan terakhir dari admin
+                    grouped[did].lastMsg = c.is_admin ? "Anda: " + c.isi : c.isi;
+                    
+                    // Cek arsip
+                    if (!c.archived_by_admin) grouped[did].isArchived = false;
+                    if (c.archive_timestamp) grouped[did].archiveTime = Math.max(grouped[did].archiveTime, c.archive_timestamp);
                 });
                 
-                // 2. Urutkan Kontak (Yang terbaru chat di atas)
                 let sortedDevices = Object.keys(grouped).sort((a,b) => grouped[b].lastTime - grouped[a].lastTime);
-                
-                // 3. Cetak ke panel kiri
                 let listHtml = '';
+                
                 sortedDevices.forEach(did => {
                     if(did === 'unknown') return; 
                     const g = grouped[did];
                     const timeStr = new Date(g.lastTime).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
                     const isActive = activeDeviceId === did ? 'active' : '';
+                    
+                    // Tambahkan Teks Arsip Tanggal Lengkap
+                    let noteHtml = '';
+                    if (g.isArchived && g.archiveTime > 0) {
+                        const opt = { weekday:'long', day:'numeric', month:'long', year:'numeric', hour:'2-digit', minute:'2-digit' };
+                        const tgl = new Intl.DateTimeFormat('id-ID', opt).format(new Date(g.archiveTime));
+                        noteHtml = `<div style="font-size:10px; color:#ff4d4d; font-style:italic; margin-top:4px;">(Pesan ini telah direset pada ${tgl})</div>`;
+                    }
                     
                     listHtml += `
                     <div class="wa-contact-item ${isActive}" onclick="bukaChatRoom('${did}', '${g.name.replace(/'/g, "\\'")}')">
@@ -715,12 +739,11 @@
                         <div class="wa-contact-info">
                             <div class="wa-contact-name">${g.name} <span class="wa-contact-time">${timeStr}</span></div>
                             <div class="wa-contact-last">${g.lastMsg}</div>
+                            ${noteHtml}
                         </div>
                     </div>`;
                 });
                 document.getElementById('wa-contact-list').innerHTML = listHtml;
-                
-                // 4. Update Ruang Chat secara realtime jika sedang terbuka
                 if(activeDeviceId) renderChatRoom(activeDeviceId);
             });
         }
@@ -748,7 +771,6 @@
                 .sort((a,b) => a.timestamp - b.timestamp);
                 
             msgs.forEach(m => {
-                // Jangan tampilkan jika Admin memilih "Hapus untuk Saya"
                 if (m.deleted_by_admin) return; 
 
                 const isDeletedAll = m.deleted_for_everyone;
@@ -756,29 +778,27 @@
                 const editedTag = (m.is_edited && !isDeletedAll) ? `<span class="msg-edited">(diedit)</span>` : '';
                 const time = new Date(m.timestamp).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
                 
-                // Hitung Umur Pesan
                 const ageMs = Date.now() - m.timestamp;
-                const canEdit = ageMs <= 30 * 60 * 1000; // 30 Menit
-                const canDeleteAll = ageMs <= 24 * 60 * 60 * 1000; // 24 Jam
+                const canEdit = ageMs <= 30 * 60 * 1000;
                 
                 let actionBar = '';
                 if (!isDeletedAll) {
-                    actionBar += `<div class="action-bar"><button class="action-btn-chat" onclick="pilihQuote('${m.id}', '${m.isi.replace(/'/g, "\\'")}')">Balas</button>`;
+                    actionBar += `<div class="action-bar" id="action-${m.id}"><button class="action-btn-chat" onclick="pilihQuote('${m.id}', '${m.isi.replace(/'/g, "\\'")}')">Balas</button>`;
                     if (m.is_admin) { 
-                        // Jika pesan milik Admin
                         if (canEdit) actionBar += `<button class="action-btn-chat" onclick="siapkanEditAdmin('${m.id}')">Edit</button>`;
-                        actionBar += `<button class="action-btn-chat" onclick="opsiHapusAdmin('${m.id}', ${canDeleteAll})">Hapus</button>`;
+                        actionBar += `<button class="action-btn-chat" onclick="opsiHapusAdmin('${m.id}', true)">Hapus</button>`;
                     } else {
-                        // Admin punya Kuasa menghapus pesan penonton (opsional)
                         actionBar += `<button class="action-btn-chat" onclick="opsiHapusAdmin('${m.id}', true)">Hapus (Admin)</button>`;
                     }
                     actionBar += `</div>`;
                 }
 
+                const clickEvent = `onclick="handleBubbleClickAdmin('${m.id}')"`;
+
                 if (!m.is_admin) {
                     let quoteHtml = m.quote_text && !isDeletedAll ? `<div style="background:rgba(0,0,0,0.2); border-left:3px solid #ff914d; padding:5px; margin-bottom:5px; font-size:11px; color:#ddd; border-radius:3px;">Membalas:<br>${m.quote_text}</div>` : '';
                     html += `
-                    <div class="bubble-user">
+                    <div class="bubble-user" ${clickEvent}>
                         <div style="font-size:11px; color:#ff914d; font-weight:bold; margin-bottom:3px;">${m.nama}</div>
                         ${quoteHtml}${textPesan}${editedTag}
                         ${actionBar}
@@ -786,7 +806,6 @@
                     </div>`;
                 }
                 
-                // Menangani data jawaban lama
                 if (m.jawaban_admin && !m.is_admin) {
                     html += `<div class="bubble-admin">${m.jawaban_admin}</div>`;
                 }
@@ -794,7 +813,7 @@
                 if (m.is_admin) {
                     let quoteHtml = m.quote_text && !isDeletedAll ? `<div style="background:rgba(0,0,0,0.2); border-left:3px solid #00a884; padding:5px; margin-bottom:5px; font-size:11px; color:#ddd; border-radius:3px;">Membalas:<br>${m.quote_text}</div>` : '';
                     html += `
-                    <div class="bubble-admin">
+                    <div class="bubble-admin" ${clickEvent}>
                         ${quoteHtml}
                         ${textPesan}${editedTag}
                         ${actionBar}
@@ -806,6 +825,53 @@
             setTimeout(() => { room.scrollTop = room.scrollHeight; }, 50);
         }
 
+        function toggleAdminDropdown() {
+            const drop = document.getElementById('admin-dropdown');
+            drop.style.display = drop.style.display === 'block' ? 'none' : 'block';
+        }
+
+        function aktifkanPilihChatAdmin() {
+            isAdminSelectMode = !isAdminSelectMode;
+            toggleAdminDropdown();
+            alert(isAdminSelectMode ? "Mode Pilih Aktif: Klik pada pesan mana saja untuk memunculkan tombol Balas/Edit/Hapus." : "Mode Pilih Dinonaktifkan.");
+        }
+
+        function handleBubbleClickAdmin(id) {
+            if(!isAdminSelectMode) return;
+            const bar = document.getElementById('action-' + id);
+            if(bar) bar.style.display = bar.style.display === 'flex' ? 'none' : 'flex';
+        }
+
+        function resetObrolanAdmin() {
+            if(!activeDeviceId) return;
+            if(confirm("Yakin ingin mereset dan mengarsipkan obrolan ini?")) {
+                Object.keys(allComplaints).forEach(k => {
+                    if(allComplaints[k].deviceId === activeDeviceId) {
+                        firebase.database().ref('complaints/' + k).update({ 
+                            archived_by_admin: true,
+                            archive_timestamp: Date.now()
+                        });
+                    }
+                });
+                toggleAdminDropdown();
+            }
+        }
+
+        function hapusPermanenObrolan() {
+            if(!activeDeviceId) return;
+            if(confirm("PERINGATAN: Yakin ingin menghapus PERMANEN seluruh obrolan dengan pengguna ini? Data akan hilang selamanya dari database!")) {
+                Object.keys(allComplaints).forEach(k => {
+                    if(allComplaints[k].deviceId === activeDeviceId) {
+                        firebase.database().ref('complaints/' + k).remove();
+                    }
+                });
+                toggleAdminDropdown();
+                document.getElementById('wa-chat-area').style.display = 'none';
+                document.getElementById('wa-empty-state').style.display = 'flex';
+                activeDeviceId = null;
+            }
+        }
+    
         function pilihQuote(msgId, text) {
             document.getElementById('quote-preview').style.display = 'block';
             document.querySelector('#quote-preview div').innerText = "Membalas:";
