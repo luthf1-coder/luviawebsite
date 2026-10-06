@@ -515,23 +515,6 @@ function renderGridRecommendations(containerId, list = videoList) {
     const randomList = shuffleArray([...list]).slice(0, 8);
 
     let html = '';
-    if (!isLivePage) {
-        html = `
-            <a href="livestream.html" class="video-card featured-live-card">
-                <div class="thumb-box">
-                    <span id="kick-watch-badge" class="badge-live">🔍 Memeriksa...</span>
-                    <img src="Asset Foto/live stream.png" alt="Live Streaming">
-                </div>
-                <div class="video-details">
-                    <h3>LIVE STREAMING LUVIA STUDIO TV</h3>
-                    <p>
-                        <span class="card-genre-btn" onclick="event.preventDefault(); window.location.href='videos.html?genre=Live%20Stream'">LIVE STREAM</span><br>
-                        LUVIA STUDIO TV • LIVE
-                    </p>
-                </div>
-            </a>
-        `;
-    }
 
     container.innerHTML = html;
 
