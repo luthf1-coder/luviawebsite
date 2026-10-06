@@ -14,6 +14,9 @@
 
     <nav>
         <div class="container nav-container">
+            <!-- Tambahan tombol Hamburger -->
+            <button class="hamburger-menu" onclick="toggleSidebar()" title="Menu">☰</button>
+            
             <div class="nav-history-controls">
                 <button onclick="history.back()" class="btn-nav-history" title="Kembali">←</button>
             </div>
@@ -24,6 +27,30 @@
         </div>
     </nav>
 
+<!-- KODE SIDEBAR -->
+    <div class="sidebar-overlay" id="sidebarOverlay" onclick="toggleSidebar()"></div>
+    <div class="sidebar" id="sidebar">
+        <div class="sidebar-header">
+            <a href="index.html" title="Kembali ke Beranda" style="display: flex; align-items: center;">
+                <img src="Asset Foto/Thumbnimail .png" alt="Logo" style="width: 40px; height: 40px; border-radius: 50%; object-fit: cover; border: 2px solid white;">
+            </a>
+            <h2>MENU</h2>
+            <button class="close-btn" onclick="toggleSidebar()">×</button>
+        </div>
+        <div class="sidebar-links">
+            <a href="index.html" onclick="toggleSidebar()">Beranda</a>
+            <a href="videos.html" onclick="toggleSidebar()">Video</a>
+            <a href="index.html#projects" onclick="toggleSidebar()">Program TV</a>
+            <a href="index.html#livestreaming" onclick="toggleSidebar()">Live Streaming</a>
+            <a href="support.html">Pusat Bantuan</a>
+            <a href="index.html#about" onclick="toggleSidebar()">Tentang</a>
+            <a href="index.html#contact" onclick="toggleSidebar()">Social Media</a>
+        </div>
+        <div class="sidebar-footer">
+            <p>&copy; 2026 LUVIA STUDIO TV. All Right Reserved</p>
+        </div>
+    </div>
+    
     <main class="container page-stream-container">
         <!-- DETAIL PROGRAM TV OTOMATIS BERUBAH -->
         <section class="program-detail-card">
@@ -51,6 +78,13 @@
 
     <script src="videos-data.js"></script>
     <script>
+
+// FUNGSI UNTUK MEMBUKA & MENUTUP SIDEBAR
+        function toggleSidebar() {
+            document.getElementById('sidebar').classList.toggle('active');
+            document.getElementById('sidebarOverlay').classList.toggle('active');
+        }
+        
         function muatHalamanProgram() {
             // Ambil ID Program dari Link (misal: program.html?id=livemusic)
             const params = new URLSearchParams(window.location.search);
