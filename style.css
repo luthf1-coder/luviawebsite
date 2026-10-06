@@ -1896,3 +1896,28 @@ input:checked + .slider-toggle:before {
     height: 55px !important; 
     width: auto !important;
 }
+
+/* MEMPERBAIKI NAVBAR AGAR TIDAK TURUN MENJADI 2 BARIS DI HP */
+@media screen and (max-width: 768px) {
+    .nav-container {
+        flex-wrap: nowrap !important; /* Memaksa semua elemen tetap dalam 1 baris */
+        gap: 8px !important; /* Merapatkan jarak antar elemen */
+    }
+    
+    /* Menyembunyikan tombol maju/mundur di layar HP untuk menghemat ruang */
+    .nav-history-controls {
+        display: none !important;
+    }
+    
+    /* Membuat kolom pencarian fleksibel dan mengecil menyesuaikan sisa ruang layar */
+    .nav-search {
+        flex: 1 1 auto !important;
+        min-width: 0 !important; 
+        width: 100% !important;
+        margin: 0 !important;
+    }
+    
+    .nav-search input {
+        width: 100% !important;
+    }
+}
