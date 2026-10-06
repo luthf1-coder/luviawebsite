@@ -560,6 +560,37 @@ function renderGridRecommendations(containerId, list = videoList) {
         updateKickBadgeStatus('kick-watch-badge');
     }
 }
+
+// D. FUNGSI RENDER SEMUA VIDEO UNTUK HALAMAN VIDEOS.HTML
+function renderAllVideosPage(containerId, list = videoList) {
+    const container = document.getElementById(containerId);
+    if (!container) return;
+    
+    container.innerHTML = ''; // Memastikan bersih dari kartu live streaming statis
+
+    list.forEach(vid => {
+        const card = document.createElement('a');
+        card.href = `watch.html?id=${vid.id}`;
+        card.className = 'video-card';
+        const uploadTime = vid.uploadDate ? timeAgoFormated(vid.uploadDate) : '';
+        
+        card.innerHTML = `
+            <div class="thumb-box"><img src="${vid.thumb}" alt="${vid.title}"></div>
+            <div class="video-details">
+                <h3>${vid.title}</h3>
+                <p>
+                    <span class="card-genre-btn" onclick="event.preventDefault(); window.location.href='videos.html?genre=${encodeURIComponent(vid.genre || 'Umum')}'">${vid.genre || 'Umum'}</span><br>
+                    <span id="view-count-all-${vid.id}">👁️ Memuat...</span>${uploadTime ? ' • ' + uploadTime : ''}
+                </p>
+            </div>
+        `;
+        container.appendChild(card);
+        listenVideoViews(vid.id, vid.defaultViews || 0, (totalViews) => {
+            const el = document.getElementById(`view-count-all-${vid.id}`);
+            if (el) el.innerText = `👁️ ${formatViews(totalViews)}`;
+        });
+    });
+}
 // ==============================================================================
 
 
