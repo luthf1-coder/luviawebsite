@@ -1890,3 +1890,9 @@ input:checked + .slider-toggle:before {
     transform: scale(1.05);
     box-shadow: 0 4px 8px rgba(0,0,0,0.3);
 }
+
+/* MEMPERBESAR LOGO NAVBAR DI SEMUA HALAMAN SEKALIGUS */
+.nav-container a[title="Halaman Utama"] img {
+    height: 55px !important; 
+    width: auto !important;
+}
