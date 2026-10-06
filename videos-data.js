@@ -401,11 +401,27 @@ async function updateKickBadgeStatus(badgeId) {
     }
 }
 
-// Render Slider di Halaman Utama (index.html)
+// FUNGSI HELPER ACAK ARRAY (Baru)
+function shuffleArray(array) {
+    let shuffled = [...array];
+    for (let i = shuffled.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
+    }
+    return shuffled;
+}
+
+// Render Slider Rekomendasi (BERDASARKAN VIDEO TERBARU RILIS)
 function renderSliderRecommendations(containerId, list = videoList) {
     const container = document.getElementById(containerId);
     if (!container) return;
-    const sortedList = [...list].sort((a, b) => (b.defaultViews || 0) - (a.defaultViews || 0)).slice(0, 4);
+    
+    // Urutkan berdasarkan tanggal terbaru (Newest First) dan ambil 6 video
+    const sortedList = [...list].sort((a, b) => {
+        const dateA = a.uploadDate ? new Date(a.uploadDate) : new Date(0);
+        const dateB = b.uploadDate ? new Date(b.uploadDate) : new Date(0);
+        return dateB - dateA;
+    }).slice(0, 6);
 
     let html = `
         <a href="livestream.html" class="slider-card featured-live">
@@ -434,7 +450,6 @@ function renderSliderRecommendations(containerId, list = videoList) {
             card.className = 'slider-card';
             const uploadTime = vid.uploadDate ? timeAgoFormated(vid.uploadDate) : '';
             
-            // PERUBAHAN: Memasukkan tombol genre aktif pengganti LUVIA STUDIO TV
             card.innerHTML = `
                 <div class="thumb-box"><img src="${vid.thumb}" alt="${vid.title}"></div>
                 <div class="slider-details">
@@ -455,20 +470,51 @@ function renderSliderRecommendations(containerId, list = videoList) {
     updateKickBadgeStatus('kick-home-badge');
 }
 
-// 2. Render Grid di Halaman Nonton & Live Stream (watch.html & livestream.html)
+// Render Slider Tontonan Trending/Teratas (VIEWS TERBANYAK TANPA LIVE STREAM)
+function renderTrendingRecommendations(containerId, list = videoList) {
+    const container = document.getElementById(containerId);
+    if (!container) return;
+    
+    // Urutkan berdasarkan Views Terbanyak dan ambil 6 video
+    const sortedList = [...list].sort((a, b) => (b.defaultViews || 0) - (a.defaultViews || 0)).slice(0, 6);
+
+    container.innerHTML = ''; // Pastikan bersih tanpa menambahkan kartu Live Streaming
+
+    sortedList.forEach(vid => {
+        const card = document.createElement('a');
+        card.href = `watch.html?id=${vid.id}`;
+        card.className = 'slider-card';
+        const uploadTime = vid.uploadDate ? timeAgoFormated(vid.uploadDate) : '';
+        
+        card.innerHTML = `
+            <div class="thumb-box"><img src="${vid.thumb}" alt="${vid.title}"></div>
+            <div class="slider-details">
+                <h3>${vid.title}</h3>
+                <p>
+                    <span class="card-genre-btn" onclick="event.preventDefault(); window.location.href='videos.html?genre=${encodeURIComponent(vid.genre || 'Umum')}'">${vid.genre || 'Umum'}</span><br>
+                    <span id="view-count-trending-${vid.id}">👁️ Memuat...</span>${uploadTime ? ' • ' + uploadTime : ''}
+                </p>
+            </div>
+        `;
+        container.appendChild(card);
+        listenVideoViews(vid.id, vid.defaultViews || 0, (totalViews) => {
+            const el = document.getElementById(`view-count-trending-${vid.id}`);
+            if (el) el.innerText = `👁️ ${formatViews(totalViews)}`;
+        });
+    });
+}
+
+// Render Grid di Halaman Nonton & Live Stream (DIBUAT ACAK MAX 8 KARTU)
 function renderGridRecommendations(containerId, list = videoList) {
     const container = document.getElementById(containerId);
     if (!container) return;
 
     const isLivePage = window.location.pathname.includes('livestream.html');
     
-    // URUTKAN BERDASARKAN VIEWS TERTINGGI & AMBIL HANYA 8 VIDEO TERATAS
-    const sortedList = [...list]
-        .sort((a, b) => (b.defaultViews || 0) - (a.defaultViews || 0))
-        .slice(0, 8); // Dibatasi maksimal 8 kartu
+    // Ambil maksimal 8 video dari hasil acakan array list
+    const randomList = shuffleArray([...list]).slice(0, 8);
 
     let html = '';
-
     if (!isLivePage) {
         html = `
             <a href="livestream.html" class="video-card featured-live-card">
@@ -489,11 +535,11 @@ function renderGridRecommendations(containerId, list = videoList) {
 
     container.innerHTML = html;
 
-    sortedList.forEach(vid => {
+    randomList.forEach(vid => {
         const card = document.createElement('a');
         card.href = `watch.html?id=${vid.id}`;
         card.className = 'video-card';
-        const uploadTime = vid.uploadDate ? timeAgoFormated(vid.uploadDate) : ''; // Fitur kalkulasi waktu
+        const uploadTime = vid.uploadDate ? timeAgoFormated(vid.uploadDate) : ''; 
         
         card.innerHTML = `
             <div class="thumb-box">
@@ -519,7 +565,7 @@ function renderGridRecommendations(containerId, list = videoList) {
     const btnContainer = document.createElement('div');
     btnContainer.style.textAlign = 'center';
     btnContainer.style.marginTop = '30px';
-    btnContainer.style.gridColumn = '1 / -1'; // Memastikan tombol memanjang di tengah grid
+    btnContainer.style.gridColumn = '1 / -1'; 
     btnContainer.innerHTML = `
         <a href="videos.html" class="btn-watch-hero" style="font-size: 15px; padding: 12px 30px;">
             Lihat Video Lainnya ❯
@@ -530,51 +576,6 @@ function renderGridRecommendations(containerId, list = videoList) {
     if (!isLivePage) {
         updateKickBadgeStatus('kick-watch-badge');
     }
-}
-// Fungsi Render Khusus Halaman Daftar Video (videos.html)
-function renderAllVideosPage(containerId, list = videoList) {
-    const container = document.getElementById(containerId);
-    if (!container) return;
-    let html = `
-        <a href="livestream.html" class="video-card featured-live-card">
-            <div class="thumb-box">
-                <span id="kick-all-badge" class="badge-live">🔍 Memeriksa...</span>
-                <img src="Asset Foto/live stream.png" alt="Live Streaming">
-            </div>
-            <div class="video-details">
-                <h3>LIVE STREAMING LUVIA STUDIO TV</h3>
-                <p>
-                    <span class="card-genre-btn" onclick="event.preventDefault(); window.location.href='videos.html?genre=Live%20Stream'">LIVE STREAM</span><br>
-                    LUVIA STUDIO TV • LIVE
-                </p>
-            </div>
-        </a>
-    `;
-    container.innerHTML = html;
-    list.forEach(vid => {
-        const card = document.createElement('a');
-        card.href = `watch.html?id=${vid.id}`;
-        card.className = 'video-card';
-        const uploadTime = vid.uploadDate ? timeAgoFormated(vid.uploadDate) : '';
-        
-        // PERUBAHAN: Memasukkan tombol genre aktif pengganti LUVIA STUDIO TV
-        card.innerHTML = `
-            <div class="thumb-box"><img src="${vid.thumb}" alt="${vid.title}"></div>
-            <div class="video-details">
-                <h3>${vid.title}</h3>
-                <p>
-                    <span class="card-genre-btn" onclick="event.preventDefault(); window.location.href='videos.html?genre=${encodeURIComponent(vid.genre || 'Umum')}'">${vid.genre || 'Umum'}</span><br>
-                    <span id="view-count-all-${vid.id}">👁️ Memuat...</span>${uploadTime ? ' • ' + uploadTime : ''}
-                </p>
-            </div>
-        `;
-        container.appendChild(card);
-        listenVideoViews(vid.id, vid.defaultViews || 0, (totalViews) => {
-            const el = document.getElementById(`view-count-all-${vid.id}`);
-            if (el) el.innerText = `👁️ ${formatViews(totalViews)}`;
-        });
-    });
-    updateKickBadgeStatus('kick-all-badge');
 }
 // ==============================================================================
 
@@ -679,6 +680,9 @@ muatDataDariFirebase();
 window.addEventListener('videoDataReady', () => {
     if (typeof renderSliderRecommendations === 'function' && document.getElementById('home-recommendations-slider')) {
         renderSliderRecommendations('home-recommendations-slider', videoList);
+    }
+    if (typeof renderTrendingRecommendations === 'function' && document.getElementById('home-trending-slider')) {
+        renderTrendingRecommendations('home-trending-slider', videoList);
     }
     if (typeof renderGridRecommendations === 'function' && document.getElementById('watch-recommendations-grid')) {
         renderGridRecommendations('watch-recommendations-grid', videoList);
