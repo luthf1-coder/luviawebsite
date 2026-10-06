@@ -64,28 +64,33 @@
         <div class="container">
             <h2 class="stream-title">Semua Video Tersedia</h2>
             
-            <div class="filter-wrapper">
+            <div class="filter-wrapper" style="display: flex; gap: 10px; margin-bottom: 20px; flex-wrap: wrap;">
+                <!-- Dropdown Genre (Sudah ada) -->
                 <div class="dropdown-container">
-                    <button class="btn-dropdown" id="genreDropdownBtn" onclick="toggleDropdown(event)">Cari berdasarkan genre ▼</button>
+                    <button class="btn-dropdown" id="genreDropdownBtn" onclick="toggleDropdown(event, 'genreDropdownList')">Cari berdasarkan genre ▼</button>
                     <div class="dropdown-list" id="genreDropdownList"></div>
+                </div>
+
+                <!-- BARU: Dropdown Urutkan -->
+                <div class="dropdown-container">
+                    <button class="btn-dropdown" id="sortDropdownBtn" onclick="toggleDropdown(event, 'sortDropdownList')">Urutkan: Terbaru ▼</button>
+                    <div class="dropdown-list" id="sortDropdownList">
+                        <div class="dropdown-item active" onclick="sortBy('newest', this)">Terbaru Ditambahkan</div>
+                        <div class="dropdown-item" onclick="sortBy('oldest', this)">Terlama Ditambahkan</div>
+                        <div class="dropdown-item" onclick="sortBy('az', this)">Abjad (A-Z)</div>
+                        <div class="dropdown-item" onclick="sortBy('za', this)">Abjad (Z-A)</div>
+                        <div class="dropdown-item" onclick="sortBy('popular', this)">Paling Banyak Ditonton</div>
+                    </div>
                 </div>
             </div>
 
+            <!-- GRID KARTU VIDEO -->
             <div class="videos-page-grid" id="all-videos-container"></div>
             
             <!-- Tempat tombol Next/Prev Halaman -->
             <div id="pagination-container" class="pagination-container"></div>
         </div>
     </section>
-
-            <!-- GRID KARTU VIDEO -->
-            <div class="videos-page-grid" id="all-videos-container"></div>
-            
-            <!-- FITUR BARU: PAGINASI / HALAMAN -->
-            <div id="pagination-container" class="pagination-container"></div>
-        </div>
-    </section>
-
     <section id="contact" class="section">
         <div class="container">
             <h2>Follow Us</h2>
@@ -158,44 +163,78 @@
             renderPage(1);
         }
 
-        // FUNGSI DROPDOWN 
-        function toggleDropdown(e) {
+        let currentSortMethod = 'newest'; // Default urutan
+
+        // FUNGSI DROPDOWN YANG DIPERBARUI
+        function toggleDropdown(e, listId) {
             e.stopPropagation();
-            document.getElementById('genreDropdownList').classList.toggle('show');
+            // Tutup semua dropdown lain dulu
+            document.querySelectorAll('.dropdown-list').forEach(el => {
+                if (el.id !== listId) el.classList.remove('show');
+            });
+            document.getElementById(listId).classList.toggle('show');
         }
+        
         window.onclick = function(event) {
             if (!event.target.matches('.btn-dropdown')) {
-                const dropdowns = document.getElementsByClassName("dropdown-list");
-                for (let i = 0; i < dropdowns.length; i++) {
-                    if (dropdowns[i].classList.contains('show')) dropdowns[i].classList.remove('show');
-                }
+                document.querySelectorAll('.dropdown-list').forEach(el => el.classList.remove('show'));
             }
         }
 
+        // FUNGSI SORTING (BARU)
+        function applySorting(list) {
+            return list.sort((a, b) => {
+                const dateA = a.uploadDate ? new Date(a.uploadDate) : new Date(0);
+                const dateB = b.uploadDate ? new Date(b.uploadDate) : new Date(0);
+                const titleA = (a.title || "").toLowerCase();
+                const titleB = (b.title || "").toLowerCase();
+                const viewsA = a.defaultViews || 0;
+                const viewsB = b.defaultViews || 0;
+
+                if (currentSortMethod === 'newest') return dateB - dateA;
+                if (currentSortMethod === 'oldest') return dateA - dateB;
+                if (currentSortMethod === 'az') return titleA.localeCompare(titleB);
+                if (currentSortMethod === 'za') return titleB.localeCompare(titleA);
+                if (currentSortMethod === 'popular') return viewsB - viewsA;
+            });
+        }
+
+        function sortBy(method, element) {
+            currentSortMethod = method;
+            
+            // Update UI tombol
+            document.querySelectorAll('#sortDropdownList .dropdown-item').forEach(el => el.classList.remove('active'));
+            if(element) element.classList.add('active');
+            const btn = document.getElementById('sortDropdownBtn');
+            btn.innerHTML = `Urutkan: ${element.innerText.split(' ')[0]} ▼`;
+
+            // Terapkan urutan pada list yang sedang di-filter
+            currentFilteredList = applySorting(currentFilteredList);
+            renderPage(1);
+        }
+
         function filterByGenre(genre, element) {
-            document.querySelectorAll('.dropdown-item').forEach(el => el.classList.remove('active'));
+            document.querySelectorAll('#genreDropdownList .dropdown-item').forEach(el => el.classList.remove('active'));
             if(element) element.classList.add('active');
             else updateActiveDropdownItem(genre);
 
             const btn = document.getElementById('genreDropdownBtn');
             btn.innerHTML = (genre === 'Semua') ? `Cari berdasarkan genre ▼` : `Genre: ${genre} ▼`;
 
-            const sortedList = [...videoList].sort((a, b) => {
-                const dateA = a.uploadDate ? new Date(a.uploadDate) : new Date(0);
-                const dateB = b.uploadDate ? new Date(b.uploadDate) : new Date(0);
-                return dateB - dateA;
-            });
-
-            if (genre === 'Semua') {
-                currentFilteredList = sortedList;
-                document.querySelector('.stream-title').innerText = `Semua Video Tersedia`;
+            // Ambil data dasar dan filter
+            let baseList = [...videoList];
+            if (genre !== 'Semua') {
+                baseList = baseList.filter(vid => vid.genre === genre);
+                document.querySelector('.stream-title').innerText = `Genre: ${genre} (${baseList.length})`;
             } else {
-                currentFilteredList = sortedList.filter(vid => vid.genre === genre);
-                document.querySelector('.stream-title').innerText = `Genre: ${genre} (${currentFilteredList.length})`;
+                document.querySelector('.stream-title').innerText = `Semua Video Tersedia`;
             }
+
+            // Terapkan sorting saat ini ke hasil filter
+            currentFilteredList = applySorting(baseList);
             renderPage(1);
         }
-
+        
         function updateActiveDropdownItem(genre) {
             document.querySelectorAll('.dropdown-item').forEach(el => {
                 if(el.innerText.toLowerCase() === genre.toLowerCase() || (genre === 'Semua' && el.innerText === 'Semua Genre')) el.classList.add('active');
