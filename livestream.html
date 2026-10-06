@@ -45,25 +45,25 @@
 
     <nav>
         <div class="container nav-container">
-            <!-- Tambahan tombol Hamburger -->
+            <!-- 1. Tombol Hamburger -->
             <button class="hamburger-menu" onclick="toggleSidebar()" title="Menu">☰</button>
             
+            <!-- 2. Logo Luvia (Bisa diklik ke Halaman Utama) -->
+            <a href="index.html" title="Halaman Utama" style="display: flex; align-items: center;">
+                <img src="Asset Foto/Thumbnimail .png" alt="Logo Luvia" style="width: 36px; height: 36px; border-radius: 50%; object-fit: cover; border: 2px solid white; box-shadow: 0 2px 5px rgba(0,0,0,0.2);">
+            </a>
+            
+            <!-- 3. Tombol Riwayat (Back/Forward) -->
             <div class="nav-history-controls">
                 <button onclick="history.back()" class="btn-nav-history" title="Kembali">←</button>
                 <button onclick="history.forward()" class="btn-nav-history" title="Maju">→</button>
             </div>
-            <div class="nav-links">
-                <a href="index.html">Beranda</a>
-                <a href="#contact">Social Media</a>
-            </div>
-          <!-- FORM PENCARIAN BARU -->
+            
+            <!-- 4. Kolom Pencarian -->
             <form class="nav-search" id="navSearchForm" onsubmit="return false;">
                 <input type="text" id="navSearchInput" placeholder="Cari video..." aria-label="Cari" autocomplete="off">
                 <button type="submit">🔍</button>
-                <div class="search-dropdown-list" id="searchDropdownList"></div>
-            </form>
-                
-                <!-- Boks Dropdown Hasil Pencarian Langsung (Menimpa Konten) -->
+                <!-- Boks Dropdown Hasil Pencarian Langsung -->
                 <div class="search-dropdown-list" id="searchDropdownList"></div>
             </form>
         </div>
