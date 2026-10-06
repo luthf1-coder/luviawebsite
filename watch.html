@@ -193,7 +193,8 @@
             playerWrapper.innerHTML = `<video id="plyr-player" controls playsinline poster="${currentVid.thumb || ''}"><source src="${currentVid.archiveSrc || ''}" type="video/mp4" /></video>`;
             if (document.getElementById('plyr-player') && typeof Plyr !== 'undefined') {
                 // MASUKKAN PLYR KE DALAM VARIABEL WINDOW.PLAYER
-                window.player = new Plyr('#plyr-player', { 
+                window.player = new Plyr('#plyr-player', {
+                    keyboard: { focused: true, global: true }, // BARIS BARU: Mengaktifkan shortcut keyboard global
                     settings: ['quality', 'speed'],
                     seekTime: 10,
                     controls: [
@@ -569,6 +570,19 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 });
+
+       // MENCEGAH HALAMAN SCROLL SAAT MENEKAN SPASI
+        window.addEventListener('keydown', function(e) {
+            // Cegah Spasi (kode 32) jika pengunjung sedang tidak mengetik di form pencarian atau komentar
+            if (e.keyCode === 32 && e.target.tagName !== 'INPUT' && e.target.tagName !== 'TEXTAREA') {
+                e.preventDefault(); 
+                
+                // Gunakan Spasi untuk Play/Pause video jika player aktif
+                if (window.player) {
+                    window.player.togglePlay(); 
+                }
+            }
+        });
     </script>
 </body>
 </html>
