@@ -30,7 +30,7 @@
             
             <!-- 4. Kolom Pencarian -->
             <form class="nav-search" id="navSearchForm" onsubmit="return false;">
-                <input type="text" id="navSearchInput" placeholder="Cari video..." aria-label="Cari" autocomplete="off">
+                <input type="text" id="navSearchInput" placeholder="Search Videos..." aria-label="Cari" autocomplete="off">
                 <button type="submit">🔍</button>
                 <!-- Boks Dropdown Hasil Pencarian Langsung -->
                 <div class="search-dropdown-list" id="searchDropdownList"></div>
@@ -41,7 +41,7 @@
     <div class="sidebar-overlay" id="sidebarOverlay" onclick="toggleSidebar()"></div>
     <div class="sidebar" id="sidebar">
         <div class="sidebar-header">
-            <h2>MENU</h2>
+            <h2>Luvia Insight Verse</h2>
             <button class="close-btn" onclick="toggleSidebar()">&times;</button>
         </div>
         <div class="sidebar-links">
@@ -49,12 +49,12 @@
             <a href="videos.html" onclick="toggleSidebar()">Video</a>
             <a href="index.html#projects" onclick="toggleSidebar()">Program TV</a>
             <a href="index.html#livestreaming" onclick="toggleSidebar()">Live Streaming</a>
-            <a href="support.html">Live Support & CS</a>
+            <a href="support.html">Pusat Bantuan</a>
             <a href="index.html#about" onclick="toggleSidebar()">Tentang</a>
             <a href="index.html#contact" onclick="toggleSidebar()">Social Media</a>
         </div>
         <div class="sidebar-footer">
-            <p>&copy; 2026 LUVIA STUDIO TV All Right Reserved</p>
+            <p>&copy; 2026 Luvia Insight Verse. All Right Reserved</p>
         </div>
     </div>
 
@@ -62,24 +62,24 @@
     
     <section class="section page-stream-container">
         <div class="container">
-            <h2 class="stream-title">Semua Video Tersedia</h2>
+            <h2 class="stream-title">All Videos</h2>
             
             <div class="filter-wrapper" style="display: flex; gap: 10px; margin-bottom: 20px; flex-wrap: wrap;">
                 <!-- Dropdown Genre (Sudah ada) -->
                 <div class="dropdown-container">
-                    <button class="btn-dropdown" id="genreDropdownBtn" onclick="toggleDropdown(event, 'genreDropdownList')">Cari berdasarkan genre ▼</button>
+                    <button class="btn-dropdown" id="genreDropdownBtn" onclick="toggleDropdown(event, 'genreDropdownList')">Category: All▼</button>
                     <div class="dropdown-list" id="genreDropdownList"></div>
                 </div>
 
                 <!-- BARU: Dropdown Urutkan -->
                 <div class="dropdown-container">
-                    <button class="btn-dropdown" id="sortDropdownBtn" onclick="toggleDropdown(event, 'sortDropdownList')">Urutkan: Terbaru ▼</button>
+                    <button class="btn-dropdown" id="sortDropdownBtn" onclick="toggleDropdown(event, 'sortDropdownList')">Sort: New Released ▼</button>
                     <div class="dropdown-list" id="sortDropdownList">
-                        <div class="dropdown-item active" onclick="sortBy('newest', this)">Terbaru Ditambahkan</div>
-                        <div class="dropdown-item" onclick="sortBy('oldest', this)">Terlama Ditambahkan</div>
-                        <div class="dropdown-item" onclick="sortBy('az', this)">Abjad (A-Z)</div>
-                        <div class="dropdown-item" onclick="sortBy('za', this)">Abjad (Z-A)</div>
-                        <div class="dropdown-item" onclick="sortBy('popular', this)">Paling Banyak Ditonton</div>
+                        <div class="dropdown-item active" onclick="sortBy('newest', this)">New Released</div>
+                        <div class="dropdown-item" onclick="sortBy('oldest', this)">Old Released</div>
+                        <div class="dropdown-item" onclick="sortBy('az', this)">A-Z</div>
+                        <div class="dropdown-item" onclick="sortBy('za', this)">Z-A</div>
+                        <div class="dropdown-item" onclick="sortBy('popular', this)">Trending Now</div>
                     </div>
                 </div>
             </div>
@@ -93,7 +93,7 @@
     </section>
     <section id="contact" class="section">
         <div class="container">
-            <h2>Follow Us</h2>
+            <h2>A Social Media-Verse</h2>
             <div class="contact-links">
                 <p><a href="https://www.youtube.com/@luthfi-fx" target="_blank" class="btn btn-contact">YOUTUBE</a></p>
                 <p><a href="https://www.instagram.com/fauzanlathif_86" target="_blank" class="btn btn-contact">INSTAGRAM</a></p>
@@ -105,7 +105,7 @@
     
     <footer>
         <div class="container">
-            <p>&copy; 2026 LUVIA STUDIO TV All Right Reserved | Channel Ini Dikelola Oleh TIM MEDIA CENTER LS MEDIA</p>
+            <p>&copy; 2026 Luvia Insight Verse. All Right Reserved | Channel Ini Dikelola Oleh TIM MEDIA CENTER LS MEDIA</p>
         </div>
     </footer>
 
