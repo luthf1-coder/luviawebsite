@@ -132,7 +132,7 @@
             // Otomatis daftar genre dari data
             const genres = [...new Set(sortedList.map(v => v.genre).filter(Boolean))];
             const genreList = document.getElementById('genreDropdownList');
-            let genreHtml = `<div class="dropdown-item active" onclick="filterByGenre('Semua', this)">Semua Genre</div>`;
+            let genreHtml = `<div class="dropdown-item active" onclick="filterByGenre('Semua', this)">All</div>`;
             genres.forEach(g => {
                 genreHtml += `<div class="dropdown-item" onclick="filterByGenre('${g}', this)">${g}</div>`;
             });
