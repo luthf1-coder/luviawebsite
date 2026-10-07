@@ -221,19 +221,23 @@
         <div class="chat-container">
 <!-- Header Chat dengan Lonceng -->
   <!-- Header Chat dengan Lonceng & Titik Tiga -->
-            <div class="chat-header">
-                <div class="chat-header-left">
+            <div class="chat-header" style="display: flex; justify-content: space-between; align-items: center; width: 100%; box-sizing: border-box;">
+                
+                <!-- Sisi Kiri (Profil) -->
+                <div class="chat-header-left" style="display: flex; align-items: center; gap: 15px;">
                     <img src="Asset Foto/Thumbnimail .png" alt="Admin Luvia">
                     <div>
                         <h3 class="chat-title">CS LUVIA STUDIO</h3>
                         <p class="chat-status">Online - Siap Membantu</p>
                     </div>
                 </div>
-                <div class="chat-header-right">
-                    <div onclick="bukaNotifKomplain()" title="Papan Jawaban Umum" style="position:relative;">
+                
+                <!-- Sisi Kanan (Lonceng & Titik Tiga sejajar) -->
+                <div class="chat-header-right" style="display: flex; align-items: center; gap: 15px; position: relative;">
+                    <div onclick="bukaNotifKomplain()" title="Papan Jawaban Umum" style="position:relative; font-size:24px; cursor:pointer;">
                         🔔 <span id="bell-dot" class="bell-dot"></span>
                     </div>
-                    <div onclick="toggleDropdown()" style="padding: 0 5px;">⋮</div>
+                    <div onclick="toggleDropdown()" style="padding: 0 5px; font-size:24px; cursor:pointer;">⋮</div>
                     
                     <!-- Dropdown Menu -->
                     <div id="header-dropdown" class="dropdown-menu">
@@ -241,6 +245,7 @@
                         <a href="javascript:void(0)" onclick="resetObrolanUser()" style="color:#ff4d4d;">🧹 Reset Obrolan</a>
                     </div>
                 </div>
+                
             </div>
 
             <!-- Area Pesan -->
