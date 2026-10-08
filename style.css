@@ -1963,3 +1963,65 @@ input:checked + .slider-toggle:before {
 .social-icon:hover {
     transform: translateY(-5px) scale(1.1); 
 }
+
+.sidebar-brand {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    text-decoration: none;
+    flex-wrap: nowrap !important; /* Memaksa elemen tetap dalam 1 baris */
+}
+
+.sidebar-brand img {
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    object-fit: cover;
+    flex-shrink: 0 !important; /* Mencegah logo gepeng saat layar sempit */
+    border: 2px solid white;
+}
+
+.sidebar-brand span {
+    font-size: 16px;
+    font-weight: 700;
+    color: #ffffff;
+    white-space: nowrap !important; /* Kunci rahasia: Mencegah teks turun ke bawah */
+}
+
+/* UBAH TATA LETAK KARTU VIDEO JADI ATAS-BAWAH (VERTIKAL) */
+.video-card {
+    display: flex !important;
+    flex-direction: column !important; /* Memaksa gambar di atas, teks di bawah */
+    width: 100% !important;
+    background: linear-gradient(135deg, rgba(255, 255, 255, 0.1), rgba(255, 255, 255, 0.05));
+    border-radius: 12px;
+    overflow: hidden;
+}
+
+.video-card .thumb-box {
+    width: 100% !important;
+    height: auto !important;
+    aspect-ratio: 16 / 9; /* Membuat gambar proporsional memanjang */
+}
+
+.video-card .thumb-box img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.video-card .video-details {
+    width: 100% !important;
+    padding: 15px !important;
+    box-sizing: border-box;
+}
+
+/* Mengatur grid khusus untuk HP agar pas 1 kolom penuh */
+@media screen and (max-width: 768px) {
+    .videos-page-grid,
+    .video-grid {
+        display: grid !important;
+        grid-template-columns: 1fr !important;
+        gap: 20px !important;
+    }
+}
