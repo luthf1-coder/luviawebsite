@@ -1921,3 +1921,45 @@ input:checked + .slider-toggle:before {
         width: 100% !important;
     }
 }
+
+/* DESAIN FOOTER & IKON SOSMED KECIL */
+.footer-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center; 
+    gap: 15px; 
+    text-align: center;
+}
+
+.footer-socials {
+    display: flex;
+    gap: 15px;
+    justify-content: center;
+    flex-wrap: wrap; /* Agar kalau sosmednya banyak, otomatis turun ke baris baru */
+}
+
+/* Membentuk tombol kecil dengan warna di belakangnya */
+.social-icon {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 36px; 
+    height: 36px; 
+    background: linear-gradient(45deg, #8c52ff, #ff914d); 
+    border-radius: 50%; 
+    text-decoration: none;
+    transition: transform 0.3s ease;
+    box-shadow: 0 4px 6px rgba(0,0,0,0.3);
+}
+
+/* Mengatur ukuran logo gambar di dalam tombolnya */
+.social-icon img {
+    width: 20px; 
+    height: 20px;
+    object-fit: contain;
+}
+
+/* Efek saat ikon disentuh/hover */
+.social-icon:hover {
+    transform: translateY(-5px) scale(1.1); 
+}
