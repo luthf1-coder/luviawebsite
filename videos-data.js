@@ -10,22 +10,22 @@ const webConfig = {
         { 
             nama: "YouTube", 
             link: "https://www.youtube.com/@luthfi-fx", 
-            gambar: "https://png.pngtree.com/element_our/sm/20180520/sm_5b0125144fcc9.jpg" // Ganti dengan lokasi gambar aslinya nanti
+            gambar: "Asset Foto/logo/2.png" // Ganti dengan lokasi gambar aslinya nanti
         },
         { 
             nama: "Instagram", 
             link: "https://www.instagram.com/fauzanlathif_86", 
-            gambar: "https://icon2.cleanpng.com/20180713/ttv/kisspng-organization-irish-rugby-ireland-hotel-white-instagram-live-5b48bcbcad5da3.6299622115314935647101.jpg" 
+            gambar: "Asset Foto/logo/1.png" 
         },
         { 
             nama: "TikTok", 
             link: "https://www.tiktok.com/@fauzan_lathif", 
-            gambar: "Asset Foto/ikon-tiktok.png" 
+            gambar: "Asset Foto/logo/3.png" 
         },
         { 
             nama: "UVideo", 
             link: "https://www.dubbindo.site/@luviastudioofficialtv", 
-            gambar: "Asset Foto/ikon-uvideo.png" 
+            gambar: "Asset Foto/logo/5.png" 
         }
         /* 
         CARA MENAMBAH SOSMED BARU NANTI:
