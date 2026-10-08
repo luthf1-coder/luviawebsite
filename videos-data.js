@@ -3,7 +3,7 @@
 // ==========================================
 const webConfig = {
     namaWebsite: "Luvia Insight Verse",
-    teksFooter: "© 2026 LUVIA STUDIO TV All Right Reserved | Channel Ini Dikelola Oleh TIM MEDIA CENTER LS MEDIA",
+    teksFooter: "© 2026 Luvia Insight Verse (Product by Luvia Studio TV). All Right Reserved",
     
     // DAFTAR SOSIAL MEDIA (BISA DITAMBAH KAPAN SAJA!)
     sosialMedia: [
