@@ -12,8 +12,7 @@ const webConfig = {
         { nama: "Program TV", link: "index.html#projects" },
         { nama: "Live Streaming", link: "index.html#livestreaming" },
         { nama: "Help Center", link: "support.html" },
-        { nama: "About Us", link: "index.html#about" },
-        { nama: "Social Media", link: "index.html#contact" }
+        { nama: "About Us", link: "index.html#about" }
     ],
 
     // DAFTAR SOSIAL MEDIA
