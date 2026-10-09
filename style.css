@@ -2012,3 +2012,51 @@ body {
         margin-top: -80px !important; 
     }
 }
+
+
+/* ========================================= */
+/* PERBAIKAN JARAK KONTEN AGAR TIDAK TERTUTUP NAVBAR DI HP */
+/* ========================================= */
+
+/* Kembalikan jarak standar untuk kontainer utama */
+.page-stream-container,
+main.container {
+    padding-top: 20px !important; /* Beri ruang bernapas di atas konten */
+}
+
+/* KHUSUS UNTUK HP (Layar Kecil) */
+@media screen and (max-width: 768px) {
+    /* Atur jarak yang lebih aman dari navbar yang menempel (fixed) */
+    .page-stream-container,
+    main.container {
+        /* Sesuaikan angka 90px ini jika navbar-mu lebih tebal/tipis */
+        margin-top: 90px !important; 
+    }
+    
+    /* Pastikan judul video (h1) punya spasi yang cukup */
+    h1.stream-title,
+    .livestream-card-container {
+        margin-top: 15px !important;
+    }
+}
+
+/* KHUSUS UNTUK LAPTOP/DESKTOP */
+@media screen and (min-width: 769px) {
+    .page-stream-container,
+    main.container {
+        margin-top: 80px !important; 
+    }
+}
+
+/* Aturan Pengecualian KHUSUS untuk halaman yang memiliki Banner (misal: videos.html) */
+/* Agar efek memudarnya tetap menyatu */
+.hero-banner-full + .page-stream-container {
+    margin-top: -60px !important; 
+    padding-top: 0 !important;
+}
+
+@media screen and (max-width: 768px) {
+    .hero-banner-full + .page-stream-container {
+        margin-top: -40px !important; /* Sesuaikan tarikan ke atasnya */
+    }
+}
