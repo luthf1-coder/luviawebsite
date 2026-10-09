@@ -41,29 +41,7 @@
         </div>
     </nav>
     
-    <div class="sidebar-overlay" id="sidebarOverlay" onclick="toggleSidebar()"></div>
-    <div class="sidebar" id="sidebar">
-        <div class="sidebar-header">
-            <!-- Tambahan Logo yang bisa diklik ke halaman utama -->
-            <a href="index.html" title="Kembali ke Beranda" style="display: flex; align-items: center;">
-                <img src="Asset Foto/Thumbnimail .png" alt="Logo" style="width: 40px; height: 40px; border-radius: 50%; object-fit: cover; border: 2px solid white;">
-            </a>
-            <h2>Luvia Insight Verse</h2>
-            <button class="close-btn" onclick="toggleSidebar()">×</button>
-        </div>
-        <div class="sidebar-links">
-            <a href="#" onclick="toggleSidebar()">Beranda</a>
-            <a href="videos.html" onclick="toggleSidebar()">Video</a>
-            <a href="#projects" onclick="toggleSidebar()">Program TV</a>
-            <a href="#livestreaming" onclick="toggleSidebar()">Live Streaming</a>
-            <a href="support.html">Pusat Bantuan</a> <!-- INI LINK BARUNYA -->
-            <a href="#about" onclick="toggleSidebar()">Tentang</a>
-            <a href="#contact" onclick="toggleSidebar()">Social Media</a>
-        </div>
-        <div class="sidebar-footer">
-            <p>&copy 2026 Luvia Insight Verse. All Right Reserved</p>
-        </div>
-    </div>
+    <div id="sidebar-container"></div>
 
     <!-- HERO SLIDER (Pengganti bagian Tentang yang lama di atas) -->
     <div id="hero-carousel" class="hero-carousel">
@@ -177,12 +155,6 @@
 
     <script src="videos-data.js"></script>
     <script>
-        // FUNGSI UNTUK MEMBUKA & MENUTUP SIDEBAR
-        function toggleSidebar() {
-            document.getElementById('sidebar').classList.toggle('active');
-            document.getElementById('sidebarOverlay').classList.toggle('active');
-        }
-
         // FUNGSI SLIDER & BADGE
         renderSliderRecommendations('home-recommendations-slider');
 
