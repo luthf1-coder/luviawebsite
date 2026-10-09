@@ -38,30 +38,14 @@
         </div>
     </nav>
 
-    <div class="sidebar-overlay" id="sidebarOverlay" onclick="toggleSidebar()"></div>
-    <div class="sidebar" id="sidebar">
-        <div class="sidebar-header">
-    <a href="index.html" class="sidebar-brand">
-        <img src="Asset Foto/Thumbnimail .png" alt="Logo">
-        <span class="nama-web-otomatis">Luvia Insight Verse</span>
-    </a>
-    <button class="close-btn" onclick="toggleSidebar()">×</button>
-</div>
-        <div class="sidebar-links">
-            <a href="index.html" onclick="toggleSidebar()">Beranda</a>
-            <a href="videos.html" onclick="toggleSidebar()">Video</a>
-            <a href="index.html#projects" onclick="toggleSidebar()">Program TV</a>
-            <a href="index.html#livestreaming" onclick="toggleSidebar()">Live Streaming</a>
-            <a href="support.html">Pusat Bantuan</a>
-            <a href="index.html#about" onclick="toggleSidebar()">Tentang</a>
-            <a href="index.html#contact" onclick="toggleSidebar()">Social Media</a>
-        </div>
-        <div class="sidebar-footer">
-            <p>&copy; 2026 Luvia Insight Verse. All Right Reserved</p>
-        </div>
-    </div>
+    <div id="sidebar-container"></div>
+
+    <header class="videos-banner" style="margin-top: 80px; text-align: center; padding: 0 15px;">
+        <!-- Ganti src di bawah dengan link foto banner yang sudah kamu siapkan -->
+        <img src="Asset Foto/Banner Thumbnail.png" alt="Banner" style="width: 100%; max-width: 1200px; height: auto; aspect-ratio: 21/9; object-fit: cover; border-radius: 12px; box-shadow: 0 4px 10px rgba(0,0,0,0.3);">
+    </header>
     
-    <section class="section page-stream-container" style="padding-top: 90px;">
+    <section class="section page-stream-container">
         <div class="container">
             <h2 class="stream-title">All Videos</h2>
             
@@ -105,10 +89,6 @@
     <!-- Muat data video terlebih dahulu -->
     <script src="videos-data.js"></script>
     <script>
-        function toggleSidebar() {
-            document.getElementById('sidebar').classList.toggle('active');
-            document.getElementById('sidebarOverlay').classList.toggle('active');
-        }
         
         let currentFilteredList = [];
         let currentPage = 1;
