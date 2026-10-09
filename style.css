@@ -1988,40 +1988,53 @@ input:checked + .slider-toggle:before {
     white-space: nowrap !important; /* Kunci rahasia: Mencegah teks turun ke bawah */
 }
 
-/* UBAH TATA LETAK KARTU VIDEO JADI ATAS-BAWAH (VERTIKAL) */
-.video-card {
-    display: flex !important;
-    flex-direction: column !important; /* Memaksa gambar di atas, teks di bawah */
-    width: 100% !important;
-    background: linear-gradient(135deg, rgba(255, 255, 255, 0.1), rgba(255, 255, 255, 0.05));
-    border-radius: 12px;
-    overflow: hidden;
+/* MENCEGAH BACKGROUND PUTIH DI BAWAH (MENGUNCI BACKGROUND) */
+body {
+    background-attachment: fixed !important;
+    background-size: cover !important;
 }
 
-.video-card .thumb-box {
-    width: 100% !important;
-    height: auto !important;
-    aspect-ratio: 16 / 9; /* Membuat gambar proporsional memanjang */
-}
-
-.video-card .thumb-box img {
+/* ========================================= */
+/* BANNER RESPONSIF ALA YOUTUBE (TV, LAPTOP, HP) */
+/* ========================================= */
+.yt-banner-container {
     width: 100%;
-    height: 100%;
-    object-fit: cover;
+    margin-top: 60px; /* Jarak dari navbar */
+    position: relative;
+    z-index: 0;
 }
 
-.video-card .video-details {
-    width: 100% !important;
-    padding: 15px !important;
-    box-sizing: border-box;
+.yt-banner-image {
+    width: 100%;
+    background-position: center;
+    background-size: cover;
+    background-repeat: no-repeat;
+    
+    /* KUNCI RAHASIA: Efek memudar transparan di bagian bawah */
+    -webkit-mask-image: linear-gradient(to bottom, rgba(0,0,0,1) 50%, rgba(0,0,0,0) 100%);
+    mask-image: linear-gradient(to bottom, rgba(0,0,0,1) 50%, rgba(0,0,0,0) 100%);
 }
 
-/* Mengatur grid khusus untuk HP agar pas 1 kolom penuh */
+/* 1. Ukuran HP (Mobile) */
 @media screen and (max-width: 768px) {
-    .videos-page-grid,
-    .video-grid {
-        display: grid !important;
-        grid-template-columns: 1fr !important;
-        gap: 20px !important;
+    .yt-banner-image { 
+        height: 30vh; 
+        min-height: 180px; 
+    }
+}
+
+/* 2. Ukuran Laptop/PC (Desktop) */
+@media screen and (min-width: 769px) and (max-width: 1440px) {
+    .yt-banner-image { 
+        height: 40vh; 
+        min-height: 350px; 
+    }
+}
+
+/* 3. Ukuran TV / Layar Sangat Lebar */
+@media screen and (min-width: 1441px) {
+    .yt-banner-image { 
+        height: 50vh; 
+        max-height: 600px; 
     }
 }
