@@ -3,50 +3,78 @@
 // ==========================================
 const webConfig = {
     namaWebsite: "Luvia Insight Verse",
-    teksFooter: "© 2026 Luvia Insight Verse (Product by Luvia Studio TV). All Right Reserved",
+    teksFooter: "© 2026 LUVIA STUDIO TV All Right Reserved | Channel Ini Dikelola Oleh TIM MEDIA CENTER LS MEDIA",
     
-    // DAFTAR SOSIAL MEDIA (BISA DITAMBAH KAPAN SAJA!)
+    // DAFTAR MENU SIDEBAR (Edit namanya atau linknya di sini!)
+    menuSidebar: [
+        { nama: "Home", link: "index.html" },
+        { nama: "Videos", link: "videos.html" },
+        { nama: "Program TV", link: "index.html#projects" },
+        { nama: "Live Streaming", link: "index.html#livestreaming" },
+        { nama: "Help Center", link: "support.html" },
+        { nama: "About Us", link: "index.html#about" },
+        { nama: "Social Media", link: "index.html#contact" }
+    ],
+
+    // DAFTAR SOSIAL MEDIA
     sosialMedia: [
-        { 
-            nama: "YouTube", 
-            link: "https://www.youtube.com/@luthfi-fx", 
-            gambar: "Asset Foto/logo/2.png" // Ganti dengan lokasi gambar aslinya nanti
-        },
-        { 
-            nama: "Instagram", 
-            link: "https://www.instagram.com/fauzanlathif_86", 
-            gambar: "Asset Foto/logo/1.png" 
-        },
-        { 
-            nama: "TikTok", 
-            link: "https://www.tiktok.com/@fauzan_lathif", 
-            gambar: "Asset Foto/logo/3.png" 
-        },
-        { 
-            nama: "UVideo", 
-            link: "https://www.dubbindo.site/@luviastudioofficialtv", 
-            gambar: "Asset Foto/logo/5.png" 
-        }
-        /* 
-        CARA MENAMBAH SOSMED BARU NANTI:
-        Tinggal tambahkan koma di kurung kurawal sebelumnya, lalu buat blok baru seperti ini:
-        { nama: "Facebook", link: "https://facebook.com/...", gambar: "Asset Foto/ikon-fb.png" }
-        */
+        { nama: "YouTube", link: "https://www.youtube.com/@luthfi-fx", gambar: "Asset Foto/logo/2.png" },
+        { nama: "Instagram", link: "https://www.instagram.com/fauzanlathif_86", gambar: "Asset Foto/logo/1.png" },
+        { nama: "TikTok", link: "https://www.tiktok.com/@fauzan_lathif", gambar: "Asset Foto/logo/3.png" },
+        { nama: "UVideo", link: "https://www.dubbindo.site/@luviastudioofficialtv", gambar: "Asset Foto/logo/5.png" }
     ]
+};
+
+// Fungsi Global untuk Membuka/Menutup Sidebar dari Semua Halaman
+window.toggleSidebar = function() {
+    const sidebar = document.getElementById('sidebar');
+    const overlay = document.getElementById('sidebarOverlay');
+    if (sidebar && overlay) {
+        sidebar.classList.toggle('active');
+        overlay.classList.toggle('active');
+    }
 };
 
 // Skrip Otomatis Penggerak Website
 document.addEventListener('DOMContentLoaded', () => {
-    // 1. Tembak Teks Judul Navbar/Sidebar
+    // 1. CETAK SIDEBAR OTOMATIS
+    const sidebarContainer = document.getElementById('sidebar-container');
+    if (sidebarContainer) {
+        let linksHTML = '';
+        webConfig.menuSidebar.forEach(menu => {
+            linksHTML += `<a href="${menu.link}" onclick="toggleSidebar()">${menu.nama}</a>`;
+        });
+
+        sidebarContainer.innerHTML = `
+            <div class="sidebar-overlay" id="sidebarOverlay" onclick="toggleSidebar()"></div>
+            <div class="sidebar" id="sidebar">
+                <div class="sidebar-header">
+                    <a href="index.html" class="sidebar-brand">
+                        <img src="Asset Foto/Thumbnimail .png" alt="Logo">
+                        <span class="nama-web-otomatis">${webConfig.namaWebsite}</span>
+                    </a>
+                    <button class="close-btn" onclick="toggleSidebar()">×</button>
+                </div>
+                <div class="sidebar-links">
+                    ${linksHTML}
+                </div>
+                <div class="sidebar-footer">
+                    <p style="font-size: 0.8rem; color: #bbb; text-align: center;">${webConfig.teksFooter}</p>
+                </div>
+            </div>
+        `;
+    }
+
+    // 2. Tembak Teks Judul (Bila ada elemen lain di luar sidebar)
     document.querySelectorAll('.nama-web-otomatis').forEach(el => {
         el.innerText = webConfig.namaWebsite;
     });
 
-    // 2. Tembak Teks Footer
+    // 3. Tembak Teks Footer
     const footerText = document.getElementById('teks-footer-copyright');
     if (footerText) footerText.innerText = webConfig.teksFooter;
 
-    // 3. CETAK IKON SOSIAL MEDIA OTOMATIS
+    // 4. CETAK IKON SOSIAL MEDIA OTOMATIS
     const socialContainer = document.getElementById('footer-social-container');
     if (socialContainer) {
         let socialHTML = '';
@@ -57,10 +85,9 @@ document.addEventListener('DOMContentLoaded', () => {
                 </a>
             `;
         });
-        socialContainer.innerHTML = socialHTML; // Masukkan semua tombol ke dalam wadah HTML
+        socialContainer.innerHTML = socialHTML;
     }
 });
-
 // ==========================================
 // 1. KONFIGURASI FIREBASE REALTIME DATABASE
 // ==========================================
