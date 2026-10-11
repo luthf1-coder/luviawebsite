@@ -1216,6 +1216,11 @@ function simpanDataPostingan(linkVideo) {
         document.getElementById('post-progress-container').style.display = 'none';
         document.getElementById('post-status-text').innerText = '';
         document.getElementById('btn-start-upload').style.display = 'block';
+    }).catch(error => {
+        // Tampilkan pesan error jika gagal (tidak stuck lagi)
+        alert("Gagal menyimpan ke database! Error: " + error.message);
+        document.getElementById('post-status-text').innerHTML = `<span style="color:#ff4d4d;">❌ Gagal: ${error.message}</span>`;
+        document.getElementById('btn-start-upload').style.display = 'block';
     });
 }
     
