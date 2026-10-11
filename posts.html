@@ -47,35 +47,38 @@
 
     <script src="videos-data.js"></script>
     <script>
-        document.addEventListener('DOMContentLoaded', () => {
-            if (typeof firebase !== 'undefined') {
-                firebase.database().ref('posts').on('value', snap => {
-                    const container = document.getElementById('grid-postingan');
-                    if (snap.exists()) {
-                        const posts = snap.val();
-                        let html = '';
-                        
-                        // Balik urutan agar yang terbaru di atas
-                        Object.keys(posts).reverse().forEach(key => {
-                            const p = posts[key];
-                            // Deteksi apakah video atau gambar (Jika link .mp4 anggap video)
-                            const isVideo = p.videoUrl.includes('.mp4');
-                            const mediaTag = isVideo 
-                                ? `<video src="${p.videoUrl}" muted loop onmouseover="this.play()" onmouseout="this.pause()"></video>`
-                                : `<img src="${p.videoUrl}" alt="Postingan">`;
+    document.addEventListener('DOMContentLoaded', () => {
+        if (typeof firebase !== 'undefined') {
+            firebase.database().ref('posts').on('value', snap => {
+                const container = document.getElementById('grid-postingan');
+                if (snap.exists()) {
+                    const posts = snap.val();
+                    let html = '';
+                    
+                    // Balik urutan agar yang terbaru di atas
+                    Object.keys(posts).reverse().forEach(key => {
+                        const p = posts[key];
+                        const isVideo = p.videoUrl.includes('.mp4');
+                        const mediaTag = isVideo 
+                            ? `<video src="${p.videoUrl}" muted loop onmouseover="this.play()" onmouseout="this.pause()"></video>`
+                            : `<img src="${p.videoUrl}" alt="Postingan">`;
 
-                            html += `
-                            <a href="post.html?id=${key}" class="post-grid-item">
-                                ${mediaTag}
-                            </a>`;
-                        });
-                        container.innerHTML = html;
-                    } else {
-                        container.innerHTML = '<p style="color:#bbb;">Belum ada postingan dari Admin.</p>';
-                    }
-                });
-            }
-        });
-    </script>
+                        html += `
+                        <a href="post.html?id=${key}" class="post-grid-item">
+                            ${mediaTag}
+                        </a>`;
+                    });
+                    container.innerHTML = html;
+                } else {
+                    container.innerHTML = '<p style="color:#bbb; text-align:center; width:100%;">Belum ada postingan dari Admin.</p>';
+                }
+            }, error => {
+                // JIKA ERROR KARENA FIREBASE RULES
+                const container = document.getElementById('grid-postingan');
+                container.innerHTML = `<p style="color:#ff4d4d; text-align:center; width:100%;">Gagal memuat: ${error.message}</p>`;
+            });
+        }
+    });
+</script>
 </body>
 </html>
