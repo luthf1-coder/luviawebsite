@@ -281,16 +281,16 @@
         if (typeof renderGridRecommendations === 'function') renderGridRecommendations('watch-recommendations-grid');
 
         // ==========================================
-        // FITUR KOMENTAR ALA YOUTUBE
+        // FITUR KOMENTAR ALA YOUTUBE (EDIT & HAPUS LOCALSTORAGE)
         // ==========================================
         const commentsRef = firebase.database().ref('video_comments_v2/' + currentVid.id);
         const commentsList = document.getElementById('comments-list');
         const defaultAvatarURL = "Asset Foto/Thumbnimail .png"; 
-        const adminPassword = "adminlstv"; 
 
         const iconThumbOutline = `<svg viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"><path d="M14 9V5a3 3 0 0 0-3-3l-4 9v11h11.28a2 2 0 0 0 2-1.7l1.38-9a2 2 0 0 0-2-2.3zM7 22H4a2 2 0 0 1-2-2v-7a2 2 0 0 1 2-2h3"></path></svg>`;
         const iconThumbSolid = `<svg viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" stroke-width="2" fill="white" stroke-linecap="round" stroke-linejoin="round"><path d="M14 9V5a3 3 0 0 0-3-3l-4 9v11h11.28a2 2 0 0 0 2-1.7l1.38-9a2 2 0 0 0-2-2.3zM7 22H4a2 2 0 0 1-2-2v-7a2 2 0 0 1 2-2h3"></path></svg>`;
         const iconTrash = `<svg viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>`;
+        const iconEdit = `✏️`;
 
         function timeAgo(ts) {
             if(!ts) return "Baru saja";
@@ -305,8 +305,14 @@
 
         function buildCommentHTML(id, c, isReply = false) {
             const hasLiked = localStorage.getItem(`liked_${id}`);
+            // Deteksi jika ini adalah komentar buatan perangkat ini
+            const isMyComment = localStorage.getItem(`my_comment_${id}`) === 'true';
+            
             const likesCount = c.likes || 0;
             const thumbIcon = hasLiked ? iconThumbSolid : iconThumbOutline;
+            
+            // Amankan teks dari error tanda kutip saat masuk ke pop-up prompt Edit
+            const safeText = (c.text || "").replace(/'/g, "\\'").replace(/"/g, "&quot;");
 
             let html = `
                 <div class="yt-comment-wrapper" id="comment-${id}">
@@ -327,10 +333,15 @@
                 html += `<button class="action-btn" onclick="toggleReplyForm('${id}')">Balas</button>`;
             }
 
-            html += `
+            // Tampilkan tombol Edit dan Hapus HANYA untuk komentar milik sendiri
+            if (isMyComment) {
+                html += `
+                            <button class="action-btn" onclick="editComment('${id}', '${isReply ? c.parentId : id}', ${isReply}, '${safeText}')">${iconEdit} Edit</button>
                             <button class="action-btn delete-btn" onclick="deleteComment('${id}', '${isReply ? c.parentId : id}', ${isReply})">${iconTrash}</button>
-                        </div>
-            `;
+                `;
+            }
+
+            html += `</div>`;
 
             if (!isReply) {
                 html += `
@@ -383,14 +394,13 @@
                         document.getElementById(`replies-list-${key}`).innerHTML = repliesHTML;
                     }
                 });
-
             } else {
                 commentsList.innerHTML = '<p style="color:#bbb; font-size:1rem; text-align:center; padding: 20px;">Belum ada komentar. Jadilah yang pertama!</p>';
                 document.getElementById('comment-count').innerText = 0;
             }
         });
 
-       document.getElementById('comment-form').addEventListener('submit', (e) => {
+        document.getElementById('comment-form').addEventListener('submit', (e) => {
             e.preventDefault();
             const nameInput = document.getElementById('comment-name');
             const textInput = document.getElementById('comment-text');
@@ -399,17 +409,15 @@
                 const isiKomen = textInput.value;
                 const nama = nameInput.value;
 
-                commentsRef.push({
+                // Push ke database & Simpan ID ke perangkat agar tombol Edit/Hapus muncul
+                const newCommentRef = commentsRef.push({
                     name: nama, text: isiKomen, timestamp: firebase.database.ServerValue.TIMESTAMP, likes: 0
                 });
+                localStorage.setItem(`my_comment_${newCommentRef.key}`, 'true');
 
-                // DETEKSI MENTION UNTUK HP ADMIN
                 let tipeNotif = "Komentar Baru";
-                if(isiKomen.includes('@admin') || isiKomen.includes('@luvia')) {
-                    tipeNotif = "Mention Admin 🔔";
-                } else if (isiKomen.includes('@')) {
-                    tipeNotif = "Mention Antar Penonton";
-                }
+                if(isiKomen.includes('@admin') || isiKomen.includes('@luvia')) tipeNotif = "Mention Admin 🔔";
+                else if (isiKomen.includes('@')) tipeNotif = "Mention Antar Penonton";
 
                 firebase.database().ref('admin_notifications').push({
                     tipe: tipeNotif,
@@ -421,14 +429,15 @@
             }
         });
 
-        // LAKUKAN HAL YANG SAMA UNTUK BALASAN (REPLY) KOMENTAR
         window.submitReply = function(parentId) {
             const nameVal = document.getElementById(`reply-name-${parentId}`).value;
             const textVal = document.getElementById(`reply-text-${parentId}`).value;
             if(nameVal && textVal) {
-                commentsRef.child(parentId).child('replies').push({
+                // Simpan balasan ke database & Simpan ID ke memori perangkat
+                const newReplyRef = commentsRef.child(parentId).child('replies').push({
                     name: nameVal, text: textVal, timestamp: firebase.database.ServerValue.TIMESTAMP, likes: 0
                 });
+                localStorage.setItem(`my_comment_${newReplyRef.key}`, 'true');
 
                 firebase.database().ref('admin_notifications').push({
                     tipe: "Balasan Komentar",
@@ -463,19 +472,34 @@
             });
         };
 
+        // FUNGSI HAPUS TANPA JEJAK (TIDAK BUTUH PASSWORD)
         window.deleteComment = function(commentId, parentId, isReply) {
-                const pw = prompt("Masukkan password tersebut jika anda adalah admin!");
-                if (pw === adminPassword) {
-                    let targetRef = isReply 
-                        ? commentsRef.child(parentId).child('replies').child(commentId)
-                        : commentsRef.child(commentId);
+            if (confirm("Yakin ingin menarik pesan ini selamanya?")) {
+                let targetRef = isReply 
+                    ? commentsRef.child(parentId).child('replies').child(commentId)
+                    : commentsRef.child(commentId);
+                
+                targetRef.remove(); // Pesan musnah seketika
+                localStorage.removeItem(`my_comment_${commentId}`); // Bersihkan memori HP
+            }
+        };
 
-                    targetRef.remove().then(() => alert("Komentar berhasil dihapus."));
-                } else if (pw !== null) {
-                    alert("Password Salah! Anda tidak memiliki izin.");
-                }
-            };
-        } // <--- INI PENUTUP FUNGSI (SANGAT PENTING)
+        // FUNGSI EDIT PESAN
+        window.editComment = function(commentId, parentId, isReply, oldText) {
+            const newText = prompt("Edit pesan Anda:", oldText);
+            
+            // Cek apakah diisi dan ada perubahan
+            if (newText !== null && newText.trim() !== "" && newText !== oldText) {
+                let targetRef = isReply 
+                    ? commentsRef.child(parentId).child('replies').child(commentId)
+                    : commentsRef.child(commentId);
+                
+                targetRef.update({ 
+                    text: newText.trim() // Timpa teks lama di database
+                });
+            }
+        };
+    } // <--- INI PENUTUP FUNGSI (SANGAT PENTING)
 
         // INI PERINTAH UNTUK MENUNGGU DATA FIREBASE SIAP
         window.addEventListener('videoDataReady', jalankanPemutarVideo);
@@ -540,13 +564,8 @@ document.addEventListener('DOMContentLoaded', () => {
             e.preventDefault();
             const q = searchInput.value.trim();
             if (q) {
-                const isVideosPage = window.location.pathname.endsWith('videos.html') || window.location.pathname === '/' || window.location.pathname.endsWith('/');
-                if (isVideosPage && typeof executeSearchOnHome === 'function') {
-                    executeSearchOnHome(q);
-                    searchDropdown.classList.remove('show');
-                } else {
-                    window.location.href = `videos.html?search=${encodeURIComponent(q)}`;
-                }
+                // Paksa pindah ke videos.html dari halaman manapun saat tekan Enter
+                window.location.href = `videos.html?search=${encodeURIComponent(q)}`;
             }
         });
     }
