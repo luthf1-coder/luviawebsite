@@ -2060,3 +2060,131 @@ main.container {
         margin-top: -40px !important; /* Sesuaikan tarikan ke atasnya */
     }
 }
+
+/* ==========================================
+   DESAIN FITUR POSTINGAN (ALA INSTAGRAM)
+   ========================================== */
+
+/* 1. Grid Daftar Postingan (Seperti Profil IG) */
+.post-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+    gap: 5px;
+    margin-top: 20px;
+}
+.post-grid-item {
+    position: relative;
+    width: 100%;
+    aspect-ratio: 1 / 1; /* Membuat kotak persegi sempurna */
+    overflow: hidden;
+    cursor: pointer;
+}
+.post-grid-item img, .post-grid-item video {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transition: transform 0.3s ease;
+}
+.post-grid-item:hover img {
+    transform: scale(1.05);
+}
+
+/* 2. Layout Halaman Buka Postingan (Desktop & HP) */
+.post-view-container {
+    display: flex;
+    max-width: 1000px;
+    margin: 80px auto 40px auto;
+    background: #1a1a1a;
+    border-radius: 12px;
+    border: 1px solid #333;
+    overflow: hidden;
+    height: 80vh;
+}
+
+.post-media-area {
+    flex: 1;
+    background: #000;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+}
+
+.post-media-area img, .post-media-area video {
+    max-width: 100%;
+    max-height: 100%;
+    object-fit: contain;
+}
+
+/* 3. Area Komentar Samping (Desktop) */
+.post-comment-sidebar {
+    width: 350px;
+    background: #111;
+    display: flex;
+    flex-direction: column;
+    border-left: 1px solid #333;
+}
+.post-header-info {
+    padding: 15px;
+    border-bottom: 1px solid #333;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+.post-header-info img {
+    width: 40px; height: 40px; border-radius: 50%; object-fit: cover;
+}
+.post-comments-list {
+    flex: 1;
+    overflow-y: auto;
+    padding: 15px;
+}
+
+/* 4. Overlay & Animasi Pop-Up Komentar (Khusus HP) */
+.post-bottom-sheet-overlay {
+    display: none;
+    position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+    background: rgba(0,0,0,0.7); z-index: 2999;
+}
+
+/* Responsif HP */
+@media screen and (max-width: 768px) {
+    .post-view-container {
+        flex-direction: column;
+        height: auto;
+        margin-top: 60px;
+        border-radius: 0;
+        border: none;
+    }
+    .post-media-area {
+        aspect-ratio: 9 / 16; /* Layar penuh vertikal */
+        width: 100%;
+    }
+    /* Sembunyikan komentar dari samping, ubah jadi pop-up dari bawah */
+    .post-comment-sidebar {
+        position: fixed;
+        bottom: -100%; /* Sembunyikan di bawah layar */
+        left: 0;
+        width: 100%;
+        height: 70vh;
+        border-radius: 20px 20px 0 0;
+        z-index: 3000;
+        border-left: none;
+        border-top: 1px solid #333;
+        transition: bottom 0.3s ease-in-out;
+    }
+    .post-comment-sidebar.active {
+        bottom: 0; /* Muncul ke atas */
+    }
+    .post-bottom-sheet-overlay.active {
+        display: block;
+    }
+}
+
+/* Desain Progress Bar Upload Admin */
+.upload-progress-container {
+    width: 100%; background: #333; border-radius: 8px; overflow: hidden; margin-bottom: 10px; display: none;
+}
+.upload-progress-bar {
+    height: 15px; background: linear-gradient(45deg, #8c52ff, #ff914d); width: 0%; transition: width 0.4s ease;
+}
