@@ -2188,3 +2188,27 @@ main.container {
 .upload-progress-bar {
     height: 15px; background: linear-gradient(45deg, #8c52ff, #ff914d); width: 0%; transition: width 0.4s ease;
 }
+
+/* Tombol Buka Komentar di Layar HP (Muncul menimpa video di pojok kanan bawah/bawah) */
+.mobile-comment-btn {
+    display: none; /* Sembunyikan di Desktop */
+    position: absolute;
+    bottom: 20px;
+    right: 20px;
+    background: rgba(0, 0, 0, 0.6);
+    backdrop-filter: blur(5px);
+    color: white;
+    border: 1px solid rgba(255, 255, 255, 0.3);
+    padding: 8px 16px;
+    border-radius: 20px;
+    font-size: 13px;
+    font-weight: bold;
+    cursor: pointer;
+    z-index: 10;
+}
+
+@media screen and (max-width: 768px) {
+    .mobile-comment-btn {
+        display: block; /* Munculkan di HP */
+    }
+}
