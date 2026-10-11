@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FEED POSTINGAN - LUVIA STUDIO</title>
+    <link rel="stylesheet" href="style.css" />
+    <link rel="icon" type="image/png" href="Asset Foto/Thumbnimail .png">
+    
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-database-compat.js"></script>
+</head>
+<body>
+    <nav>
+        <!-- Paste Navbar bawaanmu di sini (Sama seperti index.html) -->
+        <div class="container nav-container">
+            <button class="hamburger-menu" onclick="toggleSidebar()">☰</button>
+            <a href="index.html" title="Halaman Utama" style="display: flex; align-items: center; margin-right: 15px;">
+                <img src="Asset Foto/Logo Luvia Insight V﻿erse.png" alt="Logo Luvia" style="height: 34px;">
+            </a>
+        </div>
+    </nav>
+    <div id="sidebar-container"></div>
+
+    <!-- BANNER ATAS -->
+    <div class="hero-banner-full">
+        <div class="hero-banner-bg" style="background-image: url('Asset Foto/Banner Thumbnail.png');"></div>
+    </div>
+    
+    <!-- DAFTAR POSTINGAN BENTUK GRID (KOTAK) -->
+    <section class="section page-stream-container" style="position: relative; z-index: 1; margin-top: -60px; padding-top: 0;">
+        <div class="container">
+            <h2 class="stream-title">Feed Postingan</h2>
+            
+            <div class="post-grid" id="grid-postingan">
+                <p style="color: #bbb; text-align: center; width: 100%;">Memuat feed postingan...</p>
+            </div>
+        </div>
+    </section>
+
+    <footer>
+        <div class="container footer-container">
+            <div class="footer-socials" id="footer-social-container"></div>
+            <p id="teks-footer-copyright">Loading...</p>
+        </div>
+    </footer>
+
+    <script src="videos-data.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            if (typeof firebase !== 'undefined') {
+                firebase.database().ref('posts').on('value', snap => {
+                    const container = document.getElementById('grid-postingan');
+                    if (snap.exists()) {
+                        const posts = snap.val();
+                        let html = '';
+                        
+                        // Balik urutan agar yang terbaru di atas
+                        Object.keys(posts).reverse().forEach(key => {
+                            const p = posts[key];
+                            // Deteksi apakah video atau gambar (Jika link .mp4 anggap video)
+                            const isVideo = p.videoUrl.includes('.mp4');
+                            const mediaTag = isVideo 
+                                ? `<video src="${p.videoUrl}" muted loop onmouseover="this.play()" onmouseout="this.pause()"></video>`
+                                : `<img src="${p.videoUrl}" alt="Postingan">`;
+
+                            html += `
+                            <a href="post.html?id=${key}" class="post-grid-item">
+                                ${mediaTag}
+                            </a>`;
+                        });
+                        container.innerHTML = html;
+                    } else {
+                        container.innerHTML = '<p style="color:#bbb;">Belum ada postingan dari Admin.</p>';
+                    }
+                });
+            }
+        });
+    </script>
+</body>
+</html>
