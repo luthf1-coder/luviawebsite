@@ -24,51 +24,67 @@
     <main class="container page-stream-container">
         
         <!-- LAYOUT BUKA POSTINGAN (VIDEO & KOMENTAR) -->
-        <div class="post-view-container">
-            
-            <!-- AREA KIRI: VIDEO/GAMBAR -->
-            <div class="post-media-area" id="post-media-area">
-                <p style="color:white;">Memuat Media...</p>
-                <!-- Tombol ini hanya muncul di layar HP -->
-                <button class="mobile-comment-btn" onclick="toggleKomentarHP()">💬 Buka Komentar</button>
+        <!-- LAYOUT BUKA POSTINGAN (VIDEO & KOMENTAR) -->
+<div class="post-view-container">
+    
+    <!-- AREA KIRI: VIDEO/GAMBAR -->
+    <div class="post-media-area" id="post-media-area">
+        <p style="color:white;">Memuat Media...</p>
+    </div>
+
+    <!-- AREA KANAN / BAWAH (HP): SIDEBAR LAYER -->
+    <div class="post-sidebar-container" id="post-sidebar">
+        
+        <!-- LAYER 1: INFO & CAPTION (Muncul Pertama) -->
+        <div class="post-layer-info">
+            <div class="post-header-info" style="padding:0; border:none; margin-bottom:15px;">
+                <img src="Asset Foto/Thumbnimail .png" alt="LUVIA STUDIO">
+                <div>
+                    <strong style="display:block; font-size:14px; color:white;">LUVIA STUDIO TV</strong>
+                    <div id="post-date-teks" style="font-size:10px; color:#888; margin-top:2px;"></div>
+                </div>
             </div>
-
-            <!-- OVERLAY UNTUK HP SAAT KOMENTAR TERBUKA -->
-            <div class="post-bottom-sheet-overlay" id="comment-overlay" onclick="toggleKomentarHP()"></div>
-
-            <!-- AREA KANAN / BOTTOM SHEET: KOMENTAR & CAPTION -->
-            <div class="post-comment-sidebar" id="comment-sidebar">
-                
-                <!-- Header & Caption -->
-                <div class="post-header-info">
-                    <img src="Asset Foto/Thumbnimail .png" alt="LUVIA STUDIO">
-                    <div>
-                        <strong style="display:block; font-size:14px; color:white;">LUVIA STUDIO TV</strong>
-                        <div id="post-caption-teks" style="font-size:12px; color:#bbb; line-height:1.4;">Memuat caption...</div>
-                        <div id="post-date-teks" style="font-size:10px; color:#666; margin-top:4px;"></div>
-                    </div>
-                    <!-- Tombol tutup khusus HP di dalam sidebar -->
-                    <button style="margin-left:auto; background:none; border:none; color:white; font-size:20px; cursor:pointer;" class="d-none d-md-block" onclick="toggleKomentarHP()">✖</button>
-                </div>
-                
-                <!-- Daftar Komentar -->
-                <div class="post-comments-list" id="post-comments-list">
-                    <p style="color:#888; font-size:12px; text-align:center;">Memuat komentar...</p>
-                </div>
-
-                <!-- Input Komentar (Meminjam Style Chat Footer) -->
-                <div style="padding:15px; background:#1a1a1a; border-top:1px solid #333;">
-                    <form id="post-comment-form" style="display:flex; flex-direction:column; gap:10px;">
-                        <input type="text" id="post-komen-nama" placeholder="Nama Anda..." style="padding:10px; border-radius:6px; background:#222; border:1px solid #444; color:white; font-size:12px;" required>
-                        <div style="display:flex; gap:10px;">
-                            <input type="text" id="post-komen-isi" placeholder="Tambahkan komentar..." style="flex:1; padding:10px; border-radius:6px; background:#222; border:1px solid #444; color:white; font-size:12px;" required autocomplete="off">
-                            <button type="submit" style="background:linear-gradient(45deg, #8c52ff, #ff914d); color:white; border:none; border-radius:6px; padding:0 15px; font-weight:bold; cursor:pointer;">➤</button>
-                        </div>
-                    </form>
-                </div>
+            
+            <div style="flex: 1; overflow-y: auto;">
+                <p id="post-caption-teks" style="font-size:13px; color:#e0e0e0; line-height:1.6; white-space: pre-wrap;">Memuat caption...</p>
+            </div>
+            
+            <!-- Tombol Interaksi (Like & Comment) -->
+            <div class="post-action-buttons">
+                <button title="Suka">❤️ <span>Suka</span></button>
+                <!-- TOMBOL INI YANG MEMICU KOMENTAR MUNCUL -->
+                <button onclick="toggleKomentarLayer()" title="Komentar">💬 <span>Komentar</span></button>
+                <button title="Bagikan">🚀</button>
             </div>
         </div>
 
+        <!-- LAYER 2: KOMENTAR (Tersembunyi, Akan Menimpa Layer 1) -->
+        <div class="post-layer-comments" id="layer-comments">
+            <!-- Header Layer Komentar (Ada tombol ❮ untuk kembali) -->
+            <div class="comments-header-top">
+                <button class="btn-tutup-komentar" onclick="toggleKomentarLayer()">❮</button>
+                <span>Komentar Postingan</span>
+            </div>
+            
+            <!-- Daftar Komentar -->
+            <div class="post-comments-list" id="post-comments-list" style="flex:1; overflow-y:auto; padding:15px;">
+                <p style="color:#888; font-size:12px; text-align:center;">Memuat komentar...</p>
+            </div>
+
+            <!-- Form Kirim Komentar -->
+            <div style="padding:15px; background:#1a1a1a; border-top:1px solid #333;">
+                <form id="post-comment-form" style="display:flex; flex-direction:column; gap:10px;">
+                    <input type="text" id="post-komen-nama" placeholder="Nama Anda..." style="padding:10px; border-radius:6px; background:#222; border:1px solid #444; color:white; font-size:12px;" required>
+                    <div style="display:flex; gap:10px;">
+                        <input type="text" id="post-komen-isi" placeholder="Ketik komentar..." style="flex:1; padding:10px; border-radius:6px; background:#222; border:1px solid #444; color:white; font-size:12px;" required autocomplete="off">
+                        <button type="submit" style="background:linear-gradient(45deg, #8c52ff, #ff914d); color:white; border:none; border-radius:6px; padding:0 15px; font-weight:bold; cursor:pointer;">➤</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+    </div>
+</div>
         <!-- REKOMENDASI POSTINGAN ACAK -->
         <section style="margin-top:50px;">
             <div class="header-recommendation">
@@ -103,12 +119,11 @@
         const postId = urlParams.get('id');
 
         // 1. FUNGSI TOGGLE BOTTOM SHEET HP
-        function toggleKomentarHP() {
-            if(window.innerWidth <= 768) {
-                document.getElementById('comment-sidebar').classList.toggle('active');
-                document.getElementById('comment-overlay').classList.toggle('active');
-            }
-        }
+        // FUNGSI MEMUNCULKAN/MENYEMBUNYIKAN LAYER KOMENTAR
+function toggleKomentarLayer() {
+    const layerKomentar = document.getElementById('layer-comments');
+    layerKomentar.classList.toggle('active');
+}
 
         // 2. MUAT DATA POSTINGAN INI
         if(postId) {
@@ -119,16 +134,14 @@
                     const mediaArea = document.getElementById('post-media-area');
                     
                     if(isVideo) {
-                        mediaArea.innerHTML = `
-                            <video src="${p.videoUrl}" controls autoplay loop playsinline style="width:100%; height:100%; object-fit:contain;"></video>
-                            <button class="mobile-comment-btn" onclick="toggleKomentarHP()">💬 Buka Komentar</button>
-                        `;
-                    } else {
-                        mediaArea.innerHTML = `
-                            <img src="${p.videoUrl}" style="width:100%; height:100%; object-fit:contain;">
-                            <button class="mobile-comment-btn" onclick="toggleKomentarHP()">💬 Buka Komentar</button>
-                        `;
-                    }
+    mediaArea.innerHTML = `
+        <video src="${p.videoUrl}" controls autoplay loop playsinline style="width:100%; height:100%; object-fit:contain;"></video>
+    `;
+} else {
+    mediaArea.innerHTML = `
+        <img src="${p.videoUrl}" style="width:100%; height:100%; object-fit:contain;">
+    `;
+}
                     
                     document.getElementById('post-caption-teks').innerText = p.caption;
                     document.getElementById('post-date-teks').innerText = p.uploadDate ? timeAgoFormated(p.uploadDate) : '';
