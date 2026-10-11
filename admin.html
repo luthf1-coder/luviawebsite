@@ -187,6 +187,7 @@
             <button class="tab-btn" onclick="switchTab('tab-buat-program', this)">📺 Buat Program Baru</button>
             <button class="tab-btn" onclick="switchTab('tab-isi-program', this)">📂 Video ke Program</button>
             <button class="tab-btn" onclick="switchTab('tab-komplain', this)">💬 Support & Notif (HP)</button>
+            <button class="tab-btn" onclick="switchTab('tab-postingan', this)">📸 Tambah Postingan</button>
         </div>
 
 <!-- 1. TAMBAH VIDEO -->
@@ -327,6 +328,31 @@
                 </div>
             </div>
         </div>
+
+        <!-- 5. TAMBAH POSTINGAN (UPLOAD KE INTERNET ARCHIVE) -->
+<div id="tab-postingan" class="panel">
+    <h3 style="margin-top:0;">Upload Postingan Baru</h3>
+    <div style="background:#222; padding:15px; border-left:4px solid #ff914d; margin-bottom:15px; font-size:12px;">
+        ⚠️ <strong>Info Sistem:</strong> File video akan di-chunk (dipotong kecil-kecil) dan diupload bertahap. Jika error, tekan "Lanjutkan Upload".
+    </div>
+    
+    <div class="admin-form-group">
+        <label>Pilih File Video/Gambar</label>
+        <input type="file" id="post-file" accept="video/mp4, image/jpeg, image/png">
+    </div>
+    <div class="admin-form-group"><label>Judul / Caption Postingan</label><textarea id="post-caption" placeholder="Tulis caption..."></textarea></div>
+    
+    <!-- Area Progress Bar -->
+    <div class="upload-progress-container" id="post-progress-container">
+        <div class="upload-progress-bar" id="post-progress-bar"></div>
+    </div>
+    <div id="post-status-text" style="font-size:12px; color:#bbb; margin-bottom:15px; text-align:center;"></div>
+    
+    <div style="display: flex; gap: 10px;">
+        <button id="btn-start-upload" class="btn-submit-comment" style="flex: 1; background:#00a884;" onclick="mulaiUploadPost()">Mulai Upload</button>
+        <button id="btn-resume-upload" class="btn-submit-comment" style="flex: 1; background:#ff914d; display:none;" onclick="lanjutkanUploadPost()">🔁 Lanjutkan Upload</button>
+    </div>
+</div>
 
     <!-- HTML UNTUK MODAL ANALITIK -->
     <div id="stats-modal">
@@ -1091,6 +1117,107 @@
                 setTimeout(renderKelolaFAQ, 500);
             }
         }
+
+// ==========================================
+// SISTEM UPLOAD POSTINGAN (CHUNKED / RESUMEABLE)
+// ==========================================
+let filePostingan = null;
+let ukuranChunk = 5 * 1024 * 1024; // Potong per 5 MB
+let totalChunks = 0;
+let chunkSekarang = 0;
+let uploadDihentikan = false;
+
+document.getElementById('post-file').addEventListener('change', function(e) {
+    filePostingan = e.target.files[0];
+    if(filePostingan) {
+        totalChunks = Math.ceil(filePostingan.size / ukuranChunk);
+        chunkSekarang = 0;
+        document.getElementById('post-status-text').innerText = `File siap: ${filePostingan.name} (${(filePostingan.size / (1024*1024)).toFixed(2)} MB)`;
+        document.getElementById('post-progress-container').style.display = 'block';
+        document.getElementById('post-progress-bar').style.width = '0%';
+        document.getElementById('btn-resume-upload').style.display = 'none';
+        document.getElementById('btn-start-upload').style.display = 'block';
+    }
+});
+
+async function mulaiUploadPost() {
+    if(!filePostingan) return alert("Pilih file dulu!");
+    document.getElementById('btn-start-upload').style.display = 'none';
+    uploadDihentikan = false;
+    prosesUploadChunk();
+}
+
+function lanjutkanUploadPost() {
+    document.getElementById('btn-resume-upload').style.display = 'none';
+    uploadDihentikan = false;
+    prosesUploadChunk();
+}
+
+async function prosesUploadChunk() {
+    const statusText = document.getElementById('post-status-text');
+    const progressBar = document.getElementById('post-progress-bar');
+    
+    while (chunkSekarang < totalChunks && !uploadDihentikan) {
+        let mulai = chunkSekarang * ukuranChunk;
+        let akhir = Math.min(mulai + ukuranChunk, filePostingan.size);
+        let potonganBite = filePostingan.slice(mulai, akhir);
+        
+        try {
+            statusText.innerText = `Mengupload bagian ${chunkSekarang + 1} dari ${totalChunks}...`;
+            
+            // =======================================================
+            // DI SINI TEMPAT API FETCH INTERNET ARCHIVE (S3 MULTIPART)
+            // Karena ini frontend murni, simulasi delay jaringannya:
+            // =======================================================
+            await new Promise((resolve, reject) => {
+                setTimeout(() => {
+                    // Simulasi kemungkinan jaringan putus acak sebesar 5%
+                    if(Math.random() < 0.05) reject("Koneksi terputus"); 
+                    else resolve();
+                }, 1000); 
+            });
+
+            // Jika sukses, lanjut ke potongan berikutnya
+            chunkSekarang++;
+            let persentase = Math.round((chunkSekarang / totalChunks) * 100);
+            progressBar.style.width = persentase + '%';
+            
+        } catch (error) {
+            // JIKA GAGAL / KONEKSI PUTUS (Fitur Resume aktif)
+            uploadDihentikan = true;
+            statusText.innerHTML = `<span style="color:#ff4d4d;">❌ Upload terputus di ${Math.round((chunkSekarang/totalChunks)*100)}%. Klik Lanjutkan Upload.</span>`;
+            document.getElementById('btn-resume-upload').style.display = 'block';
+            return; // Hentikan loop
+        }
+    }
+
+    if(chunkSekarang === totalChunks) {
+        statusText.innerHTML = `<span style="color:#53fc18;">✅ Upload Selesai 100%! Menyimpan ke Database...</span>`;
+        // Simulasi mendapatkan link dari Internet Archive
+        let linkEmbedIA = "https://archive.org/embed/simulasi_id_" + Date.now();
+        simpanDataPostingan(linkEmbedIA);
+    }
+}
+
+function simpanDataPostingan(linkVideo) {
+    const caption = document.getElementById('post-caption').value;
+    const postId = "post_" + Date.now();
+    
+    firebase.database().ref('posts/' + postId).set({
+        id: postId,
+        videoUrl: linkVideo,
+        caption: caption,
+        uploadDate: new Date().toISOString().split('T')[0],
+        timestamp: firebase.database.ServerValue.TIMESTAMP
+    }).then(() => {
+        alert("Postingan berhasil diterbitkan!");
+        document.getElementById('post-file').value = '';
+        document.getElementById('post-caption').value = '';
+        document.getElementById('post-progress-container').style.display = 'none';
+        document.getElementById('post-status-text').innerText = '';
+        document.getElementById('btn-start-upload').style.display = 'block';
+    });
+}
     
     </script>
 </body>
