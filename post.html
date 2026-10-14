@@ -127,6 +127,11 @@ function toggleKomentarLayer() {
 
         // 2. MUAT DATA POSTINGAN INI
         if(postId) {
+    // Perekam Tayangan (Otomatis nambah +1 ke Firebase setiap kali postingan dibuka)
+    firebase.database().ref('post_views/' + postId).transaction((currentValue) => {
+        return (currentValue || 0) + 1;
+    });
+
             firebase.database().ref('posts/' + postId).once('value', snap => {
                 if(snap.exists()) {
                     const p = snap.val();
