@@ -340,14 +340,14 @@
     <input type="hidden" id="edit-post-id" value="">
     
     <div class="admin-form-group" id="form-group-file-post">
-        <label>Pilih File Video/Gambar</label>
-        <input type="file" id="post-file" accept="video/mp4, image/jpeg, image/png">
-    </div>
+    <label>Pilih File Video/Gambar (Maks 100 MB)</label>
+    <input type="file" id="post-file" accept="video/mp4, image/jpeg, image/png">
+</div>
     
-    <div class="admin-form-group">
-        <label>Judul / Caption Postingan</label>
-        <textarea id="post-caption" placeholder="Tulis caption..."></textarea>
-    </div>
+<div class="admin-form-group">
+    <label>Judul / Caption Postingan</label>
+    <textarea id="post-caption" placeholder="Tulis caption..."></textarea>
+</div>
     
     <!-- Area Progress Bar -->
     <div class="upload-progress-container" id="post-progress-container">
@@ -430,7 +430,7 @@
                 jalankanPantauanNotif();
                 muatLogNotifikasi(); // <--- TAMBAHKAN BARIS INI
                 muatDaftarHapus(); 
-muatDaftarPostingan();
+                muatDaftarPostingan();
             } else { document.getElementById('login-error').style.display = 'block'; }
         }
 
@@ -1135,108 +1135,101 @@ muatDaftarPostingan();
         }
 
 // ==========================================
-// SISTEM UPLOAD POSTINGAN (CHUNKED / RESUMEABLE)
+// SISTEM UPLOAD POSTINGAN VIA CLOUDFLARE API
 // ==========================================
 let filePostingan = null;
-let ukuranChunk = 5 * 1024 * 1024; // Potong per 5 MB
-let totalChunks = 0;
-let chunkSekarang = 0;
-let uploadDihentikan = false;
 
 document.getElementById('post-file').addEventListener('change', function(e) {
     filePostingan = e.target.files[0];
     if(filePostingan) {
-        totalChunks = Math.ceil(filePostingan.size / ukuranChunk);
-        chunkSekarang = 0;
-        document.getElementById('post-status-text').innerText = `File siap: ${filePostingan.name} (${(filePostingan.size / (1024*1024)).toFixed(2)} MB)`;
         document.getElementById('post-progress-container').style.display = 'block';
         document.getElementById('post-progress-bar').style.width = '0%';
-        document.getElementById('btn-resume-upload').style.display = 'none';
+        document.getElementById('post-status-text').innerText = `File siap: ${filePostingan.name} (${(filePostingan.size / (1024*1024)).toFixed(2)} MB)`;
         document.getElementById('btn-start-upload').style.display = 'block';
+        document.getElementById('btn-resume-upload').style.display = 'none'; // Sembunyikan tombol resume
     }
 });
 
-async function mulaiUploadPost() {
+function mulaiUploadPost() {
     if(!filePostingan) return alert("Pilih file dulu!");
+
+    // KEAMANAN: Cek batas ukuran file gratisan Cloudflare (100 MB)
+    if (filePostingan.size > 100 * 1024 * 1024) {
+        alert("Maaf, ukuran file melebihi batas 100MB! Silakan kompres video atau gunakan fitur backup manual.");
+        return;
+    }
+
     document.getElementById('btn-start-upload').style.display = 'none';
-    uploadDihentikan = false;
-    prosesUploadChunk();
-}
-
-function lanjutkanUploadPost() {
-    document.getElementById('btn-resume-upload').style.display = 'none';
-    uploadDihentikan = false;
-    prosesUploadChunk();
-}
-
-async function prosesUploadChunk() {
-    const statusText = document.getElementById('post-status-text');
     const progressBar = document.getElementById('post-progress-bar');
+    const statusText = document.getElementById('post-status-text');
+
+    const xhr = new XMLHttpRequest();
     
-    while (chunkSekarang < totalChunks && !uploadDihentikan) {
-        let mulai = chunkSekarang * ukuranChunk;
-        let akhir = Math.min(mulai + ukuranChunk, filePostingan.size);
-        let potonganBite = filePostingan.slice(mulai, akhir);
-        
-        try {
-            statusText.innerText = `Mengupload bagian ${chunkSekarang + 1} dari ${totalChunks}...`;
-            
-            // =======================================================
-            // DI SINI TEMPAT API FETCH INTERNET ARCHIVE (S3 MULTIPART)
-            // Karena ini frontend murni, simulasi delay jaringannya:
-            // =======================================================
-            await new Promise((resolve, reject) => {
-                setTimeout(() => {
-                    // Simulasi kemungkinan jaringan putus acak sebesar 5%
-                    if(Math.random() < 0.05) reject("Koneksi terputus"); 
-                    else resolve();
-                }, 1000); 
-            });
-
-            // Jika sukses, lanjut ke potongan berikutnya
-            chunkSekarang++;
-            let persentase = Math.round((chunkSekarang / totalChunks) * 100);
+    // 1. Lacak progres pengiriman ke server Cloudflare
+    xhr.upload.onprogress = function(event) {
+        if (event.lengthComputable) {
+            const persentase = Math.round((event.loaded / event.total) * 100);
             progressBar.style.width = persentase + '%';
-            
-        } catch (error) {
-            // JIKA GAGAL / KONEKSI PUTUS (Fitur Resume aktif)
-            uploadDihentikan = true;
-            statusText.innerHTML = `<span style="color:#ff4d4d;">❌ Upload terputus di ${Math.round((chunkSekarang/totalChunks)*100)}%. Klik Lanjutkan Upload.</span>`;
-            document.getElementById('btn-resume-upload').style.display = 'block';
-            return; // Hentikan loop
+            if(persentase < 100) {
+                statusText.innerText = `Mengirim ke server... ${persentase}%`;
+            } else {
+                statusText.innerText = `Memproses di Internet Archive (Tunggu sebentar)...`;
+            }
         }
-    }
+    };
 
-    if(chunkSekarang === totalChunks) {
-        statusText.innerHTML = `<span style="color:#53fc18;">✅ Upload Selesai 100%! Menyimpan ke Database...</span>`;
-        // Simulasi mendapatkan link dari Internet Archive
-        let linkEmbedIA = "https://images.unsplash.com/photo-1516961642265-531546e84af2?q=80&w=1000&auto=format&fit=crop";
-        simpanDataPostingan(linkEmbedIA);
-    }
+    // 2. Jika proses selesai
+    xhr.onload = function() {
+        if (xhr.status === 200) {
+            // Berhasil! Ambil Link dari Cloudflare
+            const respons = JSON.parse(xhr.responseText);
+            statusText.innerHTML = `<span style="color:#53fc18;">✅ Upload Sukses! Menyimpan ke Database...</span>`;
+            
+            // Simpan link dan caption ke Firebase
+            simpanDataPostinganReal(respons.url);
+        } else {
+            // Gagal
+            statusText.innerHTML = `<span style="color:#ff4d4d;">❌ Gagal: ${xhr.responseText}</span>`;
+            document.getElementById('btn-start-upload').style.display = 'block';
+            document.getElementById('btn-start-upload').innerText = 'Ulangi Upload';
+        }
+    };
+
+    // 3. Jika Jaringan Putus
+    xhr.onerror = function() {
+        statusText.innerHTML = `<span style="color:#ff4d4d;">❌ Koneksi terputus. Silakan ulangi.</span>`;
+        document.getElementById('btn-start-upload').style.display = 'block';
+        document.getElementById('btn-start-upload').innerText = 'Ulangi Upload';
+    };
+
+    // 4. Eksekusi Pengiriman ke API yang sudah kita buat di folder "functions/api/upload.js"
+    xhr.open("PUT", "/api/upload", true);
+    xhr.setRequestHeader("X-File-Name", filePostingan.name);
+    xhr.setRequestHeader("Content-Type", filePostingan.type);
+    xhr.send(filePostingan);
 }
 
-function simpanDataPostingan(linkVideo) {
-    const caption = document.getElementById('post-caption').value;
+// Fungsi Simpan ke Firebase
+function simpanDataPostinganReal(linkVideoAsli) {
+    const caption = document.getElementById('post-caption').value; // Ambil nilai caption
     const postId = "post_" + Date.now();
     
     firebase.database().ref('posts/' + postId).set({
         id: postId,
-        videoUrl: linkVideo,
+        videoUrl: linkVideoAsli,
         caption: caption,
         uploadDate: new Date().toISOString().split('T')[0],
         timestamp: firebase.database.ServerValue.TIMESTAMP
     }).then(() => {
-        alert("Postingan berhasil diterbitkan!");
+        alert("Postingan berhasil diterbitkan secara publik!");
         document.getElementById('post-file').value = '';
         document.getElementById('post-caption').value = '';
         document.getElementById('post-progress-container').style.display = 'none';
         document.getElementById('post-status-text').innerText = '';
         document.getElementById('btn-start-upload').style.display = 'block';
+        document.getElementById('btn-start-upload').innerText = 'Mulai Upload';
     }).catch(error => {
-        // Tampilkan pesan error jika gagal (tidak stuck lagi)
-        alert("Gagal menyimpan ke database! Error: " + error.message);
-        document.getElementById('post-status-text').innerHTML = `<span style="color:#ff4d4d;">❌ Gagal: ${error.message}</span>`;
-        document.getElementById('btn-start-upload').style.display = 'block';
+        alert("Upload file berhasil, tapi gagal simpan ke Firebase: " + error.message);
     });
 }
     
