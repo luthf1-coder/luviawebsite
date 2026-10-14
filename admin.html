@@ -329,18 +329,25 @@
             </div>
         </div>
 
-        <!-- 5. TAMBAH POSTINGAN (UPLOAD KE INTERNET ARCHIVE) -->
+        <!-- 5. TAMBAH / KELOLA POSTINGAN -->
 <div id="tab-postingan" class="panel">
-    <h3 style="margin-top:0;">Upload Postingan Baru</h3>
-    <div style="background:#222; padding:15px; border-left:4px solid #ff914d; margin-bottom:15px; font-size:12px;">
+    <h3 style="margin-top:0;">Upload & Kelola Postingan</h3>
+    <div style="background:#222; padding:15px; border-left:4px solid #ff914d; margin-bottom:15px; font-size:12px;" id="info-upload-post">
         ⚠️ <strong>Info Sistem:</strong> File video akan di-chunk (dipotong kecil-kecil) dan diupload bertahap. Jika error, tekan "Lanjutkan Upload".
     </div>
     
-    <div class="admin-form-group">
+    <!-- Input Tersembunyi untuk Mode Edit -->
+    <input type="hidden" id="edit-post-id" value="">
+    
+    <div class="admin-form-group" id="form-group-file-post">
         <label>Pilih File Video/Gambar</label>
         <input type="file" id="post-file" accept="video/mp4, image/jpeg, image/png">
     </div>
-    <div class="admin-form-group"><label>Judul / Caption Postingan</label><textarea id="post-caption" placeholder="Tulis caption..."></textarea></div>
+    
+    <div class="admin-form-group">
+        <label>Judul / Caption Postingan</label>
+        <textarea id="post-caption" placeholder="Tulis caption..."></textarea>
+    </div>
     
     <!-- Area Progress Bar -->
     <div class="upload-progress-container" id="post-progress-container">
@@ -351,8 +358,16 @@
     <div style="display: flex; gap: 10px;">
         <button id="btn-start-upload" class="btn-submit-comment" style="flex: 1; background:#00a884;" onclick="mulaiUploadPost()">Mulai Upload</button>
         <button id="btn-resume-upload" class="btn-submit-comment" style="flex: 1; background:#ff914d; display:none;" onclick="lanjutkanUploadPost()">🔁 Lanjutkan Upload</button>
+        
+        <!-- Tombol Khusus Edit (Sembunyi secara default) -->
+        <button id="btn-simpan-edit-post" class="btn-submit-comment" style="flex: 1; display:none;" onclick="simpanEditPostingan()">💾 Simpan Caption</button>
+        <button id="btn-batal-edit-post" class="btn-submit-comment" style="background: #ff4d4d; display: none; padding: 12px 20px;" onclick="batalEditPostingan()">✖ Batal</button>
     </div>
+
+    <!-- Tempat Munculnya Daftar Postingan -->
+    <div id="list-hapus-post" style="margin-top: 30px;"></div>
 </div>
+
 
     <!-- HTML UNTUK MODAL ANALITIK -->
     <div id="stats-modal">
