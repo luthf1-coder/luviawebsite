@@ -332,9 +332,9 @@
         <!-- 5. TAMBAH / KELOLA POSTINGAN -->
 <div id="tab-postingan" class="panel">
     <h3 style="margin-top:0;">Upload & Kelola Postingan</h3>
-    <div style="background:#222; padding:15px; border-left:4px solid #ff914d; margin-bottom:15px; font-size:12px;" id="info-upload-post">
-        ⚠️ <strong>Info Sistem:</strong> File video akan di-chunk (dipotong kecil-kecil) dan diupload bertahap. Jika error, tekan "Lanjutkan Upload".
-    </div>
+    <div style="background:#222; padding:15px; border-left:4px solid #00a884; margin-bottom:15px; font-size:12px;" id="info-upload-post">
+    ✅ <strong>Info Sistem:</strong> Upload langsung via server Cloudflare (Maksimal 100MB). Jangan tutup halaman saat loading berjalan.
+</div>
     
     <!-- Input Tersembunyi untuk Mode Edit -->
     <input type="hidden" id="edit-post-id" value="">
@@ -357,7 +357,6 @@
     
     <div style="display: flex; gap: 10px;">
         <button id="btn-start-upload" class="btn-submit-comment" style="flex: 1; background:#00a884;" onclick="mulaiUploadPost()">Mulai Upload</button>
-        <button id="btn-resume-upload" class="btn-submit-comment" style="flex: 1; background:#ff914d; display:none;" onclick="lanjutkanUploadPost()">🔁 Lanjutkan Upload</button>
         
         <!-- Tombol Khusus Edit (Sembunyi secara default) -->
         <button id="btn-simpan-edit-post" class="btn-submit-comment" style="flex: 1; display:none;" onclick="simpanEditPostingan()">💾 Simpan Caption</button>
