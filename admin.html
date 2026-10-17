@@ -170,7 +170,12 @@
     <div id="login-overlay">
         <div class="login-box">
             <h2>LUVIA STUDIO ADMIN</h2>
-            <input type="password" id="admin-password" placeholder="Kata Sandi..." onkeypress="if(event.key === 'Enter') checkLogin()">
+            <!-- TAMBAHKAN WADAH INI UNTUK IKON MATA -->
+            <div style="position: relative;">
+                <input type="password" id="admin-password" placeholder="Kata Sandi..." onkeypress="if(event.key === 'Enter') checkLogin()" style="padding-right: 40px;">
+                <span id="toggle-password" onclick="togglePasswordVisibility()" style="position: absolute; right: 12px; top: 12px; cursor: pointer; font-size: 18px;" title="Lihat Sandi">👁️</span>
+            </div>
+            
             <button onclick="checkLogin()">Masuk</button>
             <p id="login-error" style="color:#ff4d4d; font-size:13px; display:none;">Sandi Salah!</p>
         </div>
@@ -1325,7 +1330,7 @@ function simpanEditPostingan() {
     if(!id) return;
     
     firebase.database().ref('posts/' + id).update({
-        caption: newCaption
+        caption: newCaption,
         thumbnailUrl: newThumbnail // [TAMBAHAN INI]
     }).then(() => {
         alert("Caption dan Thumbnail postingan berhasil diperbarui!");
@@ -1375,6 +1380,18 @@ function bukaAnalitikPost(id, captionSnippet) {
         });
     });
 }
+
+function togglePasswordVisibility() {
+            const passInput = document.getElementById('admin-password');
+            const toggleIcon = document.getElementById('toggle-password');
+            if (passInput.type === 'password') {
+                passInput.type = 'text';
+                toggleIcon.innerText = '🙈'; // Ikon berubah saat password terlihat
+            } else {
+                passInput.type = 'password';
+                toggleIcon.innerText = '👁️'; // Ikon kembali normal saat disembunyikan
+            }
+        }
 
     </script>
 </body>
