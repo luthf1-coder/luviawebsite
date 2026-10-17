@@ -343,6 +343,11 @@
     <label>Pilih File Video/Gambar (Maks 100 MB)</label>
     <input type="file" id="post-file" accept="video/mp4, image/jpeg, image/png">
 </div>
+
+    <div class="admin-form-group">
+    <label>Link Thumbnail (Khusus Video)</label>
+    <input type="text" id="post-thumbnail" placeholder="Masukkan link gambar thumbnail (https://...)">
+</div>
     
 <div class="admin-form-group">
     <label>Judul / Caption Postingan</label>
@@ -1223,6 +1228,7 @@ function simpanDataPostinganReal(linkVideoAsli) {
         alert("Postingan berhasil diterbitkan secara publik!");
         document.getElementById('post-file').value = '';
         document.getElementById('post-caption').value = '';
+        document.getElementById('post-thumbnail').value = '';
         document.getElementById('post-progress-container').style.display = 'none';
         document.getElementById('post-status-text').innerText = '';
         document.getElementById('btn-start-upload').style.display = 'block';
@@ -1284,6 +1290,7 @@ function siapkanEditPostingan(id) {
             const p = snap.val();
             document.getElementById('edit-post-id').value = id;
             document.getElementById('post-caption').value = p.caption;
+            document.getElementById('post-thumbnail').value = p.thumbnailUrl || ''; // [TAMBAHAN INI]
             
             // Ubah tampilan UI Admin
             document.getElementById('form-group-file-post').style.display = 'none'; // Hilangkan upload file
@@ -1300,6 +1307,7 @@ function siapkanEditPostingan(id) {
 function batalEditPostingan() {
     document.getElementById('edit-post-id').value = '';
     document.getElementById('post-caption').value = '';
+    document.getElementById('post-thumbnail').value = ''; // [TAMBAHAN INI]
     
     // Kembalikan UI Admin
     document.getElementById('form-group-file-post').style.display = 'block';
@@ -1312,13 +1320,15 @@ function batalEditPostingan() {
 function simpanEditPostingan() {
     const id = document.getElementById('edit-post-id').value;
     const newCaption = document.getElementById('post-caption').value;
+    const newThumbnail = document.getElementById('post-thumbnail').value; // [TAMBAHAN INI]
     
     if(!id) return;
     
     firebase.database().ref('posts/' + id).update({
         caption: newCaption
+        thumbnailUrl: newThumbnail // [TAMBAHAN INI]
     }).then(() => {
-        alert("Caption postingan berhasil diperbarui!");
+        alert("Caption dan Thumbnail postingan berhasil diperbarui!");
         batalEditPostingan();
     });
 }
