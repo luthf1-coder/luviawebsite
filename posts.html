@@ -7,12 +7,143 @@
     <link rel="stylesheet" href="style.css" />
     <link rel="icon" type="image/png" href="Asset Foto/Thumbnimail .png">
     
+    <!-- FIREBASE SDK -->
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-database-compat.js"></script>
+    
+    <style>
+        /* TEMA CSS KHUSUS HALAMAN INI AGAR TIDAK BENTROK DENGAN CSS UTAMA */
+        
+        .feed-header {
+            margin-top: 100px;
+            text-align: center;
+            padding: 0 20px;
+            margin-bottom: 20px;
+        }
+
+        .feed-header h2 {
+            color: #ffffff;
+            font-size: 1.8rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+            margin-bottom: 5px;
+        }
+        
+        .feed-header p {
+            color: rgba(255, 255, 255, 0.8);
+            font-size: 0.95rem;
+        }
+
+        /* 
+         * WADAH GRID UNTUK POSTINGAN
+         * Default: Untuk Layar Lebar (Desktop/Tablet) 
+         */
+        .instagram-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            gap: 15px;
+            max-width: 1200px;
+            margin: 0 auto 60px auto;
+            padding: 0 20px;
+        }
+
+        /* KHUSUS UNTUK HP (Menjadi 3 Kolom Persis Seperti IG) */
+        @media screen and (max-width: 768px) {
+            .instagram-grid {
+                grid-template-columns: repeat(3, 1fr);
+                gap: 3px;
+                padding: 0 5px; /* Margin pinggir tipis aja di HP */
+            }
+        }
+
+        /* POTONGAN FOTO (Item Grid) */
+        .grid-item {
+            position: relative;
+            width: 100%;
+            /* 1080x1035 bisa disederhanakan mjd rasio ini */
+            aspect-ratio: 1080 / 1035; 
+            background: #111;
+            overflow: hidden;
+            display: block;
+            text-decoration: none;
+            cursor: pointer;
+        }
+        
+        @media screen and (min-width: 769px) {
+            .grid-item {
+                border-radius: 8px; /* Di PC kasih lengkung dikit agar estetik */
+                border: 1px solid rgba(255,255,255,0.1);
+            }
+        }
+
+        .grid-item img, .grid-item video {
+            width: 100%;
+            height: 100%;
+            object-fit: cover; /* Agar gambar tidak gepeng (stretch) */
+            display: block;
+            transition: transform 0.3s ease;
+        }
+
+        /* Efek Hover di Desktop */
+        @media screen and (min-width: 769px) {
+            .grid-item:hover img, .grid-item:hover video {
+                transform: scale(1.05);
+            }
+            .grid-item:hover::after {
+                content: '';
+                position: absolute;
+                top: 0; left: 0; right: 0; bottom: 0;
+                background: rgba(0,0,0,0.2);
+                pointer-events: none;
+            }
+        }
+
+        /* BADGE VIEWERS DI POJOK KANAN BAWAH */
+        .viewer-badge {
+            position: absolute;
+            bottom: 8px;
+            right: 8px;
+            background: rgba(0, 0, 0, 0.65);
+            backdrop-filter: blur(4px);
+            -webkit-backdrop-filter: blur(4px);
+            color: white;
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 11px;
+            font-weight: 700;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            z-index: 5;
+            pointer-events: none; /* Biar tetap bisa klik gambar di bawahnya */
+        }
+
+        /* Ikon Mata (SVG agar tajam) */
+        .eye-icon {
+            width: 12px;
+            height: 12px;
+            fill: currentColor;
+        }
+        
+        /* Ikon Video (Pojok Kanan Atas - Persis IG Reels) */
+        .video-indicator {
+            position: absolute;
+            top: 8px;
+            right: 8px;
+            color: white;
+            font-size: 14px;
+            text-shadow: 0 1px 4px rgba(0,0,0,0.8);
+            z-index: 5;
+            pointer-events: none;
+        }
+        
+    </style>
 </head>
 <body>
+
+    <!-- NAVBAR BAWAAN -->
     <nav>
-        <!-- Paste Navbar bawaanmu di sini (Sama seperti index.html) -->
         <div class="container nav-container">
             <button class="hamburger-menu" onclick="toggleSidebar()">☰</button>
             <a href="index.html" title="Halaman Utama" style="display: flex; align-items: center; margin-right: 15px;">
@@ -22,22 +153,19 @@
     </nav>
     <div id="sidebar-container"></div>
 
-    <!-- BANNER ATAS -->
-    <div class="hero-banner-full">
-        <div class="hero-banner-bg" style="background-image: url('Asset Foto/Banner Thumbnail.png');"></div>
+    <!-- HEADER FEED -->
+    <div class="feed-header">
+        <h2>Feed Postingan</h2>
+        <p>Lihat postingan dan kabar terbaru dari kami.</p>
     </div>
-    
-    <!-- DAFTAR POSTINGAN BENTUK GRID (KOTAK) -->
-    <section class="section page-stream-container" style="position: relative; z-index: 1; margin-top: -60px; padding-top: 0;">
-        <div class="container">
-            <h2 class="stream-title">Feed Postingan</h2>
-            
-            <div class="post-grid" id="grid-postingan">
-                <p style="color: #bbb; text-align: center; width: 100%;">Memuat feed postingan...</p>
-            </div>
-        </div>
-    </section>
 
+    <!-- WADAH GRID FOTO/VIDEO -->
+    <div class="instagram-grid" id="instagram-grid">
+        <!-- Akan dimuat lewat JavaScript -->
+        <p style="color:#bbb; text-align:center; grid-column:1/-1; padding:50px;">Memuat feed postingan...</p>
+    </div>
+
+    <!-- FOOTER BAWAAN -->
     <footer>
         <div class="container footer-container">
             <div class="footer-socials" id="footer-social-container"></div>
@@ -45,40 +173,74 @@
         </div>
     </footer>
 
+    <!-- SCRIPT UTAMA DATABSE -->
     <script src="videos-data.js"></script>
     <script>
-    document.addEventListener('DOMContentLoaded', () => {
-        if (typeof firebase !== 'undefined') {
-            firebase.database().ref('posts').on('value', snap => {
-                const container = document.getElementById('grid-postingan');
-                if (snap.exists()) {
-                    const posts = snap.val();
-                    let html = '';
+        document.addEventListener('DOMContentLoaded', () => {
+            // Pastikan Firebase udah load
+            if (typeof firebase !== 'undefined') {
+                
+                // KITA AMBIL DUA DATA SEKALIGUS: 'posts' dan 'post_views'
+                Promise.all([
+                    firebase.database().ref('posts').once('value'),
+                    firebase.database().ref('post_views').once('value')
+                ]).then((snapshots) => {
                     
-                    // Balik urutan agar yang terbaru di atas
-                    Object.keys(posts).reverse().forEach(key => {
-                        const p = posts[key];
-                        const isVideo = p.videoUrl.includes('.mp4');
-                        const mediaTag = isVideo 
-                            ? `<video src="${p.videoUrl}" muted loop onmouseover="this.play()" onmouseout="this.pause()"></video>`
-                            : `<img src="${p.videoUrl}" alt="Postingan">`;
+                    const postsSnap = snapshots[0];
+                    const viewsSnap = snapshots[1];
+                    const container = document.getElementById('instagram-grid');
+                    
+                    if (postsSnap.exists()) {
+                        const postsData = postsSnap.val();
+                        const viewsData = viewsSnap.exists() ? viewsSnap.val() : {};
+                        let html = '';
+                        
+                        // Balik urutan objek agar postingan terbaru muncul di atas
+                        const sortedKeys = Object.keys(postsData).reverse();
+                        
+                        sortedKeys.forEach(key => {
+                            const p = postsData[key];
+                            const isVideo = p.videoUrl.includes('.mp4');
+                            
+                            // Hitung jumlah Viewers dari Firebase
+                            let totalViews = viewsData[key] || 0;
+                            let formattedViews = totalViews;
+                            
+                            // Logika Angka (Format 1.2K jika ribuan)
+                            if (totalViews >= 1000) {
+                                formattedViews = (totalViews / 1000).toFixed(1).replace('.0', '') + 'K';
+                            } else if (totalViews >= 1000000) {
+                                formattedViews = (totalViews / 1000000).toFixed(1).replace('.0', '') + 'M';
+                            }
+                            
+                            // Render HTML Video / Foto
+                            // Tambahan onmouseenter utk putar video pelan di desktop
+                            const mediaTag = isVideo 
+                                ? `<video src="${p.videoUrl}" muted loop onmouseenter="this.play()" onmouseleave="this.pause()"></video><div class="video-indicator">▶</div>`
+                                : `<img src="${p.videoUrl}" alt="Postingan" loading="lazy">`;
 
-                        html += `
-                        <a href="post.html?id=${key}" class="post-grid-item">
-                            ${mediaTag}
-                        </a>`;
-                    });
-                    container.innerHTML = html;
-                } else {
-                    container.innerHTML = '<p style="color:#bbb; text-align:center; width:100%;">Belum ada postingan dari Admin.</p>';
-                }
-            }, error => {
-                // JIKA ERROR KARENA FIREBASE RULES
-                const container = document.getElementById('grid-postingan');
-                container.innerHTML = `<p style="color:#ff4d4d; text-align:center; width:100%;">Gagal memuat: ${error.message}</p>`;
-            });
-        }
-    });
-</script>
+                            // Ikon Mata SVG
+                            const eyeSVG = `<svg class="eye-icon" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M12 4.5C7 4.5 2.73 7.61 1 12c1.73 4.39 6 7.5 11 7.5s9.27-3.11 11-7.5c-1.73-4.39-6-7.5-11-7.5zM12 17c-2.76 0-5-2.24-5-5s2.24-5 5-5 5 2.24 5 5-2.24 5-5 5zm0-8c-1.66 0-3 1.34-3 3s1.34 3 3 3 3-1.34 3-3-1.34-3-3-3z"/></svg>`;
+
+                            html += `
+                            <a href="post.html?id=${key}" class="grid-item">
+                                ${mediaTag}
+                                <div class="viewer-badge">
+                                    ${eyeSVG} ${formattedViews}
+                                </div>
+                            </a>`;
+                        });
+                        
+                        container.innerHTML = html;
+                    } else {
+                        container.innerHTML = '<p style="color:#bbb; text-align:center; grid-column:1/-1; padding:50px;">Belum ada feed postingan.</p>';
+                    }
+                }).catch((error) => {
+                    const container = document.getElementById('instagram-grid');
+                    container.innerHTML = `<p style="color:#ff4d4d; text-align:center; grid-column:1/-1; padding:50px;">Gagal memuat feed: ${error.message}</p>`;
+                });
+            }
+        });
+    </script>
 </body>
 </html>
