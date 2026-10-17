@@ -463,8 +463,9 @@
                 let totalViews = viewsData[key] || 0;
                 let formattedViews = totalViews >= 1000 ? (totalViews / 1000).toFixed(1).replace('.0', '') + 'K' : totalViews;
 
+                const thumb = p.thumbnailUrl || ''; // Memanggil link thumbnail jika ada
                 const mediaTag = isVideo 
-                    ? `<video src="${p.videoUrl}" muted loop onmouseenter="this.play()" onmouseleave="this.pause()"></video><div class="video-indicator">▶</div>`
+                    ? `<video src="${p.videoUrl}" poster="${thumb}" muted loop onmouseenter="this.play()" onmouseleave="this.pause()"></video><div class="video-indicator">▶</div>`
                     : `<img src="${p.videoUrl}" alt="Postingan" loading="lazy">`;
 
                 html += `
