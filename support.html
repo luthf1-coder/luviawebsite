@@ -170,34 +170,11 @@
 </head>
 <body>
 
-    <!-- NAVBAR STANDAR LUVIA STUDIO TV -->
-    <nav>
-        <div class="container nav-container">
-            <!-- 1. Tombol Hamburger -->
-            <button class="hamburger-menu" onclick="toggleSidebar()" title="Menu">☰</button>
-            
-            <!-- 2. Logo Luvia (Tanpa bingkai bulat, menyesuaikan logo memanjang) -->
-            <a href="index.html" title="Halaman Utama" style="display: flex; align-items: center; margin-right: 15px;">
-                <!-- Pastikan nama file di src sesuai dengan letak foto logomu -->
-                <img src="Asset Foto/Logo Luvia Insight V﻿erse.png" alt="Logo Luvia" style="height: 34px; width: auto; object-fit: contain;">
-            </a>
-            
-            <!-- 3. Tombol Riwayat (Back/Forward) -->
-            <div class="nav-history-controls">
-                <button onclick="history.back()" class="btn-nav-history" title="Kembali">←</button>
-                <button onclick="history.forward()" class="btn-nav-history" title="Maju">→</button>
-            </div>
-            
-            <!-- 4. Kolom Pencarian -->
-            <form class="nav-search" id="navSearchForm" onsubmit="return false;">
-                <input type="text" id="navSearchInput" placeholder="Cari video..." aria-label="Cari" autocomplete="off">
-                <button type="submit">🔍</button>
-                <!-- Boks Dropdown Hasil Pencarian Langsung -->
-                <div class="search-dropdown-list" id="searchDropdownList"></div>
-            </form>
-        </div>
-    </nav>
+ <!-- WADAH NAVBAR OTOMATIS DARI PUSAT KOMANDO -->
+    <nav id="navbar-container"></nav>
+    
     <div id="sidebar-container"></div>
+    
     <!-- KONTEN UTAMA: KOTAK CHAT SUPPORT -->
     <div class="support-wrapper">
         <div class="chat-container">
