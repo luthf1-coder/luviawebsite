@@ -541,12 +541,16 @@
         }
 
 // ==========================================
-        // FUNGSI KOMENTAR POSTINGAN (EDIT, HAPUS, SUKA)
+        // FITUR KOMENTAR V2 (BALAS & EDIT INLINE TANPA POP-UP)
         // ==========================================
         const iconThumbOutline = `<svg viewBox="0 0 24 24" width="14" height="14" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"><path d="M14 9V5a3 3 0 0 0-3-3l-4 9v11h11.28a2 2 0 0 0 2-1.7l1.38-9a2 2 0 0 0-2-2.3zM7 22H4a2 2 0 0 1-2-2v-7a2 2 0 0 1 2-2h3"></path></svg>`;
         const iconThumbSolid = `<svg viewBox="0 0 24 24" width="14" height="14" stroke="currentColor" stroke-width="2" fill="white" stroke-linecap="round" stroke-linejoin="round"><path d="M14 9V5a3 3 0 0 0-3-3l-4 9v11h11.28a2 2 0 0 0 2-1.7l1.38-9a2 2 0 0 0-2-2.3zM7 22H4a2 2 0 0 1-2-2v-7a2 2 0 0 1 2-2h3"></path></svg>`;
-        const iconTrash = `<svg viewBox="0 0 24 24" width="14" height="14" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>`;
+        const iconTrash = `<svg viewBox="0 0 24 24" width="14" height="14" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2-2v2"></path></svg>`;
         const iconEdit = `✏️`;
+
+        let editingCommentId = null; 
+        let editingParentId = null; 
+        let editingIsReply = false;
 
         function timeAgo(ts) {
             if(!ts) return "Baru saja";
@@ -559,59 +563,89 @@
             return `${Math.floor(hours / 24)} hari yang lalu`;
         }
 
+        // FUNGSI MEMBANGUN STRUKTUR HTML KOMENTAR + BALASAN
+        function buildPostCommentHTML(id, c, postId, isReply = false, parentId = null) {
+            const hasLiked = localStorage.getItem(`liked_post_comment_${id}`);
+            const isMyComment = localStorage.getItem(`my_post_comment_${id}`) === 'true';
+            const likesCount = c.likes || 0;
+            const thumbIcon = hasLiked ? iconThumbSolid : iconThumbOutline;
+            const safeText = encodeURIComponent(c.text || "");
+
+            let html = `
+            <div style="margin-bottom: 15px; display: flex; gap: 12px; ${isReply ? 'margin-left: 40px; margin-top: 10px;' : ''}">
+                <img src="Asset Foto/Thumbnimail .png" style="width: ${isReply ? '28px' : '34px'}; height: ${isReply ? '28px' : '34px'}; border-radius: 50%; background: rgba(255,255,255,0.2); flex-shrink: 0;" alt="Avatar">
+                <div style="flex: 1;">
+                    <div style="font-size: 0.85rem; font-weight: bold; color: #fff;">
+                        @${c.name} <span style="font-size: 0.75rem; color: #bbb; font-weight: normal; margin-left: 6px;">${timeAgo(c.timestamp)}</span>
+                    </div>
+                    <div style="font-size: 0.9rem; color: #f1f1f1; margin-top: 4px; line-height: 1.4; word-wrap: break-word;">${c.text}</div>
+                    
+                    <div style="display: flex; gap: 15px; margin-top: 8px; align-items: center;">
+                        <button onclick="toggleCommentLike('${id}', '${postId}', ${isReply}, '${parentId}')" style="background:none; border:none; color:#bbb; font-size:0.8rem; cursor:pointer; display:flex; align-items:center; gap:4px; padding:0;">
+                            ${thumbIcon} <span id="like-count-${id}">${likesCount > 0 ? likesCount : ''}</span>
+                        </button>
+                        ${!isReply ? `<button onclick="toggleReplyForm('${id}')" style="background:none; border:none; color:#bbb; font-size:0.8rem; cursor:pointer; padding:0;">Balas</button>` : ''}
+                        ${isMyComment ? `
+                            <button onclick="editCommentInline('${id}', '${postId}',${isReply}, '${parentId}', '${safeText}')" style="background:none; border:none; color:#bbb; font-size:0.8rem; cursor:pointer; display:flex; align-items:center; gap:4px; padding:0;">
+                                ${iconEdit} Edit
+                            </button>
+                            <button onclick="deleteComment('${id}', '${postId}', ${isReply}, '${parentId}')" style="background:none; border:none; color:#ff4d4d; font-size:0.8rem; cursor:pointer; display:flex; align-items:center; gap:4px; padding:0;">
+                                ${iconTrash} Hapus
+                            </button>
+                        ` : ''}
+                    </div>
+
+                    ${!isReply ? `
+                    <div id="reply-form-${id}" style="display: none; margin-top: 10px; background: rgba(0,0,0,0.3); padding: 10px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.1);">
+                        <input type="text" id="reply-name-${id}" placeholder="Nama Anda..." style="width: 100%; box-sizing: border-box; background: transparent; border: none; border-bottom: 1px solid rgba(255, 255, 255, 0.4); color: white; padding: 5px; outline: none; font-size: 0.85rem; margin-bottom: 8px;" required>
+                        <textarea id="reply-text-${id}" placeholder="Tulis balasan..." style="width: 100%; box-sizing: border-box; background: transparent; border: none; border-bottom: 1px solid rgba(255, 255, 255, 0.4); color: white; padding: 5px; outline: none; resize: none; min-height: 30px; font-family: inherit; font-size: 0.85rem;" required></textarea>
+                        <div style="display: flex; justify-content: flex-end; gap: 8px; margin-top: 5px;">
+                            <button onclick="toggleReplyForm('${id}')" style="background: transparent; border: none; color: #fff; cursor: pointer; padding: 4px 10px; border-radius: 12px; font-size: 0.8rem;">Batal</button>
+                            <button onclick="submitReply('${id}', '${postId}')" style="background: linear-gradient(45deg, #8c52ff, #ff914d); color: white; border: none; cursor: pointer; padding: 4px 12px; border-radius: 12px; font-weight: bold; font-size: 0.8rem;">Kirim</button>
+                        </div>
+                    </div>
+                    <div id="replies-list-${id}"></div>
+                    ` : ''}
+                </div>
+            </div>
+            `;
+            return html;
+        }
+
         function initPostComments(postId) {
             const commentsRef = firebase.database().ref('post_comments/' + postId);
             const commentsList = document.getElementById('post-comments-list');
 
-            // 1. Ambil Data Komentar Realtime
             commentsRef.on('value', (snapshot) => {
                 const data = snapshot.val();
                 let totalComments = 0;
                 
                 if (data) {
                     const keys = Object.keys(data);
-                    let html = '';
+                    let finalHTML = '';
+                    
                     keys.forEach(key => {
                         totalComments++;
                         const c = data[key];
-                        
-                        // Sistem Kepemilikan & Suka Komentar
-                        const hasLiked = localStorage.getItem(`liked_post_comment_${key}`);
-                        const isMyComment = localStorage.getItem(`my_post_comment_${key}`) === 'true';
-                        const likesCount = c.likes || 0;
-                        const thumbIcon = hasLiked ? iconThumbSolid : iconThumbOutline;
-                        const safeText = (c.text || "").replace(/'/g, "\\'").replace(/"/g, "&quot;");
-
-                        html += `
-                        <div style="margin-bottom: 20px; display: flex; gap: 12px;">
-                            <img src="Asset Foto/Thumbnimail .png" style="width: 34px; height: 34px; border-radius: 50%; background: rgba(255,255,255,0.2); flex-shrink: 0;" alt="Avatar">
-                            <div style="flex: 1;">
-                                <div style="font-size: 0.85rem; font-weight: bold; color: #fff;">
-                                    @${c.name} <span style="font-size: 0.75rem; color: #bbb; font-weight: normal; margin-left: 6px;">${timeAgo(c.timestamp)}</span>
-                                </div>
-                                <div style="font-size: 0.9rem; color: #f1f1f1; margin-top: 4px; line-height: 1.4; word-wrap: break-word;">${c.text}</div>
-                                
-                                <!-- TOMBOL AKSI KOMENTAR -->
-                                <div style="display: flex; gap: 15px; margin-top: 8px; align-items: center;">
-                                    <button onclick="toggleCommentLike('${key}', '${postId}')" style="background:none; border:none; color:#bbb; font-size:0.8rem; cursor:pointer; display:flex; align-items:center; gap:4px; padding:0;">
-                                        ${thumbIcon} <span id="like-count-${key}">${likesCount > 0 ? likesCount : ''}</span>
-                                    </button>
-                                    ${isMyComment ? `
-                                        <button onclick="editComment('${key}', '${postId}', '${safeText}')" style="background:none; border:none; color:#bbb; font-size:0.8rem; cursor:pointer; display:flex; align-items:center; gap:4px; padding:0;">
-                                            ${iconEdit} Edit
-                                        </button>
-                                        <button onclick="deleteComment('${key}', '${postId}')" style="background:none; border:none; color:#ff4d4d; font-size:0.8rem; cursor:pointer; display:flex; align-items:center; gap:4px; padding:0;">
-                                            ${iconTrash} Hapus
-                                        </button>
-                                    ` : ''}
-                                </div>
-                            </div>
-                        </div>
-                        `;
+                        finalHTML += buildPostCommentHTML(key, c, postId, false, null);
                     });
-                    commentsList.innerHTML = html;
+                    
+                    commentsList.innerHTML = finalHTML;
                     document.getElementById('comment-count-header').innerText = totalComments;
-                    // Auto-scroll pelan ke bawah
+
+                    // Pasang sub-komentar (Balasan)
+                    keys.forEach(key => {
+                        const c = data[key];
+                        if (c.replies) {
+                            const replyKeys = Object.keys(c.replies);
+                            let repliesHTML = '';
+                            replyKeys.forEach(rKey => {
+                                const rData = c.replies[rKey];
+                                repliesHTML += buildPostCommentHTML(rKey, rData, postId, true, key);
+                            });
+                            document.getElementById(`replies-list-${key}`).innerHTML = repliesHTML;
+                        }
+                    });
                     setTimeout(() => commentsList.scrollTop = commentsList.scrollHeight, 100);
                 } else {
                     commentsList.innerHTML = '<p style="color: #ddd; text-align: center; font-size: 0.9rem; margin-top: 20px;">Belum ada komentar. Jadilah yang pertama!</p>';
@@ -619,10 +653,9 @@
                 }
             });
 
-            // 2. Kirim Komentar Baru
+            // 2. LOGIK KOMENTAR BARU & EDIT INLINE
             const form = document.getElementById('post-comment-form');
             if(form) {
-                // Cegah double event listener
                 const newForm = form.cloneNode(true);
                 form.parentNode.replaceChild(newForm, form);
 
@@ -632,32 +665,91 @@
                     const textInput = document.getElementById('post-comment-text');
 
                     if (nameInput.value && textInput.value) {
-                        const newCommentRef = commentsRef.push({
-                            name: nameInput.value,
-                            text: textInput.value,
-                            timestamp: firebase.database.ServerValue.TIMESTAMP,
-                            likes: 0
-                        });
-                        
-                        // Simpan kepemilikan komentar ke device
-                        localStorage.setItem(`my_post_comment_${newCommentRef.key}`, 'true');
-
-                        firebase.database().ref('admin_notifications').push({
-                            tipe: "Komentar Postingan",
-                            pesan: `${nameInput.value} berkomentar di Postingan: "${textInput.value}"`,
-                            timestamp: Date.now(), read: false
-                        });
-
+                        if (editingCommentId) {
+                            // JIKA SEDANG MODE EDIT
+                            let targetRef = editingIsReply 
+                                ? commentsRef.child(editingParentId).child('replies').child(editingCommentId)
+                                : commentsRef.child(editingCommentId);
+                                
+                            targetRef.update({ text: textInput.value.trim() });
+                            
+                            // Kembalikan ke mode normal
+                            editingCommentId = null;
+                            editingParentId = null;
+                            editingIsReply = false;
+                            newForm.querySelector('button[type="submit"]').innerText = 'Kirim';
+                            textInput.placeholder = "Tambahkan komentar...";
+                        } else {
+                            // JIKA KOMENTAR BARU
+                            const newCommentRef = commentsRef.push({
+                                name: nameInput.value, text: textInput.value,
+                                timestamp: firebase.database.ServerValue.TIMESTAMP, likes: 0
+                            });
+                            localStorage.setItem(`my_post_comment_${newCommentRef.key}`, 'true');
+                        }
                         textInput.value = ''; 
                     }
                 });
+
+                // Tombol Batal Reset Form Edit
+                const cancelBtn = newForm.querySelector('button[type="button"]');
+                cancelBtn.onclick = function() {
+                    document.getElementById('post-comment-text').value = '';
+                    if (editingCommentId) {
+                        editingCommentId = null;
+                        newForm.querySelector('button[type="submit"]').innerText = 'Kirim';
+                        document.getElementById('post-comment-text').placeholder = "Tambahkan komentar...";
+                    }
+                };
             }
         }
 
-        // FUNGSI AKSI KOMENTAR POSTINGAN (SUKA, EDIT, HAPUS)
-        window.toggleCommentLike = function(commentId, postId) {
+        // FUNGSI INLINE EDIT (Masuk kolom bawah)
+        window.editCommentInline = function(commentId, postId, isReply, parentId, encodedOldText) {
+            const oldText = decodeURIComponent(encodedOldText);
+            const textInput = document.getElementById('post-comment-text');
+            
+            textInput.value = oldText;
+            textInput.focus();
+            
+            // Simpan status
+            editingCommentId = commentId;
+            editingIsReply = isReply;
+            editingParentId = parentId;
+            
+            const submitBtn = document.querySelector('#post-comment-form button[type="submit"]');
+            if (submitBtn) submitBtn.innerText = 'Update';
+            textInput.placeholder = "Edit komentar Anda...";
+        };
+
+        // FUNGSI BALASAN
+        window.toggleReplyForm = function(id) {
+            const form = document.getElementById(`reply-form-${id}`);
+            form.style.display = form.style.display === 'none' ? 'block' : 'none';
+        };
+
+        window.submitReply = function(parentId, postId) {
+            const nameInput = document.getElementById(`reply-name-${parentId}`);
+            const textInput = document.getElementById(`reply-text-${parentId}`);
+            
+            if(nameInput.value && textInput.value) {
+                const commentsRef = firebase.database().ref('post_comments/' + postId);
+                const newReplyRef = commentsRef.child(parentId).child('replies').push({
+                    name: nameInput.value, text: textInput.value,
+                    timestamp: firebase.database.ServerValue.TIMESTAMP, likes: 0
+                });
+                localStorage.setItem(`my_post_comment_${newReplyRef.key}`, 'true');
+                textInput.value = '';
+                toggleReplyForm(parentId);
+            }
+        };
+
+        window.toggleCommentLike = function(commentId, postId, isReply, parentId) {
             const hasLiked = localStorage.getItem(`liked_post_comment_${commentId}`);
-            const targetRef = firebase.database().ref(`post_comments/${postId}/${commentId}/likes`);
+            const baseRef = firebase.database().ref(`post_comments/${postId}`);
+            const targetRef = isReply 
+                ? baseRef.child(parentId).child('replies').child(commentId).child('likes')
+                : baseRef.child(commentId).child('likes');
 
             targetRef.transaction((currentLikes) => {
                 if (hasLiked) {
@@ -670,19 +762,15 @@
             });
         };
 
-        window.deleteComment = function(commentId, postId) {
+        window.deleteComment = function(commentId, postId, isReply, parentId) {
             if (confirm("Yakin ingin menarik pesan ini selamanya?")) {
-                firebase.database().ref(`post_comments/${postId}/${commentId}`).remove();
+                const baseRef = firebase.database().ref(`post_comments/${postId}`);
+                const targetRef = isReply 
+                    ? baseRef.child(parentId).child('replies').child(commentId)
+                    : baseRef.child(commentId);
+                    
+                targetRef.remove();
                 localStorage.removeItem(`my_post_comment_${commentId}`);
-            }
-        };
-
-        window.editComment = function(commentId, postId, oldText) {
-            const newText = prompt("Edit pesan Anda:", oldText);
-            if (newText !== null && newText.trim() !== "" && newText !== oldText) {
-                firebase.database().ref(`post_comments/${postId}/${commentId}`).update({ 
-                    text: newText.trim() 
-                });
             }
         };
 
