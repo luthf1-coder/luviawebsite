@@ -100,13 +100,15 @@
         }
 
         /* BADGE VIEWERS DI POJOK KANAN BAWAH */
+        /* BADGE VIEWERS DI POJOK KANAN BAWAH DIBUAT TRANSPARAN KACA */
         .viewer-badge {
             position: absolute;
             bottom: 8px;
             right: 8px;
-            background: rgba(0, 0, 0, 0.65);
-            backdrop-filter: blur(4px);
-            -webkit-backdrop-filter: blur(4px);
+            background: rgba(255, 255, 255, 0.15); /* Latar transparan */
+            backdrop-filter: blur(8px);
+            -webkit-backdrop-filter: blur(8px);
+            border: 1px solid rgba(255, 255, 255, 0.2); /* Garis kaca tipis */
             color: white;
             padding: 4px 8px;
             border-radius: 4px;
@@ -116,7 +118,6 @@
             align-items: center;
             gap: 5px;
             z-index: 5;
-            pointer-events: none; /* Biar tetap bisa klik gambar di bawahnya */
         }
 
         /* Ikon Mata (SVG agar tajam) */
