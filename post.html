@@ -208,12 +208,15 @@
             transition: transform 0.3s ease;
         }
 
+        /* BADGE VIEWERS DI POJOK KANAN BAWAH DIBUAT TRANSPARAN KACA */
         .viewer-badge {
             position: absolute;
             bottom: 8px;
             right: 8px;
-            background: rgba(0, 0, 0, 0.65);
-            backdrop-filter: blur(4px);
+            background: rgba(255, 255, 255, 0.15); /* Latar transparan */
+            backdrop-filter: blur(8px);
+            -webkit-backdrop-filter: blur(8px);
+            border: 1px solid rgba(255, 255, 255, 0.2); /* Garis kaca tipis */
             color: white;
             padding: 4px 8px;
             border-radius: 4px;
@@ -289,13 +292,13 @@
                     <p style="color: #ddd; text-align: center; font-size: 0.9rem; margin-top: 20px;">Memuat komentar...</p>
                 </div>
 
-                <!-- Form Input Komentar -->
+               <!-- Form Input Komentar -->
                 <div class="comment-input-area" style="padding: 15px; border-top: 1px solid rgba(255,255,255,0.3); background: rgba(0,0,0,0.4); margin-top: auto;">
-                    <form id="post-comment-form" style="display: flex; flex-direction: column; gap: 8px;">
-                        <input type="text" id="post-comment-name" placeholder="Nama Anda..." required style="background: transparent; border: none; border-bottom: 1px solid rgba(255, 255, 255, 0.4); color: white; padding: 6px; outline: none; font-size: 0.9rem;">
-                        <textarea id="post-comment-text" placeholder="Tambahkan komentar..." required style="background: transparent; border: none; border-bottom: 1px solid rgba(255, 255, 255, 0.4); color: white; padding: 6px; outline: none; resize: none; min-height: 35px; font-family: inherit; font-size: 0.9rem;"></textarea>
+                    <form id="post-comment-form" style="display: flex; flex-direction: column; gap: 8px; width: 100%;">
+                        <input type="text" id="post-comment-name" placeholder="Nama Anda..." required style="width: 100%; box-sizing: border-box; background: transparent; border: none; border-bottom: 1px solid rgba(255, 255, 255, 0.4); color: white; padding: 6px; outline: none; font-size: 0.9rem;">
+                        <textarea id="post-comment-text" placeholder="Tambahkan komentar..." required style="width: 100%; box-sizing: border-box; background: transparent; border: none; border-bottom: 1px solid rgba(255, 255, 255, 0.4); color: white; padding: 6px; outline: none; resize: none; min-height: 35px; font-family: inherit; font-size: 0.9rem;"></textarea>
                         
-                        <div style="display: flex; justify-content: flex-end; gap: 10px; margin-top: 5px;">
+                        <div style="display: flex; justify-content: flex-end; gap: 10px; margin-top: 5px; width: 100%;">
                             <button type="button" onclick="document.getElementById('post-comment-text').value=''" style="background: transparent; border: none; color: #fff; cursor: pointer; padding: 5px 12px; border-radius: 15px; font-size: 0.85rem;">Batal</button>
                             <button type="submit" style="background: linear-gradient(45deg, #8c52ff, #ff914d); color: white; border: none; cursor: pointer; padding: 5px 15px; border-radius: 15px; font-weight: bold; font-size: 0.85rem;">Kirim</button>
                         </div>
@@ -452,32 +455,42 @@
                 mediaContainer.innerHTML = `<img src="${data.videoUrl}" alt="Foto Postingan">`;
             }
 
-            // Sistem Like Sederhana
+           // Sistem Like Postingan Utama
             const likeBtn = document.getElementById('btn-like-post');
             const likeCountEl = document.getElementById('post-like-count');
-            let hasLiked = localStorage.getItem('liked_post_' + id);
             
-            // Ambil jumlah like dari firebase (jika kita punya path post_likes)
+            // Ambil jumlah like dari firebase secara realtime
             firebase.database().ref('post_likes/' + id).on('value', snap => {
                 const totalLikes = snap.val() || 0;
                 likeCountEl.innerText = totalLikes;
-                likeBtn.style.color = hasLiked ? '#ff914d' : '#fff';
+                // Selalu cek ulang status dari localStorage setiap ada perubahan
+                likeBtn.style.color = localStorage.getItem('liked_post_' + id) ? '#ff914d' : '#fff';
             });
 
-            likeBtn.addEventListener('click', () => {
+            // Pastikan pakai onclick agar langsung responsif
+            likeBtn.onclick = () => {
+                let currentHasLiked = localStorage.getItem('liked_post_' + id);
                 const likesRef = firebase.database().ref('post_likes/' + id);
+                
+                // 1. Ubah UI seketika biar responsif
+                if (currentHasLiked) {
+                    localStorage.removeItem('liked_post_' + id);
+                    likeBtn.style.color = '#fff';
+                } else {
+                    localStorage.setItem('liked_post_' + id, 'true');
+                    likeBtn.style.color = '#ff914d';
+                }
+
+                // 2. Kirim transaksi secara aman ke database
                 likesRef.transaction(currentLikes => {
-                    if (hasLiked) {
-                        localStorage.removeItem('liked_post_' + id);
-                        hasLiked = false;
-                        return (currentLikes || 1) - 1;
+                    let newLikes = currentLikes || 0;
+                    if (currentHasLiked) {
+                        return Math.max(0, newLikes - 1); // Cegah angka jadi minus
                     } else {
-                        localStorage.setItem('liked_post_' + id, 'true');
-                        hasLiked = true;
-                        return (currentLikes || 0) + 1;
+                        return newLikes + 1;
                     }
                 });
-            });
+            };
         }
 
         // ==========================================
@@ -502,11 +515,12 @@
                 let totalViews = viewsData[key] || 0;
                 let formattedViews = totalViews >= 1000 ? (totalViews / 1000).toFixed(1).replace('.0', '') + 'K' : totalViews;
 
-                const thumb = p.thumbnailUrl || ''; // Memanggil link thumbnail jika ada
+               const thumb = p.thumbnailUrl || ''; // Memanggil link thumbnail jika ada
+                // Disamakan dengan posts.html: Tambah preload="none" dan playsinline agar thumbnail fix
                 const mediaTag = isVideo 
-                    ? `<video src="${p.videoUrl}" poster="${thumb}" muted loop onmouseenter="this.play()" onmouseleave="this.pause()"></video><div class="video-indicator">▶</div>`
+                    ? `<video src="${p.videoUrl}" poster="${thumb}" preload="none" playsinline muted loop onmouseenter="this.play()" onmouseleave="this.pause(); this.load();"></video><div class="video-indicator">▶</div>`
                     : `<img src="${p.videoUrl}" alt="Postingan" loading="lazy">`;
-
+                
                 html += `
                 <a href="post.html?id=${key}" class="grid-item">
                     ${mediaTag}
