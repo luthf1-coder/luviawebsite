@@ -462,18 +462,31 @@
                 likeBtn.style.color = localStorage.getItem('liked_post_' + id) ? '#ff914d' : '#fff';
             });
 
-            likeBtn.onclick = () => {
+            // PERBAIKAN: Update angka langsung di layar (Optimistic UI) & Anti-Spam
+            likeBtn.onclick = function() {
+                // Cegah spam klik (tombol tidak bisa diklik bertubi-tubi dalam waktu sangat cepat)
+                this.disabled = true;
+                setTimeout(() => this.disabled = false, 500);
+
                 let currentHasLiked = localStorage.getItem('liked_post_' + id);
                 const likesRef = firebase.database().ref('post_likes/' + id);
                 
+                // Baca angka yang sedang tampil di layar
+                let currentCount = parseInt(likeCountEl.innerText) || 0;
+                
                 if (currentHasLiked) {
+                    // Batal Suka
                     localStorage.removeItem('liked_post_' + id);
                     likeBtn.style.color = '#fff';
+                    likeCountEl.innerText = Math.max(0, currentCount - 1); // Langsung kurangi angka di layar
                 } else {
+                    // Suka
                     localStorage.setItem('liked_post_' + id, 'true');
                     likeBtn.style.color = '#ff914d';
+                    likeCountEl.innerText = currentCount + 1; // Langsung tambah angka di layar
                 }
 
+                // Proses kirim ke database tetap berjalan di latar belakang
                 likesRef.transaction(currentLikes => {
                     let newLikes = currentLikes || 0;
                     if (currentHasLiked) {
