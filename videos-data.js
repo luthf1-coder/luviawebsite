@@ -715,62 +715,81 @@ function renderAllVideosPage(containerId, list = videoList) {
 
 
 // ==========================================
-// 4. SISTEM PENCARIAN
+// 4. SISTEM PENCARIAN (LIVE SEARCH & REDIRECT)
 // ==========================================
 document.addEventListener('DOMContentLoaded', () => {
-    const searchForms = document.querySelectorAll('.nav-search');
-
-    searchForms.forEach(form => {
-        form.addEventListener('submit', (e) => {
-            e.preventDefault();
-            const input = form.querySelector('input');
-            const query = input ? input.value.trim() : '';
-            if (!query) return;
-
-            const isHomePage = window.location.pathname.endsWith('videos.html') || window.location.pathname === '/' || window.location.pathname.endsWith('/');
-
-            if (isHomePage) {
-                executeSearchOnHome(query);
-            } else {
-                window.location.href = `videos.html?search=${encodeURIComponent(query)}`;
-            }
-        });
-    });
-
-    const urlParams = new URLSearchParams(window.location.search);
-    const searchQuery = urlParams.get('search');
-    const isHomePage = window.location.pathname.endsWith('videos.html') || window.location.pathname === '/' || window.location.pathname.endsWith('/');
-
-    if (searchQuery && isHomePage) {
-        const input = document.querySelector('.nav-search input');
-        if (input) input.value = searchQuery;
-        executeSearchOnHome(searchQuery);
-    }
-});
-
-function executeSearchOnHome(query) {
-    const q = query.toLowerCase();
     
-    // UPDATE: Sekarang pencarian akan mengecek Judul, Genre, Tanggal, dan Deskripsi
-    const filteredVideos = videoList.filter(vid => 
-        (vid.title && vid.title.toLowerCase().includes(q)) || 
-        (vid.genre && vid.genre.toLowerCase().includes(q)) ||
-        (vid.uploadDate && vid.uploadDate.includes(q)) ||
-        (vid.description && vid.description.toLowerCase().includes(q))
-    );
+    // Beri jeda 100ms agar Navbar dari Pusat Komando selesai dicetak ke layar terlebih dahulu
+    setTimeout(() => {
+        const searchInput = document.getElementById('navSearchInput');
+        const searchDropdown = document.getElementById('searchDropdownList');
+        const searchForm = document.getElementById('navSearchForm');
 
-    const sectionTitle = document.querySelector('#recommendations h2');
-    if (sectionTitle) {
-        sectionTitle.innerText = `Hasil Pencarian: "${query}" (${filteredVideos.length})`;
-    }
+        if (searchInput && searchDropdown && searchForm) {
+            
+            // A. FITUR LIVE SEARCH (AUTOCOMPLETE DROPDOWN)
+            searchInput.addEventListener('input', function() {
+                const query = this.value.toLowerCase().trim();
+                if (query.length === 0) { searchDropdown.classList.remove('show'); return; }
 
-    renderSliderRecommendations('home-recommendations-slider', filteredVideos);
+                if (typeof videoList !== 'undefined') {
+                    // Cari berdasarkan Judul, Genre, Tanggal, atau Deskripsi
+                    const results = videoList.filter(vid => 
+                        (vid.title && vid.title.toLowerCase().includes(query)) || 
+                        (vid.genre && vid.genre.toLowerCase().includes(query)) ||
+                        (vid.uploadDate && vid.uploadDate.includes(query)) ||
+                        (vid.description && vid.description.toLowerCase().includes(query))
+                    ).slice(0, 6); 
 
-    const recSection = document.getElementById('recommendations');
-    if (recSection) {
-        recSection.scrollIntoView({ behavior: 'smooth' });
-    }
-}
+                    if (results.length > 0) {
+                        let html = '';
+                        results.forEach(vid => {
+                            html += `
+                                <a href="watch.html?id=${vid.id}" class="search-result-item">
+                                    <img src="${vid.thumb}" alt="Thumbnail">
+                                    <div class="search-result-info">
+                                        <h4>${vid.title}</h4>
+                                        <p>${vid.genre || 'Umum'} • <span id="search-view-${vid.id}">Memuat...</span></p>
+                                    </div>
+                                </a>
+                            `;
+                        });
+                        searchDropdown.innerHTML = html;
+                        searchDropdown.classList.add('show');
+
+                        // Panggil Firebase untuk jumlah view real-time di Dropdown
+                        results.forEach(vid => {
+                            if (typeof listenVideoViews === 'function') {
+                                listenVideoViews(vid.id, vid.defaultViews || 0, (totalViews) => {
+                                    const viewEl = document.getElementById(`search-view-${vid.id}`);
+                                    if (viewEl) viewEl.innerText = `${formatViews(totalViews)}`;
+                                });
+                            }
+                        });
+                    } else {
+                        searchDropdown.innerHTML = `<div style="padding: 15px; text-align: center; color: #bbb; font-size: 0.85rem;">Tidak ada hasil untuk "${query}"</div>`;
+                        searchDropdown.classList.add('show');
+                    }
+                }
+            });
+
+            // Sembunyikan dropdown jika user mengeklik area luar pencarian
+            document.addEventListener('click', function(e) {
+                if (!searchForm.contains(e.target)) searchDropdown.classList.remove('show');
+            });
+
+            // B. AKSI SAAT MENEKAN TOMBOL ENTER ATAU CARI
+            searchForm.addEventListener('submit', (e) => {
+                e.preventDefault();
+                const q = searchInput.value.trim();
+                if (q) {
+                    // Paksa pindah ke halaman videos.html dari halaman manapun (termasuk Index)
+                    window.location.href = `videos.html?search=${encodeURIComponent(q)}`;
+                }
+            });
+        }
+    }, 100); // Akhir dari jeda 100ms
+});
 
 // =================================================================
 // KODE TAMBAHAN UNTUK JALUR HYBRID (BOT GITHUB + ADMIN FIREBASE)
