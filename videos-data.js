@@ -4,6 +4,7 @@
 const webConfig = {
     namaWebsite: "Luvia Insight Verse",
     teksFooter: "© 2026 Luvia Insight Verse (Product by Luvia Studio TV). All Right Reserved",
+    logoNavbar: "Asset Foto/Logo Luvia Insight V﻿erse.png", // <--- TAMBAHAN LOGO NAVBAR DI SINI
     
     // DAFTAR MENU SIDEBAR (Edit namanya atau linknya di sini!)
     menuSidebar: [
@@ -36,6 +37,36 @@ window.toggleSidebar = function() {
 
 // Skrip Otomatis Penggerak Website
 document.addEventListener('DOMContentLoaded', () => {
+
+// 0. CETAK NAVBAR OTOMATIS DARI PUSAT KOMANDO
+    const navbarContainer = document.getElementById('navbar-container');
+    if (navbarContainer) {
+        navbarContainer.innerHTML = `
+            <div class="container nav-container">
+                <!-- 1. Tombol Hamburger -->
+                <button class="hamburger-menu" onclick="toggleSidebar()" title="Menu">☰</button>
+                
+                <!-- 2. Logo Luvia -->
+                <a href="index.html" title="Halaman Utama" style="display: flex; align-items: center; margin-right: 15px;">
+                    <img src="${webConfig.logoNavbar}" alt="Logo Luvia" style="height: 34px; width: auto; object-fit: contain;">
+                </a>
+                
+                <!-- 3. Tombol Riwayat (Back/Forward) -->
+                <div class="nav-history-controls">
+                    <button onclick="history.back()" class="btn-nav-history" title="Kembali">←</button>
+                    <button onclick="history.forward()" class="btn-nav-history" title="Maju">→</button>
+                </div>
+                
+                <!-- 4. Kolom Pencarian & Fitur Live Search -->
+                <form class="nav-search" id="navSearchForm" onsubmit="return false;">
+                    <input type="text" id="navSearchInput" placeholder="Cari video..." aria-label="Cari" autocomplete="off">
+                    <button type="submit">🔍</button>
+                    <div class="search-dropdown-list" id="searchDropdownList"></div>
+                </form>
+            </div>
+        `;
+    }
+    
     // 1. CETAK SIDEBAR OTOMATIS
     const sidebarContainer = document.getElementById('sidebar-container');
     if (sidebarContainer) {
