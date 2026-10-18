@@ -420,38 +420,6 @@
                     muted: false,      
                 });
 
-                // (Biarkan logika double tap Plyr di bawahnya tetap sama...)
-            const mediaContainer = document.getElementById('post-media-container');
-            
-            document.getElementById('post-caption-display').innerText = data.caption || "Tidak ada keterangan.";
-            
-            // Logika Waktu
-            if (data.timestamp) {
-                const date = new Date(data.timestamp);
-                document.getElementById('post-time-display').innerText = date.toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' });
-            }
-
-            if (isVideo) {
-                // Gunakan Thumbnail jika ada di database (data.thumbnailUrl), jika tidak, kosong.
-                const thumbUrl = data.thumbnailUrl || 'Asset Foto/Thumbnimail .png'; 
-                
-                mediaContainer.innerHTML = `
-                    <div class="plyr-wrapper">
-                        <video id="plyr-post-player" playsinline poster="${thumbUrl}">
-                            <source src="${data.videoUrl}" type="video/mp4" />
-                        </video>
-                    </div>
-                `;
-
-                // INISIALISASI PLYR DENGAN KONTROL KHUSUS
-                const player = new Plyr('#plyr-post-player', {
-                    // Tombol Play, Rewind, Fast-Forward DIBUANG dari kontrol bawah
-                    controls: ['progress', 'current-time', 'duration', 'mute', 'volume', 'fullscreen'],
-                    clickToPlay: true, // Klik tengah video untuk Play/Pause
-                    autoplay: true,    // Langsung mulai otomatis
-                    muted: false,      // Suara tidak di-mute
-                });
-
                 // FUNGSI KETUK 2X (Double Tap / Double Click) untuk Skip 10 detik
                 let lastTap = 0;
                 const plyrContainer = mediaContainer.querySelector('.plyr-wrapper');
@@ -464,7 +432,7 @@
                         const clickX = e.changedTouches[0].clientX;
                         if (clickX > window.innerWidth / 2) player.forward(10);
                         else player.rewind(10);
-                        e.preventDefault(); // Cegah zoom layar
+                        e.preventDefault(); 
                     }
                     lastTap = currentTime;
                 });
@@ -473,7 +441,6 @@
                 plyrContainer.addEventListener('dblclick', (e) => {
                     const clickX = e.clientX;
                     const containerRect = plyrContainer.getBoundingClientRect();
-                    // Cek posisi klik relatif terhadap lebar wadah video
                     if (clickX > containerRect.left + (containerRect.width / 2)) {
                         player.forward(10);
                     } else {
@@ -482,27 +449,23 @@
                 });
 
             } else {
-                mediaContainer.innerHTML = `<img src="${data.videoUrl}" alt="Foto Postingan">`;
+                mediaContainer.innerHTML = `<img src="${fileUrl}" alt="Foto Postingan">`;
             }
 
-           // Sistem Like Postingan Utama
+            // Sistem Like Postingan Utama
             const likeBtn = document.getElementById('btn-like-post');
             const likeCountEl = document.getElementById('post-like-count');
             
-            // Ambil jumlah like dari firebase secara realtime
             firebase.database().ref('post_likes/' + id).on('value', snap => {
                 const totalLikes = snap.val() || 0;
                 likeCountEl.innerText = totalLikes;
-                // Selalu cek ulang status dari localStorage setiap ada perubahan
                 likeBtn.style.color = localStorage.getItem('liked_post_' + id) ? '#ff914d' : '#fff';
             });
 
-            // Pastikan pakai onclick agar langsung responsif
             likeBtn.onclick = () => {
                 let currentHasLiked = localStorage.getItem('liked_post_' + id);
                 const likesRef = firebase.database().ref('post_likes/' + id);
                 
-                // 1. Ubah UI seketika biar responsif
                 if (currentHasLiked) {
                     localStorage.removeItem('liked_post_' + id);
                     likeBtn.style.color = '#fff';
@@ -511,18 +474,16 @@
                     likeBtn.style.color = '#ff914d';
                 }
 
-                // 2. Kirim transaksi secara aman ke database
                 likesRef.transaction(currentLikes => {
                     let newLikes = currentLikes || 0;
                     if (currentHasLiked) {
-                        return Math.max(0, newLikes - 1); // Cegah angka jadi minus
+                        return Math.max(0, newLikes - 1); 
                     } else {
                         return newLikes + 1;
                     }
                 });
             };
         }
-
         // ==========================================
         // FUNGSI RENDER POSTINGAN LAINNYA
         // ==========================================
@@ -530,7 +491,7 @@
             const container = document.getElementById('other-posts-grid');
             let html = '';
             
-            const keys = Object.keys(postsData).reverse().filter(k => k !== currentPostId).slice(0, 6); // Ambil maks 6 post
+            const keys = Object.keys(postsData).reverse().filter(k => k !== currentPostId).slice(0, 6);
             
             if (keys.length === 0) {
                 container.innerHTML = '<p style="color:#888;">Tidak ada postingan lain.</p>';
@@ -541,7 +502,6 @@
 
             keys.forEach(key => {
                 const p = postsData[key];
-                // PERBAIKAN: Cegah Crash kalau postingan berupa Gambar/Foto
                 const fileUrl = p.videoUrl || p.imageUrl || '';
                 const isVideo = fileUrl.includes('.mp4');
                 
@@ -552,13 +512,6 @@
                 const mediaTag = isVideo 
                     ? `<video src="${fileUrl}" poster="${thumb}" preload="none" playsinline muted loop onmouseenter="this.play()" onmouseleave="this.pause(); this.load();"></video><div class="video-indicator">▶</div>`
                     : `<img src="${fileUrl}" alt="Postingan" loading="lazy">`;
-                let formattedViews = totalViews >= 1000 ? (totalViews / 1000).toFixed(1).replace('.0', '') + 'K' : totalViews;
-
-               const thumb = p.thumbnailUrl || ''; // Memanggil link thumbnail jika ada
-                // Disamakan dengan posts.html: Tambah preload="none" dan playsinline agar thumbnail fix
-                const mediaTag = isVideo 
-                    ? `<video src="${p.videoUrl}" poster="${thumb}" preload="none" playsinline muted loop onmouseenter="this.play()" onmouseleave="this.pause(); this.load();"></video><div class="video-indicator">▶</div>`
-                    : `<img src="${p.videoUrl}" alt="Postingan" loading="lazy">`;
                 
                 html += `
                 <a href="post.html?id=${key}" class="grid-item">
@@ -569,7 +522,7 @@
             
             container.innerHTML = html;
         }
-
+        
         function incrementPostViews(id) {
             firebase.database().ref('post_views/' + id).transaction(current => (current || 0) + 1);
         }
