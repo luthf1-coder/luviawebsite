@@ -59,7 +59,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 
                 <!-- 4. Kolom Pencarian & Fitur Live Search -->
                 <form class="nav-search" id="navSearchForm" onsubmit="return false;">
-                    <input type="text" id="navSearchInput" placeholder="Cari video..." aria-label="Cari" autocomplete="off">
+                    <input type="text" id="navSearchInput" placeholder="Search Videos..." aria-label="Cari" autocomplete="off">
                     <button type="submit">🔍</button>
                     <div class="search-dropdown-list" id="searchDropdownList"></div>
                 </form>
