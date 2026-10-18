@@ -390,7 +390,37 @@
         // FUNGSI RENDER POSTINGAN UTAMA
         // ==========================================
         function renderMainPost(data, id) {
-            const isVideo = data.videoUrl && data.videoUrl.includes('.mp4');
+            // PERBAIKAN: Deteksi otomatis apakah ini foto atau video dari database
+            const fileUrl = data.videoUrl || data.imageUrl || '';
+            const isVideo = fileUrl.includes('.mp4');
+            const mediaContainer = document.getElementById('post-media-container');
+            
+            document.getElementById('post-caption-display').innerText = data.caption || "Tidak ada keterangan.";
+            
+            // Logika Waktu
+            if (data.timestamp) {
+                const date = new Date(data.timestamp);
+                document.getElementById('post-time-display').innerText = date.toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' });
+            }
+
+            if (isVideo) {
+                const thumbUrl = data.thumbnailUrl || 'Asset Foto/Thumbnimail .png'; 
+                mediaContainer.innerHTML = `
+                    <div class="plyr-wrapper">
+                        <video id="plyr-post-player" playsinline poster="${thumbUrl}">
+                            <source src="${fileUrl}" type="video/mp4" />
+                        </video>
+                    </div>
+                `;
+
+                const player = new Plyr('#plyr-post-player', {
+                    controls: ['progress', 'current-time', 'duration', 'mute', 'volume', 'fullscreen'],
+                    clickToPlay: true, 
+                    autoplay: true,    
+                    muted: false,      
+                });
+
+                // (Biarkan logika double tap Plyr di bawahnya tetap sama...)
             const mediaContainer = document.getElementById('post-media-container');
             
             document.getElementById('post-caption-display').innerText = data.caption || "Tidak ada keterangan.";
@@ -511,8 +541,17 @@
 
             keys.forEach(key => {
                 const p = postsData[key];
-                const isVideo = p.videoUrl.includes('.mp4');
+                // PERBAIKAN: Cegah Crash kalau postingan berupa Gambar/Foto
+                const fileUrl = p.videoUrl || p.imageUrl || '';
+                const isVideo = fileUrl.includes('.mp4');
+                
                 let totalViews = viewsData[key] || 0;
+                let formattedViews = totalViews >= 1000 ? (totalViews / 1000).toFixed(1).replace('.0', '') + 'K' : totalViews;
+
+                const thumb = p.thumbnailUrl || ''; 
+                const mediaTag = isVideo 
+                    ? `<video src="${fileUrl}" poster="${thumb}" preload="none" playsinline muted loop onmouseenter="this.play()" onmouseleave="this.pause(); this.load();"></video><div class="video-indicator">▶</div>`
+                    : `<img src="${fileUrl}" alt="Postingan" loading="lazy">`;
                 let formattedViews = totalViews >= 1000 ? (totalViews / 1000).toFixed(1).replace('.0', '') + 'K' : totalViews;
 
                const thumb = p.thumbnailUrl || ''; // Memanggil link thumbnail jika ada
