@@ -1,138 +1,4 @@
 // ==========================================
-// PUSAT KOMANDO GLOBAL WEBSITE LUVIA
-// ==========================================
-const webConfig = {
-    namaWebsite: "Luvia Insight Verse",
-    teksFooter: "© 2026 Luvia Insight Verse (Product by Luvia Studio TV). All Right Reserved",
-    logoNavbar: "Asset Foto/Logo Luvia Insight V﻿erse.png", // <--- TAMBAHAN LOGO NAVBAR DI SINI
-    
-    // DAFTAR MENU SIDEBAR (Edit namanya atau linknya di sini!)
-    menuSidebar: [
-    {
-    "id": "kick_vod_133969675",
-    "title": "VOD PLAY LIVE STREAMING LUVIA STUDIO TV",
-    "defaultViews": 0,
-    "thumb": "Asset Foto/Thumbnimail_VOD_LIVE.png",
-    "sources": [],
-    "driveEmbed": "https://drive.google.com/file/d/1cWPBhueR2YyeZfGRyA4QtMqhOd_m0pDi/preview",
-    "youtubeId": "",
-    "rumbleEmbed": "",
-    "downloadUrl": "https://drive.google.com/uc?export=download&id=1cWPBhueR2YyeZfGRyA4QtMqhOd_m0pDi",
-    "description": "VOD LS TV pada 24 Oktober 2026. Perhatian! Untuk menonton VOD, Disarankan untuk opsi Menonton full screen. Agar Kontrol Video tidak terhalang Oleh Bingkai Player!!!. Report di kolom komentar Jika ada error atau Video tidak dapat Diputar!!.",
-    "genre": "Video On Demand",
-    "uploadDate": "2026-10-24"
-},
-        { nama: "Home", link: "index.html" },
-        { nama: "Videos", link: "videos.html" },
-        { nama: "Program TV", link: "index.html#projects" },
-        { nama: "Live Streaming", link: "index.html#livestreaming" },
-        { nama: "Help Center", link: "support.html" },
-        { nama: "About Us", link: "index.html#about" }
-    ],
-
-    // DAFTAR SOSIAL MEDIA
-    sosialMedia: [
-        { nama: "YouTube", link: "https://www.youtube.com/@luthfi-fx", gambar: "Asset Foto/logo/2.png" },
-        { nama: "Instagram", link: "https://www.instagram.com/fauzanlathif_86", gambar: "Asset Foto/logo/1.png" },
-        { nama: "TikTok", link: "https://www.tiktok.com/@fauzan_lathif", gambar: "Asset Foto/logo/3.png" },
-        { nama: "UVideo", link: "https://www.dubbindo.site/@luviastudioofficialtv", gambar: "Asset Foto/logo/5.png" }
-    ]
-};
-
-// Fungsi Global untuk Membuka/Menutup Sidebar dari Semua Halaman
-window.toggleSidebar = function() {
-    const sidebar = document.getElementById('sidebar');
-    const overlay = document.getElementById('sidebarOverlay');
-    if (sidebar && overlay) {
-        sidebar.classList.toggle('active');
-        overlay.classList.toggle('active');
-    }
-};
-
-// Skrip Otomatis Penggerak Website
-document.addEventListener('DOMContentLoaded', () => {
-
-// 0. CETAK NAVBAR OTOMATIS DARI PUSAT KOMANDO
-    const navbarContainer = document.getElementById('navbar-container');
-    if (navbarContainer) {
-        navbarContainer.innerHTML = `
-            <div class="container nav-container">
-                <!-- 1. Tombol Hamburger -->
-                <button class="hamburger-menu" onclick="toggleSidebar()" title="Menu">☰</button>
-                
-                <!-- 2. Logo Luvia -->
-                <a href="index.html" title="Halaman Utama" style="display: flex; align-items: center; margin-right: 15px;">
-                    <img src="${webConfig.logoNavbar}" alt="Logo Luvia" style="height: 34px; width: auto; object-fit: contain;">
-                </a>
-                
-                <!-- 3. Tombol Riwayat (Back/Forward) -->
-                <div class="nav-history-controls">
-                    <button onclick="history.back()" class="btn-nav-history" title="Kembali">←</button>
-                    <button onclick="history.forward()" class="btn-nav-history" title="Maju">→</button>
-                </div>
-                
-                <!-- 4. Kolom Pencarian & Fitur Live Search -->
-                <form class="nav-search" id="navSearchForm" onsubmit="return false;">
-                    <input type="text" id="navSearchInput" placeholder="Search Videos..." aria-label="Cari" autocomplete="off">
-                    <button type="submit">🔍</button>
-                    <div class="search-dropdown-list" id="searchDropdownList"></div>
-                </form>
-            </div>
-        `;
-    }
-    
-    // 1. CETAK SIDEBAR OTOMATIS
-    const sidebarContainer = document.getElementById('sidebar-container');
-    if (sidebarContainer) {
-        let linksHTML = '';
-        webConfig.menuSidebar.forEach(menu => {
-            linksHTML += `<a href="${menu.link}" onclick="toggleSidebar()">${menu.nama}</a>`;
-        });
-
-        sidebarContainer.innerHTML = `
-            <div class="sidebar-overlay" id="sidebarOverlay" onclick="toggleSidebar()"></div>
-            <div class="sidebar" id="sidebar">
-                <div class="sidebar-header">
-                    <a href="index.html" class="sidebar-brand">
-                        <img src="Asset Foto/Thumbnimail .png" alt="Logo">
-                        <span class="nama-web-otomatis">${webConfig.namaWebsite}</span>
-                    </a>
-                    <button class="close-btn" onclick="toggleSidebar()">×</button>
-                </div>
-                <div class="sidebar-links">
-                    ${linksHTML}
-                </div>
-                <div class="sidebar-footer">
-                    <p style="font-size: 0.8rem; color: #bbb; text-align: center;">${webConfig.teksFooter}</p>
-                </div>
-            </div>
-        `;
-    }
-
-    // 2. Tembak Teks Judul (Bila ada elemen lain di luar sidebar)
-    document.querySelectorAll('.nama-web-otomatis').forEach(el => {
-        el.innerText = webConfig.namaWebsite;
-    });
-
-    // 3. Tembak Teks Footer
-    const footerText = document.getElementById('teks-footer-copyright');
-    if (footerText) footerText.innerText = webConfig.teksFooter;
-
-    // 4. CETAK IKON SOSIAL MEDIA OTOMATIS
-    const socialContainer = document.getElementById('footer-social-container');
-    if (socialContainer) {
-        let socialHTML = '';
-        webConfig.sosialMedia.forEach(sosmed => {
-            socialHTML += `
-                <a href="${sosmed.link}" target="_blank" class="social-icon" title="${sosmed.nama}">
-                    <img src="${sosmed.gambar}" alt="${sosmed.nama}">
-                </a>
-            `;
-        });
-        socialContainer.innerHTML = socialHTML;
-    }
-});
-// ==========================================
 // 1. KONFIGURASI FIREBASE REALTIME DATABASE
 // ==========================================
 // Ganti nilai firebaseConfig di bawah ini dengan konfigurasi Firebase milikmu!
@@ -154,6 +20,20 @@ if (typeof firebase !== 'undefined' && !firebase.apps.length) {
 
 // Pusat Data Video
 const videoList = [
+    {
+    "id": "kick_vod_133969675",
+    "title": "VOD PLAY LIVE STREAMING LUVIA STUDIO TV",
+    "defaultViews": 0,
+    "thumb": "Asset Foto/Thumbnimail_VOD_LIVE.png",
+    "sources": [],
+    "driveEmbed": "https://drive.google.com/file/d/1cWPBhueR2YyeZfGRyA4QtMqhOd_m0pDi/preview",
+    "youtubeId": "",
+    "rumbleEmbed": "",
+    "downloadUrl": "https://drive.google.com/uc?export=download&id=1cWPBhueR2YyeZfGRyA4QtMqhOd_m0pDi",
+    "description": "VOD LS TV pada 24 Oktober 2026. Perhatian! Untuk menonton VOD, Disarankan untuk opsi Menonton full screen. Agar Kontrol Video tidak terhalang Oleh Bingkai Player!!!. Report di kolom komentar Jika ada error atau Video tidak dapat Diputar!!.",
+    "genre": "Video On Demand",
+    "uploadDate": "2026-10-24"
+},
     {
     "id": "kick_vod_129368659",
     "title": "VOD PLAY LIVE STREAMING LUVIA STUDIO TV",
@@ -368,6 +248,128 @@ const videoList = [
     },
 ];
 
+
+// ==========================================
+// PUSAT KOMANDO GLOBAL WEBSITE LUVIA
+// ==========================================
+const webConfig = {
+    namaWebsite: "Luvia Insight Verse",
+    teksFooter: "© 2026 Luvia Insight Verse (Product by Luvia Studio TV). All Right Reserved",
+    logoNavbar: "Asset Foto/Logo Luvia Insight V﻿erse.png", // <--- TAMBAHAN LOGO NAVBAR DI SINI
+    
+    // DAFTAR MENU SIDEBAR (Edit namanya atau linknya di sini!)
+    menuSidebar: [
+        
+        { nama: "Home", link: "index.html" },
+        { nama: "Videos", link: "videos.html" },
+        { nama: "Program TV", link: "index.html#projects" },
+        { nama: "Live Streaming", link: "index.html#livestreaming" },
+        { nama: "Help Center", link: "support.html" },
+        { nama: "About Us", link: "index.html#about" }
+    ],
+
+    // DAFTAR SOSIAL MEDIA
+    sosialMedia: [
+        { nama: "YouTube", link: "https://www.youtube.com/@luthfi-fx", gambar: "Asset Foto/logo/2.png" },
+        { nama: "Instagram", link: "https://www.instagram.com/fauzanlathif_86", gambar: "Asset Foto/logo/1.png" },
+        { nama: "TikTok", link: "https://www.tiktok.com/@fauzan_lathif", gambar: "Asset Foto/logo/3.png" },
+        { nama: "UVideo", link: "https://www.dubbindo.site/@luviastudioofficialtv", gambar: "Asset Foto/logo/5.png" }
+    ]
+};
+
+// Fungsi Global untuk Membuka/Menutup Sidebar dari Semua Halaman
+window.toggleSidebar = function() {
+    const sidebar = document.getElementById('sidebar');
+    const overlay = document.getElementById('sidebarOverlay');
+    if (sidebar && overlay) {
+        sidebar.classList.toggle('active');
+        overlay.classList.toggle('active');
+    }
+};
+
+// Skrip Otomatis Penggerak Website
+document.addEventListener('DOMContentLoaded', () => {
+
+// 0. CETAK NAVBAR OTOMATIS DARI PUSAT KOMANDO
+    const navbarContainer = document.getElementById('navbar-container');
+    if (navbarContainer) {
+        navbarContainer.innerHTML = `
+            <div class="container nav-container">
+                <!-- 1. Tombol Hamburger -->
+                <button class="hamburger-menu" onclick="toggleSidebar()" title="Menu">☰</button>
+                
+                <!-- 2. Logo Luvia -->
+                <a href="index.html" title="Halaman Utama" style="display: flex; align-items: center; margin-right: 15px;">
+                    <img src="${webConfig.logoNavbar}" alt="Logo Luvia" style="height: 34px; width: auto; object-fit: contain;">
+                </a>
+                
+                <!-- 3. Tombol Riwayat (Back/Forward) -->
+                <div class="nav-history-controls">
+                    <button onclick="history.back()" class="btn-nav-history" title="Kembali">←</button>
+                    <button onclick="history.forward()" class="btn-nav-history" title="Maju">→</button>
+                </div>
+                
+                <!-- 4. Kolom Pencarian & Fitur Live Search -->
+                <form class="nav-search" id="navSearchForm" onsubmit="return false;">
+                    <input type="text" id="navSearchInput" placeholder="Search Videos..." aria-label="Cari" autocomplete="off">
+                    <button type="submit">🔍</button>
+                    <div class="search-dropdown-list" id="searchDropdownList"></div>
+                </form>
+            </div>
+        `;
+    }
+    
+    // 1. CETAK SIDEBAR OTOMATIS
+    const sidebarContainer = document.getElementById('sidebar-container');
+    if (sidebarContainer) {
+        let linksHTML = '';
+        webConfig.menuSidebar.forEach(menu => {
+            linksHTML += `<a href="${menu.link}" onclick="toggleSidebar()">${menu.nama}</a>`;
+        });
+
+        sidebarContainer.innerHTML = `
+            <div class="sidebar-overlay" id="sidebarOverlay" onclick="toggleSidebar()"></div>
+            <div class="sidebar" id="sidebar">
+                <div class="sidebar-header">
+                    <a href="index.html" class="sidebar-brand">
+                        <img src="Asset Foto/Thumbnimail .png" alt="Logo">
+                        <span class="nama-web-otomatis">${webConfig.namaWebsite}</span>
+                    </a>
+                    <button class="close-btn" onclick="toggleSidebar()">×</button>
+                </div>
+                <div class="sidebar-links">
+                    ${linksHTML}
+                </div>
+                <div class="sidebar-footer">
+                    <p style="font-size: 0.8rem; color: #bbb; text-align: center;">${webConfig.teksFooter}</p>
+                </div>
+            </div>
+        `;
+    }
+
+    // 2. Tembak Teks Judul (Bila ada elemen lain di luar sidebar)
+    document.querySelectorAll('.nama-web-otomatis').forEach(el => {
+        el.innerText = webConfig.namaWebsite;
+    });
+
+    // 3. Tembak Teks Footer
+    const footerText = document.getElementById('teks-footer-copyright');
+    if (footerText) footerText.innerText = webConfig.teksFooter;
+
+    // 4. CETAK IKON SOSIAL MEDIA OTOMATIS
+    const socialContainer = document.getElementById('footer-social-container');
+    if (socialContainer) {
+        let socialHTML = '';
+        webConfig.sosialMedia.forEach(sosmed => {
+            socialHTML += `
+                <a href="${sosmed.link}" target="_blank" class="social-icon" title="${sosmed.nama}">
+                    <img src="${sosmed.gambar}" alt="${sosmed.nama}">
+                </a>
+            `;
+        });
+        socialContainer.innerHTML = socialHTML;
+    }
+});
 
 // ==========================================
 // FUNGSI BANTUAN TANGGAL & WAKTU (BARU DITAMBAHKAN)
