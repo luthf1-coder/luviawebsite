@@ -21,6 +21,20 @@ if (typeof firebase !== 'undefined' && !firebase.apps.length) {
 // Pusat Data Video
 const videoList = [
     {
+    "id": "kick_vod_134882134",
+    "title": "VOD PLAY LIVE STREAMING LUVIA STUDIO TV",
+    "defaultViews": 0,
+    "thumb": "Asset Foto/Thumbnimail_VOD_LIVE.png",
+    "sources": [],
+    "driveEmbed": "https://drive.google.com/file/d/1URGaJsj7tcV4EXXJeWJUGJQNkICdFIbv/preview",
+    "youtubeId": "",
+    "rumbleEmbed": "",
+    "downloadUrl": "https://drive.google.com/uc?export=download&id=1URGaJsj7tcV4EXXJeWJUGJQNkICdFIbv",
+    "description": "VOD LS TV pada 29 Oktober 2026. Perhatian! Untuk menonton VOD, Disarankan untuk opsi Menonton full screen. Agar Kontrol Video tidak terhalang Oleh Bingkai Player!!!. Report di kolom komentar Jika ada error atau Video tidak dapat Diputar!!.",
+    "genre": "Video On Demand",
+    "uploadDate": "2026-10-29"
+},
+    {
     "id": "kick_vod_133969675",
     "title": "VOD PLAY LIVE STREAMING LUVIA STUDIO TV",
     "defaultViews": 0,
