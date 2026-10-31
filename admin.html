@@ -389,6 +389,20 @@
     </div>
     <div class="an-box"><canvas id="an-chart" height="110"></canvas></div>
 
+<div class="an-box">
+    <h4 id="aw-judul">🌐 Analitik Website</h4>
+    <div class="an-grid3" id="aw-kartu"></div>
+
+    <h4 style="margin-top:22px;">Pengunjung Per Halaman</h4>
+    <div style="overflow-x:auto;"><table class="an-top" id="aw-tabel"></table></div>
+    <p style="color:#999; font-size:12px; margin:10px 0 0;">
+        Catatan: "Total semua halaman" adalah penjumlahan angka tiap halaman. Satu orang yang membuka
+        beberapa halaman dihitung di tiap halaman itu, jadi angkanya bisa lebih besar daripada
+        "Total pengunjung" di atas (yang menghitung tiap orang hanya sekali).
+    </p>
+</div>
+
+    
     <div class="an-box">
         <h4>Pengunjung Baru vs Berulang</h4>
         <div class="an-grid3" id="an-pengunjung"></div>
@@ -1697,5 +1711,78 @@ function renderPerformaTerbaru() {
 }
 </script>
 
+<script>
+// Peta: ID pengunjung -> tanggal pertama kali terlihat (untuk periode yang dipilih)
+function anPetaPengunjung(hariList) {
+    const peta = {};
+    hariList.forEach(h => {
+        const dv = anData.visitors[h] || {};
+        Object.keys(dv).forEach(v => { peta[v] = dv[v]; });
+    });
+    return peta;
+}
+
+// Teks perkembangan: ▲ +3 (50%) / ▼ 2 (25%) / ● 0 (0%)
+function anPerubahan(now, prev) {
+    const selisih = now - prev;
+    const warna = selisih > 0 ? '#4caf50' : (selisih < 0 ? '#ff5252' : '#999');
+    const tanda = selisih > 0 ? '▲ +' : (selisih < 0 ? '▼ ' : '● ');
+    const pct = prev > 0 ? Math.round(Math.abs(selisih) / prev * 100) + '%' : (now > 0 ? 'sebelumnya 0' : '0%');
+    return '<span style="color:' + warna + '; font-weight:bold;">' + tanda + Math.abs(selisih) + ' (' + pct + ')</span>';
+}
+
+function renderAnalitikWebsite() {
+    const n = anRange;
+    const hariList = anDaftarHari(n, 0);
+    const now = anHitung(hariList);
+    const prev = anHitung(anDaftarHari(n, n));
+    const peta = anPetaPengunjung(hariList);
+    const mulai = hariList[0];
+
+    anSet('aw-judul', '🌐 Analitik Website — ' + n + ' hari terakhir');
+
+    const kartu = (label, a, b, warna) =>
+        '<div class="an-mini"><div class="lbl">' + label + '</div>' +
+        '<div class="num" style="color:' + warna + ';">' + a + '</div>' +
+        '<div class="lbl">' + anPerubahan(a, b) + '<br>dari ' + n + ' hari sebelumnya</div></div>';
+    anSet('aw-kartu',
+        kartu('Total pengunjung', now.unik, prev.unik, '#ffffff') +
+        kartu('Pengunjung baru', now.baru, prev.baru, '#3ea6ff') +
+        kartu('Pengunjung berulang', now.kembali, prev.kembali, '#ff914d'));
+
+    // Per halaman: total, baru, berulang
+    const halaman = Object.keys(now.pageVis).map(pg => {
+        const ids = Object.keys(now.pageVis[pg]);
+        const baru = ids.filter(v => peta[v] && peta[v] >= mulai).length;
+        return {
+            pg: pg, unik: ids.length, baru: baru, kembali: ids.length - baru,
+            kali: now.pageHits[pg] || 0,
+            unikPrev: prev.pageVis[pg] ? Object.keys(prev.pageVis[pg]).length : 0
+        };
+    }).sort((a, b) => b.unik - a.unik);
+
+    const tot = halaman.reduce((s, h) => ({
+        unik: s.unik + h.unik, baru: s.baru + h.baru, kembali: s.kembali + h.kembali,
+        kali: s.kali + h.kali, unikPrev: s.unikPrev + h.unikPrev
+    }), { unik: 0, baru: 0, kembali: 0, kali: 0, unikPrev: 0 });
+
+    const head = '<tr><th>Halaman</th><th>Pengunjung</th><th>Baru</th><th>Berulang</th><th>Dibuka</th><th>Perubahan</th></tr>';
+    const baris = halaman.map(h =>
+        '<tr><td>' + (anLabelHalaman[h.pg] || h.pg) + '</td><td><b>' + h.unik + '</b></td>' +
+        '<td style="color:#3ea6ff;">' + h.baru + '</td><td style="color:#ff914d;">' + h.kembali + '</td>' +
+        '<td>' + h.kali + 'x</td><td>' + anPerubahan(h.unik, h.unikPrev) + '</td></tr>').join('');
+    const total = halaman.length
+        ? '<tr style="background:#222;"><td><b>Total semua halaman</b></td><td><b>' + tot.unik + '</b></td>' +
+          '<td style="color:#3ea6ff;"><b>' + tot.baru + '</b></td><td style="color:#ff914d;"><b>' + tot.kembali + '</b></td>' +
+          '<td><b>' + tot.kali + 'x</b></td><td>' + anPerubahan(tot.unik, tot.unikPrev) + '</td></tr>'
+        : '<tr><td colspan="6" style="color:#bbb;">Belum ada data.</td></tr>';
+    anSet('aw-tabel', head + baris + total);
+}
+
+// Sambungkan ke fungsi lama TANPA mengubahnya: setiap analitik video digambar, analitik website ikut digambar
+const anRenderLama = renderAnalitik;
+renderAnalitik = function () { anRenderLama(); renderAnalitikWebsite(); };
+</script>
+        
 </body>
 </html>
