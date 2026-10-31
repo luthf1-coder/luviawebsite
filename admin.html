@@ -8,7 +8,7 @@
     <link rel="icon" type="image/png" href="Asset Foto/Thumbnimail .png">
     
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-database-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-database-compatz.js"></script>
     <script src="videos-data.js"></script>
     <!-- Pustaka Grafik Analitik -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
@@ -335,6 +335,81 @@
             </div>
         </div>
 
+<div id="tab-analitik" class="panel">
+    <style>
+        .an-range { display:flex; gap:8px; margin-bottom:15px; flex-wrap:wrap; }
+        .an-range button { padding:8px 14px; background:#222; border:1px solid #444; color:#fff; border-radius:20px; cursor:pointer; font-size:13px; }
+        .an-range button.active { background:linear-gradient(45deg,#8c52ff,#ff914d); border:none; font-weight:bold; }
+        .an-title { text-align:center; font-size:20px; font-weight:bold; margin:10px 0 15px; }
+        .an-cards { display:grid; grid-template-columns:repeat(3,1fr); gap:0; border:1px solid #333; border-radius:10px; overflow:hidden; }
+        .an-card { padding:16px 10px; text-align:center; background:#151515; border-right:1px solid #333; }
+        .an-card:last-child { border-right:none; }
+        .an-card .lbl { font-size:13px; color:#bbb; }
+        .an-card .num { font-size:28px; font-weight:bold; margin:6px 0; }
+        .an-card .cmp { font-size:11px; color:#999; font-style:italic; }
+        .an-box { background:#151515; border:1px solid #333; border-radius:10px; padding:16px; margin-top:20px; }
+        .an-box h4 { margin:0 0 12px; color:#ff914d; }
+        .an-grid3 { display:grid; grid-template-columns:repeat(3,1fr); gap:10px; }
+        .an-mini { background:#222; border-radius:8px; padding:12px; text-align:center; }
+        .an-mini .num { font-size:24px; font-weight:bold; }
+        .an-mini .lbl { font-size:12px; color:#bbb; }
+        .an-row { display:flex; align-items:center; gap:10px; margin-bottom:10px; font-size:13px; }
+        .an-row .nm { width:130px; flex-shrink:0; }
+        .an-bar { flex:1; height:10px; background:#2a2a2a; border-radius:5px; overflow:hidden; }
+        .an-bar div { height:100%; background:linear-gradient(90deg,#8c52ff,#ff914d); }
+        .an-row .vl { width:190px; text-align:right; flex-shrink:0; color:#ddd; font-size:12px; }
+        .an-perf { display:grid; grid-template-columns:repeat(2,1fr); gap:15px; }
+        .an-perf img { width:100%; aspect-ratio:16/9; object-fit:cover; border-radius:8px; background:#000; }
+        .an-line { display:flex; justify-content:space-between; padding:7px 0; border-bottom:1px solid #2a2a2a; font-size:13px; }
+        .an-top { width:100%; border-collapse:collapse; font-size:13px; }
+        .an-top th, .an-top td { padding:8px 6px; text-align:left; border-bottom:1px solid #2a2a2a; }
+        .an-top th { color:#ff914d; }
+        @media (max-width:700px) {
+            .an-perf { grid-template-columns:1fr; }
+            .an-grid3 { grid-template-columns:1fr; }
+            .an-row { flex-wrap:wrap; }
+            .an-row .nm, .an-row .vl { width:100%; text-align:left; }
+            .an-card .num { font-size:22px; }
+        }
+    </style>
+
+    <h3 style="margin-top:0;">📊 Analitik Website</h3>
+    <div class="an-range">
+        <button class="active" onclick="setAnRange(7, this)">7 hari</button>
+        <button onclick="setAnRange(14, this)">2 minggu</button>
+        <button onclick="setAnRange(28, this)">28 hari</button>
+    </div>
+    <p id="an-status" style="color:#bbb; font-size:13px;"></p>
+
+    <div id="an-judul" class="an-title">Memuat...</div>
+    <div class="an-cards">
+        <div class="an-card"><div class="lbl">Penayangan</div><div class="num" id="an-c-views">0</div><div class="cmp" id="an-c-views-cmp"></div></div>
+        <div class="an-card"><div class="lbl">Waktu tonton (jam)</div><div class="num" id="an-c-jam">0</div><div class="cmp" id="an-c-jam-cmp"></div></div>
+        <div class="an-card"><div class="lbl">Pengunjung</div><div class="num" id="an-c-unik">0</div><div class="cmp" id="an-c-unik-cmp"></div></div>
+    </div>
+    <div class="an-box"><canvas id="an-chart" height="110"></canvas></div>
+
+    <div class="an-box">
+        <h4>Pengunjung Baru vs Berulang</h4>
+        <div class="an-grid3" id="an-pengunjung"></div>
+    </div>
+
+    <div class="an-box">
+        <h4>Kunjungan Per Halaman <span style="font-weight:normal; color:#999; font-size:12px;">(persen = dari total pengunjung website)</span></h4>
+        <div id="an-halaman"></div>
+    </div>
+
+    <div class="an-box">
+        <h4>Performa Terbaru</h4>
+        <div class="an-perf" id="an-terbaru"><p style="color:#bbb;">Memuat...</p></div>
+    </div>
+
+    <div class="an-box">
+        <h4>Top 10 Video Paling Banyak Ditonton <span style="font-weight:normal; color:#999; font-size:12px;">(sesuai periode di atas)</span></h4>
+        <div style="overflow-x:auto;"><table class="an-top" id="an-top10"></table></div>
+    </div>
+</div>
+   
         <!-- 5. TAMBAH / KELOLA POSTINGAN -->
 <div id="tab-postingan" class="panel">
     <h3 style="margin-top:0;">Upload & Kelola Postingan</h3>
@@ -432,6 +507,7 @@
             const inputPass = document.getElementById('admin-password').value;
             if (isAuto || inputPass === passwordAdmin) {
                 sessionStorage.setItem('admin_logged_in', 'true'); // Simpan sesi login
+                localStorage.setItem('luvia_no_track', '1');
                 document.getElementById('login-overlay').style.display = 'none';
                 document.getElementById('admin-dashboard').style.display = 'block';
                 waktuLoginAdmin = Date.now();
@@ -1395,5 +1471,231 @@ function togglePasswordVisibility() {
         }
 
     </script>
+        
+        <script>
+let anRange = 7;
+let anChart = null;
+let anData = null;
+
+const anLabelHalaman = {
+    index: 'Beranda', videos: 'Daftar Video', watch: 'Menonton Video', posts: 'Feed Postingan',
+    post: 'Detail Postingan', program: 'Program TV', livestream: 'Live Streaming', support: 'Help Center', lainnya: 'Lainnya'
+};
+
+function anAman(s) { return String(s).replace(/[^a-zA-Z0-9_-]/g, '_'); }
+function anFmtTgl(d) {
+    const p = n => String(n).padStart(2, '0');
+    return d.getFullYear() + '-' + p(d.getMonth() + 1) + '-' + p(d.getDate());
+}
+// jumlah hari berakhir hari ini; geser = mundur berapa hari (untuk periode pembanding)
+function anDaftarHari(jumlah, geser) {
+    const out = [];
+    for (let i = jumlah - 1 + geser; i >= geser; i--) {
+        const d = new Date(); d.setDate(d.getDate() - i);
+        out.push(anFmtTgl(d));
+    }
+    return out;
+}
+function anDurasi(s) {
+    s = Math.round(s || 0);
+    if (s >= 3600) return Math.floor(s / 3600) + ' jam ' + Math.floor((s % 3600) / 60) + ' menit';
+    if (s >= 60) return Math.floor(s / 60) + ' menit ' + (s % 60) + ' detik';
+    return s + ' detik';
+}
+function anBandingkan(now, prev, hari) {
+    if (!prev) return 'Belum ada data ' + hari + ' hari sebelumnya';
+    const pct = Math.round(((now - prev) / prev) * 100);
+    if (pct === 0) return 'Sama seperti ' + hari + ' hari sebelumnya';
+    return Math.abs(pct) + '% ' + (pct > 0 ? 'lebih tinggi' : 'lebih rendah') + ' daripada ' + hari + ' hari sebelumnya';
+}
+function anJudulVideo(key) {
+    const v = (typeof videoList !== 'undefined') ? videoList.find(x => anAman(x.id) === key) : null;
+    return v ? { judul: v.title, tgl: v.uploadDate || '' } : { judul: key, tgl: '' };
+}
+function anSet(id, html) { const el = document.getElementById(id); if (el) el.innerHTML = html; }
+
+function anBaca(path, mulai) {
+    return firebase.database().ref(path).orderByKey().startAt(mulai).once('value').then(s => s.val() || {});
+}
+
+function muatAnalitik() {
+    anSet('an-status', 'Memuat data...');
+    const mulai = anDaftarHari(56, 0)[0];
+    Promise.all([
+        anBaca('analytics/daily_visitors', mulai),
+        anBaca('analytics/page_hits', mulai),
+        anBaca('analytics/video_views_daily', mulai),
+        anBaca('analytics/video_watch', mulai),
+        anBaca('analytics/post_views_daily', mulai)
+    ]).then(r => {
+        anData = { visitors: r[0], pages: r[1], views: r[2], watch: r[3], postViews: r[4] };
+        anSet('an-status', '');
+        renderAnalitik();
+        renderPerformaTerbaru();
+    }).catch(e => anSet('an-status', 'Gagal memuat: ' + e.message));
+}
+
+function setAnRange(n, btn) {
+    anRange = n;
+    document.querySelectorAll('.an-range button').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    if (anData) { renderAnalitik(); renderPerformaTerbaru(); }
+}
+
+function anHitung(hariList) {
+    const vis = {};
+    const pageVis = {}, pageHits = {}, perVideo = {}, perDay = [];
+    let views = 0, detik = 0;
+    const pv = k => (perVideo[k] = perVideo[k] || { views: 0, sec: 0, sessions: 0 });
+
+    hariList.forEach(h => {
+        const dv = anData.visitors[h] || {};
+        Object.keys(dv).forEach(v => { vis[v] = dv[v]; });
+
+        let viewsHari = 0;
+        const dvv = anData.views[h] || {};
+        Object.keys(dvv).forEach(k => { viewsHari += dvv[k]; pv(k).views += dvv[k]; });
+        views += viewsHari; perDay.push(viewsHari);
+
+        const dw = anData.watch[h] || {};
+        Object.keys(dw).forEach(k => {
+            const w = dw[k] || {};
+            detik += (w.sec || 0); pv(k).sec += (w.sec || 0); pv(k).sessions += (w.sessions || 0);
+        });
+
+        const dp = anData.pages[h] || {};
+        Object.keys(dp).forEach(pg => {
+            pageVis[pg] = pageVis[pg] || {}; pageHits[pg] = pageHits[pg] || 0;
+            Object.keys(dp[pg]).forEach(v => { pageVis[pg][v] = true; pageHits[pg] += dp[pg][v]; });
+        });
+    });
+
+    const mulai = hariList[0];
+    const ids = Object.keys(vis);
+    const baru = ids.filter(v => vis[v] >= mulai).length;
+    return { unik: ids.length, baru: baru, kembali: ids.length - baru, views, detik, perDay, pageVis, pageHits, perVideo };
+}
+
+function renderAnalitik() {
+    const n = anRange;
+    const hariList = anDaftarHari(n, 0);
+    const now = anHitung(hariList);
+    const prev = anHitung(anDaftarHari(n, n));
+
+    anSet('an-judul', 'Video Anda ditonton ' + now.views + ' kali dalam ' + n + ' hari terakhir');
+    anSet('an-c-views', now.views);
+    anSet('an-c-views-cmp', anBandingkan(now.views, prev.views, n));
+    anSet('an-c-jam', (now.detik / 3600).toFixed(1));
+    anSet('an-c-jam-cmp', anBandingkan(now.detik, prev.detik, n));
+    anSet('an-c-unik', now.unik);
+    anSet('an-c-unik-cmp', anBandingkan(now.unik, prev.unik, n));
+
+    // Grafik garis penayangan per hari
+    const canvas = document.getElementById('an-chart');
+    if (anChart) anChart.destroy();
+    anChart = new Chart(canvas.getContext('2d'), {
+        type: 'line',
+        data: {
+            labels: hariList.map(h => { const d = new Date(h); return d.toLocaleDateString('id-ID', { day: 'numeric', month: 'short' }); }),
+            datasets: [{ label: 'Penayangan', data: now.perDay, borderColor: '#3ea6ff', backgroundColor: 'rgba(62,166,255,0.12)', fill: true, tension: 0.25, pointRadius: n > 14 ? 0 : 3 }]
+        },
+        options: {
+            plugins: { legend: { display: false } },
+            scales: {
+                y: { beginAtZero: true, ticks: { color: '#bbb', precision: 0 }, grid: { color: '#2a2a2a' } },
+                x: { ticks: { color: '#bbb', maxTicksLimit: 8 }, grid: { display: false } }
+            }
+        }
+    });
+
+    // Pengunjung baru vs berulang
+    const pct = x => now.unik ? Math.round((x / now.unik) * 100) : 0;
+    anSet('an-pengunjung',
+        '<div class="an-mini"><div class="num">' + now.unik + '</div><div class="lbl">Total pengunjung</div></div>' +
+        '<div class="an-mini"><div class="num" style="color:#3ea6ff;">' + now.baru + '</div><div class="lbl">Pendatang pertama kali (' + pct(now.baru) + '%)</div></div>' +
+        '<div class="an-mini"><div class="num" style="color:#ff914d;">' + now.kembali + '</div><div class="lbl">Pendatang berulang (' + pct(now.kembali) + '%)</div></div>');
+
+    // Per halaman
+    const halaman = Object.keys(now.pageVis).map(pg => ({ pg, unik: Object.keys(now.pageVis[pg]).length, kali: now.pageHits[pg] }))
+        .sort((a, b) => b.unik - a.unik);
+    anSet('an-halaman', halaman.length ? halaman.map(h => {
+        const p = now.unik ? Math.round((h.unik / now.unik) * 100) : 0;
+        return '<div class="an-row"><div class="nm">' + (anLabelHalaman[h.pg] || h.pg) + '</div>' +
+            '<div class="an-bar"><div style="width:' + p + '%"></div></div>' +
+            '<div class="vl"><b>' + p + '%</b> (' + h.unik + ' orang) • ' + h.kali + ' kali</div></div>';
+    }).join('') : '<p style="color:#bbb;">Belum ada data. Data mulai terkumpul sejak tracker dipasang.</p>');
+
+    // Top 10 video
+    const top = Object.keys(now.perVideo).map(k => Object.assign({ key: k }, now.perVideo[k]))
+        .filter(x => x.views > 0).sort((a, b) => b.views - a.views).slice(0, 10);
+    anSet('an-top10', '<tr><th>#</th><th>Video</th><th>Ditonton</th><th>Rata-rata durasi tonton</th><th>Total waktu tonton</th></tr>' +
+        (top.length ? top.map((x, i) => {
+            const j = anJudulVideo(x.key);
+            const rata = x.sessions ? x.sec / x.sessions : 0;
+            return '<tr><td>' + (i + 1) + '</td><td>' + j.judul + (j.tgl ? ' <span style="color:#888;">(' + j.tgl + ')</span>' : '') +
+                '</td><td>' + x.views + 'x</td><td>' + anDurasi(rata) + '</td><td>' + anDurasi(x.sec) + '</td></tr>';
+        }).join('') : '<tr><td colspan="5" style="color:#bbb;">Belum ada data.</td></tr>'));
+}
+
+function renderPerformaTerbaru() {
+    const db = firebase.database();
+    const hariList = anDaftarHari(anRange, 0);
+    const wadah = document.getElementById('an-terbaru');
+    const baris = (a, b) => '<div class="an-line"><span>' + a + '</span><b>' + b + '</b></div>';
+
+    // ---- Video terbaru ----
+    let htmlVideo = '<div><p style="color:#bbb;">Belum ada video.</p></div>';
+    const terbaru = (typeof videoList !== 'undefined' ? [...videoList] : [])
+        .sort((a, b) => new Date(b.uploadDate || 0) - new Date(a.uploadDate || 0)).slice(0, 4);
+
+    const pVideo = terbaru.length ? Promise.all(terbaru.map(x =>
+        db.ref('video_views/' + anAman(x.id)).once('value').then(s => (x.defaultViews || 0) + (s.val() || 0))
+    )).then(totals => {
+        const v = terbaru[0];
+        return db.ref('video_comments_v2/' + v.id).once('value').then(cs => {
+            const urut = totals.slice().sort((a, b) => b - a);
+            const peringkat = urut.indexOf(totals[0]) + 1;
+            let sec = 0, ses = 0;
+            Object.keys(anData.watch).forEach(h => { const w = (anData.watch[h] || {})[anAman(v.id)]; if (w) { sec += (w.sec || 0); ses += (w.sessions || 0); } });
+            const hari = v.uploadDate ? Math.max(0, Math.floor((Date.now() - new Date(v.uploadDate)) / 86400000)) : '-';
+            return '<div><h5 style="margin:0 0 8px; color:#bbb;">Video terbaru</h5>' +
+                '<img src="' + (v.thumb || '') + '" alt="">' +
+                '<p style="font-weight:bold; margin:10px 0;">' + v.title + '</p>' +
+                '<p style="color:#bbb; font-size:13px;">📊 ' + totals[0] + ' &nbsp; 💬 ' + cs.numChildren() + '</p>' +
+                baris('Diunggah', hari + ' hari yang lalu') +
+                baris('Peringkat menurut jumlah penayangan', peringkat + ' dari ' + terbaru.length) +
+                baris('Penayangan (total)', totals[0]) +
+                baris('Rata-rata durasi tonton', ses ? anDurasi(sec / ses) : 'Belum ada data') + '</div>';
+        });
+    }) : Promise.resolve(htmlVideo);
+
+    // ---- Postingan terbaru ----
+    const pPost = db.ref('posts').orderByKey().limitToLast(1).once('value').then(ps => {
+        if (!ps.exists()) return '<div><p style="color:#bbb;">Belum ada postingan.</p></div>';
+        const id = Object.keys(ps.val())[0];
+        const p = ps.val()[id];
+        return Promise.all([
+            db.ref('post_views/' + id).once('value'),
+            db.ref('post_likes/' + id).once('value'),
+            db.ref('post_comments/' + id).once('value')
+        ]).then(r => {
+            let v28 = 0;
+            hariList.forEach(h => { v28 += ((anData.postViews[h] || {})[anAman(id)] || 0); });
+            const img = p.thumbnailUrl || (/\.(mp4|webm|mov)/i.test(p.videoUrl || '') ? '' : p.videoUrl);
+            return '<div><h5 style="margin:0 0 8px; color:#bbb;">Postingan terbaru</h5>' +
+                (img ? '<img src="' + img + '" alt="">' : '<div style="aspect-ratio:16/9; background:#000; border-radius:8px; display:flex; align-items:center; justify-content:center; color:#666;">▶ Video</div>') +
+                '<p style="font-weight:bold; margin:10px 0;">' + ((p.caption || '(tanpa caption)').substring(0, 80)) + '</p>' +
+                '<p style="color:#bbb; font-size:13px;">📊 ' + (r[0].val() || 0) + ' &nbsp; 💬 ' + r[2].numChildren() + ' &nbsp; 👍 ' + (r[1].val() || 0) + '</p>' +
+                baris('Diunggah', p.uploadDate || '-') +
+                baris('Dilihat (total)', r[0].val() || 0) +
+                baris('Dilihat dalam ' + anRange + ' hari', v28) + '</div>';
+        });
+    });
+
+    Promise.all([pVideo, pPost]).then(h => { wadah.innerHTML = h[0] + h[1]; })
+        .catch(e => { wadah.innerHTML = '<p style="color:#ff4d4d;">Gagal memuat: ' + e.message + '</p>'; });
+}
+</script>
+
 </body>
 </html>
