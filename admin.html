@@ -437,6 +437,13 @@
     </div>
     <button class="btn-submit-comment" onclick="simpanPlatformLive()">💾 Simpan Pilihan</button>
     <p id="platform-live-status" style="color:#bbb; font-size:13px; margin-top:15px;"></p>
+    <hr style="border:0; border-top:1px solid #333; margin:20px 0;">
+<h4 style="color:#ff914d; margin:0 0 10px;">⚡ Buat Kartu dari Live Rumble</h4>
+<div class="admin-form-group">
+    <label>Link video Rumble (contoh: https://rumble.com/v7hoykc-tasked.html)</label>
+    <input type="text" id="rumble-quick-link" placeholder="Tempel link video Rumble di sini...">
+</div>
+<button class="btn-submit-comment" onclick="buatKartuRumble()">Buat Kartu Video</button>
 </div>
         
         <!-- 5. TAMBAH / KELOLA POSTINGAN -->
@@ -1500,6 +1507,48 @@ function simpanPlatformLive() {
     firebase.database().ref('site_settings/live_platform').set(p).then(() => {
         alert('Bot aktif diganti ke ' + (p === 'rumble' ? 'Bot Rumble' : 'Bot Kick') + '!');
         muatPlatformLive();
+    });
+}
+
+    function buatKartuRumble() {
+    const link = document.getElementById('rumble-quick-link').value.trim();
+    const m = link.match(/rumble\.com\/(?:embed\/)?(v[a-z0-9]{4,10})/i);
+    if (!m) return alert('Link Rumble tidak dikenali. Contoh: https://rumble.com/v7hoykc-tasked.html');
+
+    const code = m[1].toLowerCase();
+    const id = 'rumble_' + code;
+
+    if (typeof videoList !== 'undefined' && videoList.some(v => v.id === id)) {
+        return alert('Kartu untuk video ini sudah ada!');
+    }
+
+    const bulan = ["Januari","Februari","Maret","April","Mei","Juni","Juli","Agustus","September","Oktober","November","Desember"];
+    const d = new Date();
+    const p = n => String(n).padStart(2, '0');
+    const tglISO = d.getFullYear() + '-' + p(d.getMonth() + 1) + '-' + p(d.getDate());
+    const tglTeks = d.getDate() + ' ' + bulan[d.getMonth()] + ' ' + d.getFullYear();
+
+    firebase.database().ref('videos_manual/' + id).once('value').then(snap => {
+        if (snap.exists()) return alert('Kartu untuk video ini sudah ada!');
+        return firebase.database().ref('videos_manual/' + id).set({
+            id: id,
+            title: 'VOD PLAY LIVE STREAMING LUVIA STUDIO TV',
+            thumb: 'Asset Foto/Thumbnimail_VOD_LIVE.png',
+            visibility: 'publik',
+            sources: [],
+            driveEmbed: '',
+            youtubeId: '',
+            rumbleEmbed: 'https://rumble.com/embed/' + code + '/',
+            archiveSrc: '',
+            downloadUrl: '',
+            description: 'VOD LS TV pada ' + tglTeks + '. Report di kolom komentar Jika ada error atau Video tidak dapat Diputar!!.',
+            genre: 'Video On Demand',
+            uploadDate: tglISO,
+            defaultViews: 0
+        }).then(() => {
+            alert('Kartu video Rumble berhasil dibuat!');
+            document.getElementById('rumble-quick-link').value = '';
+        });
     });
 }
     
