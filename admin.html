@@ -194,6 +194,7 @@
             <button class="tab-btn" onclick="switchTab('tab-komplain', this)">💬 Support & Notif (HP)</button>
             <button class="tab-btn" onclick="switchTab('tab-postingan', this)">📸 Tambah Postingan</button>
             <button class="tab-btn" onclick="switchTab('tab-analitik', this); muatAnalitik();">📊 Analitik Website</button>
+            <button class="tab-btn" onclick="switchTab('tab-platform-live', this); muatPlatformLive();">📡 Bot Backup Live</button>
         </div>
 
 <!-- 1. TAMBAH VIDEO -->
@@ -423,7 +424,21 @@
         <div style="overflow-x:auto;"><table class="an-top" id="an-top10"></table></div>
     </div>
 </div>
-   
+
+<div id="tab-platform-live" class="panel">
+    <h3 style="margin-top:0;">📡 Bot Backup Live Streaming</h3>
+    <p style="color:#bbb; font-size:13px;">Player live di website tetap Kick. Pilihan ini hanya menentukan bot mana yang membuat kartu video setelah live selesai.</p>
+    <div class="admin-form-group">
+        <label>Bot yang aktif</label>
+        <select id="select-live-platform" style="width:100%; padding:12px; margin-bottom:15px; background:#2a2a2a; border:1px solid #444; color:white; border-radius:6px;">
+            <option value="kick">Bot Kick (unduh VOD Kick, simpan ke Google Drive)</option>
+            <option value="rumble">Bot Rumble (ambil link embed live Rumble)</option>
+        </select>
+    </div>
+    <button class="btn-submit-comment" onclick="simpanPlatformLive()">💾 Simpan Pilihan</button>
+    <p id="platform-live-status" style="color:#bbb; font-size:13px; margin-top:15px;"></p>
+</div>
+        
         <!-- 5. TAMBAH / KELOLA POSTINGAN -->
 <div id="tab-postingan" class="panel">
     <h3 style="margin-top:0;">Upload & Kelola Postingan</h3>
@@ -1472,6 +1487,22 @@ function bukaAnalitikPost(id, captionSnippet) {
     });
 }
 
+function muatPlatformLive() {
+    firebase.database().ref('site_settings/live_platform').once('value').then(snap => {
+        const p = snap.val() || 'kick';
+        document.getElementById('select-live-platform').value = p;
+        document.getElementById('platform-live-status').innerText = 'Bot aktif saat ini: ' + (p === 'rumble' ? 'Bot Rumble' : 'Bot Kick');
+    });
+}
+
+function simpanPlatformLive() {
+    const p = document.getElementById('select-live-platform').value;
+    firebase.database().ref('site_settings/live_platform').set(p).then(() => {
+        alert('Bot aktif diganti ke ' + (p === 'rumble' ? 'Bot Rumble' : 'Bot Kick') + '!');
+        muatPlatformLive();
+    });
+}
+    
 function togglePasswordVisibility() {
             const passInput = document.getElementById('admin-password');
             const toggleIcon = document.getElementById('toggle-password');
