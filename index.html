@@ -204,9 +204,9 @@
                             
                             <h2 class="carousel-title">${vid.title}</h2>
                             <!-- Waktu rilis diselipkan di sini -->
-                            <div class="carousel-meta"><span id="hero-badge-${vid.id}">Total Memuat...</span> • ${timeAgoFormated(vid.uploadDate)}</div>
+                           <div class="carousel-meta"><span id="hero-badge-${vid.id}">${icon('eye')} Memuat...</span> • ${icon('clock')} ${timeAgoFormated(vid.uploadDate)}</div>
                             <p class="carousel-desc">${desc}</p>
-                            <a href="watch.html?id=${vid.id}" class="btn-watch-hero">▷ Tonton</a>
+                            <a href="watch.html?id=${vid.id}" class="btn-watch-hero">${icon('play')} Tonton</a>
                         </div>
                     </div>
                 `;
@@ -220,7 +220,7 @@
             slides.forEach(vid => {
                 listenVideoViews(vid.id, vid.defaultViews || 0, (totalViews) => {
                     const badge = document.getElementById(`hero-badge-${vid.id}`);
-                    if (badge) badge.innerText = `Total ${formatViews(totalViews)}`;
+                    if (badge) badge.innerHTML = `${icon('eye')} ${formatViews(totalViews)}`;
                 });
             });
 
