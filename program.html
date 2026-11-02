@@ -96,7 +96,7 @@
                                     <h3>${vid.title}</h3>
                                     <p>
                                         <span class="card-genre-btn" onclick="event.preventDefault(); window.location.href='videos.html?genre=${encodeURIComponent(vid.genre || 'Umum')}'">${vid.genre || 'Umum'}</span><br>
-                                        <span id="view-count-prog-${vid.id}">👁️ Memuat...</span>${uploadTime ? ' • ' + uploadTime : ''}
+                                        <span id="view-count-prog-${vid.id}">${icon('eye')} Memuat...</span>${uploadTime ? ' • ' + uploadTime : ''}
                                     </p>
                                 </div>
                             </a>`;
@@ -110,7 +110,7 @@
                         if(vid) {
                             listenVideoViews(vid.id, vid.defaultViews || 0, (totalViews) => {
                                 const el = document.getElementById(`view-count-prog-${vid.id}`);
-                                if (el) el.innerText = `👁️ ${formatViews(totalViews)}`;
+                                if (el) el.innerHTML = `${icon('eye')} ${formatViews(totalViews)}`;
                             });
                         }
                     });
