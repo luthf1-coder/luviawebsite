@@ -248,9 +248,9 @@
 
         if (typeof incrementVideoViewsAsync === 'function') {
             incrementVideoViewsAsync(currentVid.id, currentVid.defaultViews || 0).then(totalViews => {
-                document.getElementById('views-display-box').innerText = `👁️ ${formatViews(totalViews)}`;
+                document.getElementById('views-display-box').innerHTML = `${icon('eye')} ${formatViews(totalViews)}`;
             }).catch(() => {
-                document.getElementById('views-display-box').innerText = `👁️ ${currentVid.defaultViews || 0} Ditonton`;
+                document.getElementById('views-display-box').innerHTML = `${icon('eye')} ${currentVid.defaultViews || 0} Ditonton`;
             });
         }
         if (typeof renderGridRecommendations === 'function') renderGridRecommendations('watch-recommendations-grid');
