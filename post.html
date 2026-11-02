@@ -50,9 +50,9 @@
                 </div>
                 
                 <div class="post-actions" style="padding: 15px 0 0 0; border-bottom: none; gap: 20px; display: flex;">
-                    <button class="post-action-btn" id="btn-like-post">❤️ <span id="post-like-count">0</span> Suka</button>
+                    <button class="post-action-btn" id="btn-like-post"><svg class="ic"><use href="Asset%20Foto/icons.svg#heart"></use></svg> <span id="post-like-count">0</span> Suka</button>
                     <!-- Klik tombol ini akan memicu animasi geser komentar dari bawah -->
-                    <button class="post-action-btn" onclick="toggleKomentar(true)">💬 Komentar</button>
+                    <button class="post-action-btn" onclick="toggleKomentar(true)"><svg class="ic"><use href="Asset%20Foto/icons.svg#message"></use></svg> Komentar</button>
                 </div>
             </div>
 
@@ -300,7 +300,7 @@
 
                 const thumb = p.thumbnailUrl || ''; 
                 const mediaTag = isVideo 
-                    ? `<video src="${fileUrl}" poster="${thumb}" preload="none" playsinline muted loop onmouseenter="this.play()" onmouseleave="this.pause(); this.load();"></video><div class="video-indicator">▶</div>`
+                    ? `<video src="${fileUrl}" poster="${thumb}" preload="none" playsinline muted loop onmouseenter="this.play()" onmouseleave="this.pause(); this.load();"></video><div class="video-indicator">${icon('play')}</div>`
                     : `<img src="${fileUrl}" alt="Postingan" loading="lazy">`;
                 
                 html += `
