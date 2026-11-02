@@ -18,6 +18,11 @@ if (typeof firebase !== 'undefined' && !firebase.apps.length) {
     firebase.initializeApp(firebaseConfig);
 }
 
+// IKON GAMBAR (SVG) - sumber: Asset Foto/icons.svg
+function icon(name, extraClass) {
+    return '<svg class="ic ' + (extraClass || '') + '" aria-hidden="true"><use href="Asset%20Foto/icons.svg#' + name + '"></use></svg>';
+}
+
 // Pusat Data Video
 const videoList = [
     {
@@ -310,7 +315,7 @@ document.addEventListener('DOMContentLoaded', () => {
         navbarContainer.innerHTML = `
             <div class="container nav-container">
                 <!-- 1. Tombol Hamburger -->
-                <button class="hamburger-menu" onclick="toggleSidebar()" title="Menu">☰</button>
+                <button class="hamburger-menu" onclick="toggleSidebar()" title="Menu">${icon('menu')}</button>
                 
                 <!-- 2. Logo Luvia -->
                 <a href="index.html" title="Halaman Utama" style="display: flex; align-items: center; margin-right: 15px;">
@@ -319,14 +324,14 @@ document.addEventListener('DOMContentLoaded', () => {
                 
                 <!-- 3. Tombol Riwayat (Back/Forward) -->
                 <div class="nav-history-controls">
-                    <button onclick="history.back()" class="btn-nav-history" title="Kembali">←</button>
-                    <button onclick="history.forward()" class="btn-nav-history" title="Maju">→</button>
+                    <button onclick="history.back()" class="btn-nav-history" title="Kembali">${icon('arrow-left')}</button>
+                    <button onclick="history.forward()" class="btn-nav-history" title="Maju">${icon('arrow-right')}</button>
                 </div>
                 
                 <!-- 4. Kolom Pencarian & Fitur Live Search -->
                 <form class="nav-search" id="navSearchForm" onsubmit="return false;">
                     <input type="text" id="navSearchInput" placeholder="Search Videos..." aria-label="Cari" autocomplete="off">
-                    <button type="submit">🔍</button>
+                    <button type="submit">${icon('search')}</button>
                     <div class="search-dropdown-list" id="searchDropdownList"></div>
                 </form>
             </div>
@@ -606,14 +611,14 @@ function renderSliderRecommendations(containerId, list = videoList) {
                     <h3>${vid.title}</h3>
                     <p>
                         <span class="card-genre-btn" onclick="event.preventDefault(); window.location.href='videos.html?genre=${encodeURIComponent(vid.genre || 'Umum')}'">${vid.genre || 'Umum'}</span><br>
-                        <span id="view-count-slider-${vid.id}">👁️ Memuat...</span>${uploadTime ? ' • ' + uploadTime : ''}
+                        <span id="view-count-slider-${vid.id}">${icon('eye')} Memuat...</span>${uploadTime ? ' • ' + uploadTime : ''}
                     </p>
                 </div>
             `;
             container.appendChild(card);
             listenVideoViews(vid.id, vid.defaultViews || 0, (totalViews) => {
                 const el = document.getElementById(`view-count-slider-${vid.id}`);
-                if (el) el.innerText = `👁️ ${formatViews(totalViews)}`;
+                if (el) el.innerHTML = `${icon('eye')} ${formatViews(totalViews)}`;
             });
         });
     }
@@ -642,14 +647,14 @@ function renderTrendingRecommendations(containerId, list = videoList) {
                 <h3>${vid.title}</h3>
                 <p>
                     <span class="card-genre-btn" onclick="event.preventDefault(); window.location.href='videos.html?genre=${encodeURIComponent(vid.genre || 'Umum')}'">${vid.genre || 'Umum'}</span><br>
-                    <span id="view-count-trending-${vid.id}">👁️ Memuat...</span>${uploadTime ? ' • ' + uploadTime : ''}
+                    <span id="view-count-trending-${vid.id}">${icon('eye')} Memuat...</span>${uploadTime ? ' • ' + uploadTime : ''}
                 </p>
             </div>
         `;
         container.appendChild(card);
         listenVideoViews(vid.id, vid.defaultViews || 0, (totalViews) => {
             const el = document.getElementById(`view-count-trending-${vid.id}`);
-            if (el) el.innerText = `👁️ ${formatViews(totalViews)}`;
+            if (el) el.innerHTML = `${icon('eye')} ${formatViews(totalViews)}`;
         });
     });
 }
@@ -682,7 +687,7 @@ function renderGridRecommendations(containerId, list = videoList) {
                 <h3>${vid.title}</h3>
                 <p>
                     <span class="card-genre-btn" onclick="event.preventDefault(); window.location.href='videos.html?genre=${encodeURIComponent(vid.genre || 'Umum')}'">${vid.genre || 'Umum'}</span><br>
-                    <span id="view-count-grid-${vid.id}">👁️ Memuat...</span>${uploadTime ? ' • ' + uploadTime : ''}
+                    <span id="view-count-grid-${vid.id}">${icon('eye')} Memuat...</span>${uploadTime ? ' • ' + uploadTime : ''}
                 </p>
             </div>
         `;
@@ -690,7 +695,7 @@ function renderGridRecommendations(containerId, list = videoList) {
 
         listenVideoViews(vid.id, vid.defaultViews || 0, (totalViews) => {
             const el = document.getElementById(`view-count-grid-${vid.id}`);
-            if (el) el.innerText = `👁️ ${formatViews(totalViews)}`;
+            if (el) el.innerHTML = `${icon('eye')} ${formatViews(totalViews)}`;
         });
     });
 
@@ -730,14 +735,14 @@ function renderAllVideosPage(containerId, list = videoList) {
                 <h3>${vid.title}</h3>
                 <p>
                     <span class="card-genre-btn" onclick="event.preventDefault(); window.location.href='videos.html?genre=${encodeURIComponent(vid.genre || 'Umum')}'">${vid.genre || 'Umum'}</span><br>
-                    <span id="view-count-all-${vid.id}">👁️ Memuat...</span>${uploadTime ? ' • ' + uploadTime : ''}
+                    <span id="view-count-all-${vid.id}">${icon('eye')} Memuat...</span>${uploadTime ? ' • ' + uploadTime : ''}
                 </p>
             </div>
         `;
         container.appendChild(card);
         listenVideoViews(vid.id, vid.defaultViews || 0, (totalViews) => {
             const el = document.getElementById(`view-count-all-${vid.id}`);
-            if (el) el.innerText = `👁️ ${formatViews(totalViews)}`;
+            if (el) el.innerHTML = `${icon('eye')} ${formatViews(totalViews)}`;
         });
     });
 }
