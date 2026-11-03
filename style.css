@@ -2893,3 +2893,28 @@ body::after {
         rgba(10,9,16,0.45) 40%,
         rgba(10,9,16,0) 75%);
 }
+
+/* =====================================================
+   BLOK 6: HERO MENYATU KE LATAR + HAPUS JUDUL DI ATAS PLAYER
+   ===================================================== */
+
+/* 1) HERO BERANDA: gambar & lapisan gelap memudar sampai transparan di tepi bawah,
+      jadi menyatu mulus dengan latar gelembung (tidak ada pita gelap / garis tegas) */
+.carousel-bg {
+    -webkit-mask-image: linear-gradient(to bottom, #000 55%, transparent 100%);
+    mask-image: linear-gradient(to bottom, #000 55%, transparent 100%);
+}
+.carousel-overlay {
+    background: linear-gradient(to top,
+        rgba(10,9,16,0)    0%,    /* tepi bawah: transparan */
+        rgba(10,9,16,0.55) 28%,   /* area teks: cukup gelap agar terbaca */
+        rgba(10,9,16,0.30) 55%,
+        rgba(10,9,16,0)    80%);
+}
+
+/* 2) HALAMAN watch.html & livestream.html: sembunyikan judul di atas player
+      (judul tetap ada di kotak info bawah video) */
+#player-title,
+#live-player-title {
+    display: none;
+}
