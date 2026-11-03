@@ -43,6 +43,7 @@
             <button class="tab-btn" onclick="switchTab('tab-komplain', this)">💬 Support & Notif (HP)</button>
             <button class="tab-btn" onclick="switchTab('tab-postingan', this)">📸 Tambah Postingan</button>
             <button class="tab-btn" onclick="switchTab('tab-analitik', this); muatAnalitik();">📊 Analitik Website</button>
+            <button class="tab-btn" onclick="switchTab('tab-offline', this); muatOfflineVideo();">📡 Livestream Offline</button>
             <button class="tab-btn" onclick="switchTab('tab-platform-live', this); muatPlatformLive();">📡 Bot Backup Live</button>
         </div>
 
@@ -73,6 +74,7 @@
                     <option value="drive">Google Drive (Link Preview/View)</option>
                     <option value="rumble">Rumble (Link Embed)</option>
                     <option value="other">Bebas / Archive.org (Link Direct MP4)</option>
+                    <option value="embed">Player Bebas (tempel kode embed / link embed)</option>
                 </select>
             </div>
             
@@ -259,6 +261,33 @@
 <button class="btn-submit-comment" onclick="buatKartuRumble()">Buat Kartu Video</button>
 </div>
         
+        <!-- 6. LIVESTREAM OFFLINE -->
+<div id="tab-offline" class="panel">
+    <h3 style="margin-top:0;">📡 Tampilan Livestream Saat Offline</h3>
+
+    <div class="admin-form-group">
+        <label>Tampilan saat siaran tidak aktif</label>
+        <select id="off-mode" onchange="simpanModeOffline()">
+            <option value="thumbnail">🖼️ Foto thumbnail</option>
+            <option value="video">🎬 Video berulang otomatis (tanpa tombol kendali)</option>
+        </select>
+        <div id="off-status" style="font-size:12px; color:#53fc18; margin-top:-8px;"></div>
+    </div>
+
+    <div style="background:#222; padding:12px; border-left:4px solid #ff914d; border-radius:6px; font-size:12px; margin-bottom:15px;">
+        ℹ️ Video disimpan di GitHub folder <b>Asset Foto/Video/</b> (maks 20 MB, .mp4 / .webm). Setelah upload, tunggu 1-2 menit sampai website selesai diperbarui agar preview bisa diputar.
+    </div>
+
+    <div class="admin-form-group"><label>Kunci Upload Admin</label><input type="password" id="off-key" placeholder="Kunci dari Cloudflare (diisi sekali per sesi)..."></div>
+    <div class="admin-form-group"><label>Pilih Video (.mp4 / .webm, maks 20 MB)</label><input type="file" id="off-file" accept="video/mp4,video/webm"></div>
+    <div class="upload-progress-container" id="off-progress-box"><div class="upload-progress-bar" id="off-progress-bar"></div></div>
+    <div id="off-upload-text" style="font-size:12px; color:#bbb; margin-bottom:12px; text-align:center;"></div>
+    <button class="btn-submit-comment" style="background:#00a884;" onclick="uploadVideoOffline()">⬆️ Upload Video</button>
+
+    <h4 style="color:#ff914d; margin-top:30px; border-top:1px solid #333; padding-top:15px;">Daftar Video Offline</h4>
+    <div id="off-list"><p style="color:#bbb; font-size:13px;">Memuat...</p></div>
+</div>
+        
         <!-- 5. TAMBAH / KELOLA POSTINGAN -->
 <div id="tab-postingan" class="panel">
     <h3 style="margin-top:0;">Upload & Kelola Postingan</h3>
@@ -387,6 +416,16 @@
         let tempOldViews = 0;
         let tempOldDate = "";
 
+// Ambil link src dari kode <iframe ...> ATAU dari link biasa. Hanya menerima https.
+function ambilSrcEmbed(teks) {
+    let src = (teks || "").trim();
+    const m = src.match(/<iframe[^>]*\ssrc\s*=\s*["']([^"']+)["']/i);
+    if (m) src = m[1];
+    if (src.startsWith("//")) src = "https:" + src;
+    src = src.replace(/&amp;/g, "&");
+    return /^https:\/\/[^\s"'<>]+$/i.test(src) ? src : "";
+}
+    
         function simpanVideo() {
             const title = document.getElementById('vid-title').value.trim();
             let url = document.getElementById('vid-url').value.trim();
@@ -398,7 +437,7 @@
             const visibility = document.getElementById('vid-visibility').value;
             const downloadUrl = document.getElementById('vid-download').value.trim();
             
-            let ytId = "", driveEmbed = "", rumbleEmbed = "", archiveSrc = "";
+            let ytId = "", driveEmbed = "", rumbleEmbed = "", archiveSrc = "", customEmbed = "";
 
             if (type === "youtube") {
                 const regExp = /^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|\&v=)([^#\&\?]*).*/;
@@ -406,6 +445,10 @@
                 ytId = (match && match[2].length === 11) ? match[2] : url; 
             } else if (type === "drive") { driveEmbed = url; } 
               else if (type === "rumble") { rumbleEmbed = url; } 
+              else if (type === "embed") {
+                customEmbed = ambilSrcEmbed(url);
+                if (!customEmbed) { alert("Kode embed tidak valid. Tempel kode <iframe ...> lengkap atau link embed yang diawali https://"); return; }
+              }
               else { archiveSrc = url; }
             
             // JIKA EDIT: Gunakan views & tanggal lama. JIKA BARU: Gunakan 0 & tanggal hari ini.
@@ -414,7 +457,7 @@
 
             const newData = {
                 id: id, title: title, thumb: document.getElementById('vid-thumb').value, visibility: visibility,
-                sources: [], driveEmbed: driveEmbed, youtubeId: ytId, rumbleEmbed: rumbleEmbed, archiveSrc: archiveSrc, 
+                sources: [], driveEmbed: driveEmbed, youtubeId: ytId, rumbleEmbed: rumbleEmbed, customEmbed: customEmbed, archiveSrc: archiveSrc, 
                 downloadUrl: downloadUrl || archiveSrc || driveEmbed, 
                 description: document.getElementById('vid-desc').value, genre: document.getElementById('vid-genre').value, 
                 uploadDate: finalDate, defaultViews: finalViews
@@ -451,6 +494,7 @@
                 if(v.youtubeId) { type = "youtube"; url = "https://youtube.com/watch?v=" + v.youtubeId; }
                 else if(v.driveEmbed) { type = "drive"; url = v.driveEmbed; }
                 else if(v.rumbleEmbed) { type = "rumble"; url = v.rumbleEmbed; }
+                else if(v.customEmbed) { type = "embed"; url = v.customEmbed; }
 
                 document.getElementById('vid-type').value = type;
                 document.getElementById('vid-url').value = url;
@@ -1675,6 +1719,161 @@ function renderAnalitikWebsite() {
 // Sambungkan ke fungsi lama TANPA mengubahnya: setiap analitik video digambar, analitik website ikut digambar
 const anRenderLama = renderAnalitik;
 renderAnalitik = function () { anRenderLama(); renderAnalitikWebsite(); };
+</script>
+
+        <script>
+// ==========================================
+// LIVESTREAM OFFLINE: FOTO / VIDEO
+// ==========================================
+let offSettings = { mode: 'thumbnail', videoUrl: '', videoName: '', muted: true };
+let offVideos = {};
+let offSiap = false;
+
+function muatOfflineVideo() {
+    const kunci = sessionStorage.getItem('luvia_upload_key');
+    if (kunci) document.getElementById('off-key').value = kunci;
+    if (offSiap) return;
+    offSiap = true;
+
+    firebase.database().ref('settings/livestream_offline').on('value', snap => {
+        offSettings = Object.assign({ mode: 'thumbnail', videoUrl: '', videoName: '', muted: true }, snap.val() || {});
+        document.getElementById('off-mode').value = offSettings.mode;
+        renderDaftarOffline();
+    });
+    firebase.database().ref('offline_videos').on('value', snap => {
+        offVideos = snap.val() || {};
+        renderDaftarOffline();
+    });
+}
+
+function renderDaftarOffline() {
+    const wadah = document.getElementById('off-list');
+    if (!wadah) return;
+    const ids = Object.keys(offVideos).sort().reverse();
+    if (!ids.length) { wadah.innerHTML = '<p style="color:#bbb; font-size:13px;">Belum ada video. Upload dulu di atas.</p>'; return; }
+
+    wadah.innerHTML = ids.map(id => {
+        const v = offVideos[id];
+        const aktif = offSettings.videoName === v.name;
+        return `
+        <div class="list-item" style="flex-direction:column; align-items:stretch; gap:10px;">
+            <div style="display:flex; justify-content:space-between; align-items:center; gap:8px; flex-wrap:wrap;">
+                <div style="font-size:13px; font-weight:bold; word-break:break-all;">${v.name}${aktif ? ' <span style="background:#00a884; padding:2px 8px; border-radius:10px; font-size:10px;">● AKTIF</span>' : ''}</div>
+                <div style="font-size:11px; color:#bbb;">${v.sizeMB} MB</div>
+            </div>
+            <video id="offv-${id}" src="${encodeURI(v.path)}" controls playsinline preload="metadata"
+                   style="width:100%; max-height:220px; background:#000; border-radius:8px;"
+                   onvolumechange="offUpdateMute('${id}')"
+                   onerror="document.getElementById('offerr-${id}').style.display='block'"></video>
+            <div id="offerr-${id}" style="display:none; font-size:12px; color:#ff914d;">
+                Video belum bisa dimuat. Jika baru diupload, tunggu 1-2 menit lalu
+                <button class="btn-edit" onclick="muatUlangPreview('${id}')">Muat ulang</button>
+            </div>
+            <div id="offmute-${id}" style="font-size:12px; color:#bbb;">🔊 Suara: Hidup (tekan tombol speaker pada preview untuk mematikan)</div>
+            <div style="display:flex; gap:8px; flex-wrap:wrap;">
+                <button class="btn-edit" onclick="tetapkanVideoOffline('${id}')">✔ Tetapkan sebagai video offline</button>
+                <button class="btn-delete" onclick="hapusVideoOffline('${id}')">🗑️ Hapus</button>
+            </div>
+        </div>`;
+    }).join('');
+}
+
+function offUpdateMute(id) {
+    const v = document.getElementById('offv-' + id);
+    const t = document.getElementById('offmute-' + id);
+    if (v && t) t.innerText = (v.muted || v.volume === 0) ? '🔇 Suara: Mati' : '🔊 Suara: Hidup';
+}
+
+function muatUlangPreview(id) {
+    const v = document.getElementById('offv-' + id);
+    if (!v) return;
+    document.getElementById('offerr-' + id).style.display = 'none';
+    v.load();
+}
+
+function simpanModeOffline() {
+    const mode = document.getElementById('off-mode').value;
+    if (mode === 'video' && !offSettings.videoUrl) {
+        alert('Belum ada video yang ditetapkan. Upload lalu tekan "Tetapkan" dulu. Sementara livestream tetap menampilkan foto thumbnail.');
+    }
+    firebase.database().ref('settings/livestream_offline/mode').set(mode).then(() => {
+        const st = document.getElementById('off-status');
+        st.innerText = '✅ Tersimpan';
+        setTimeout(() => st.innerText = '', 2000);
+    });
+}
+
+function tetapkanVideoOffline(id) {
+    const v = offVideos[id];
+    if (!v) return;
+    const prev = document.getElementById('offv-' + id);
+    const muted = prev ? (prev.muted || prev.volume === 0) : true; // ikut status mute di preview
+    firebase.database().ref('settings/livestream_offline').update({
+        videoName: v.name, videoUrl: v.path, muted: muted, mode: 'video'
+    }).then(() => alert('Video ditetapkan!\nSuara di livestream: ' + (muted ? 'MATI' : 'HIDUP') + '\n\nMode tampilan otomatis menjadi "Video". Bisa dikembalikan ke foto lewat pilihan di atas.'));
+}
+
+function uploadVideoOffline() {
+    const file = document.getElementById('off-file').files[0];
+    const kunci = document.getElementById('off-key').value.trim();
+    const box = document.getElementById('off-progress-box');
+    const bar = document.getElementById('off-progress-bar');
+    const teks = document.getElementById('off-upload-text');
+
+    if (!file) return alert('Pilih file video dulu!');
+    if (!kunci) return alert('Isi Kunci Upload Admin dulu!');
+    if (!/\.(mp4|webm)$/i.test(file.name)) return alert('Hanya file .mp4 atau .webm');
+    if (file.size > 20 * 1024 * 1024) return alert('Ukuran file melebihi 20 MB. Kompres dulu videonya.');
+    sessionStorage.setItem('luvia_upload_key', kunci);
+
+    box.style.display = 'block'; bar.style.width = '0%'; teks.style.color = '#bbb';
+    const xhr = new XMLHttpRequest();
+    xhr.upload.onprogress = e => {
+        if (!e.lengthComputable) return;
+        const p = Math.round((e.loaded / e.total) * 100);
+        bar.style.width = p + '%';
+        teks.textContent = p < 100 ? 'Mengirim... ' + p + '%' : 'Menyimpan ke GitHub (tunggu sebentar)...';
+    };
+    xhr.onload = () => {
+        if (xhr.status === 200) {
+            const r = JSON.parse(xhr.responseText);
+            firebase.database().ref('offline_videos').push({ name: r.name, path: r.path, sizeMB: r.sizeMB, uploadedAt: Date.now() }).then(() => {
+                teks.style.color = '#53fc18';
+                teks.textContent = '✅ Terupload! Website sedang diperbarui, preview bisa diputar dalam 1-2 menit.';
+                document.getElementById('off-file').value = '';
+            });
+        } else {
+            teks.style.color = '#ff4d4d';
+            teks.textContent = '❌ Gagal: ' + xhr.responseText;
+        }
+    };
+    xhr.onerror = () => { teks.style.color = '#ff4d4d'; teks.textContent = '❌ Koneksi terputus. Silakan ulangi.'; };
+    xhr.open('PUT', '/api/video-offline', true);
+    xhr.setRequestHeader('X-File-Name', encodeURIComponent(file.name));
+    xhr.setRequestHeader('X-Admin-Key', kunci);
+    xhr.setRequestHeader('Content-Type', file.type || 'application/octet-stream');
+    xhr.send(file);
+}
+
+function hapusVideoOffline(id) {
+    const v = offVideos[id];
+    if (!v) return;
+    const kunci = document.getElementById('off-key').value.trim() || sessionStorage.getItem('luvia_upload_key');
+    if (!kunci) return alert('Isi Kunci Upload Admin dulu (kolom di atas).');
+    const aktif = offSettings.videoName === v.name;
+    if (!confirm(aktif
+        ? 'Video ini sedang AKTIF di livestream. Jika dihapus, livestream kembali menampilkan foto thumbnail. Lanjut hapus?'
+        : 'Hapus video ini permanen dari GitHub?')) return;
+
+    fetch('/api/video-offline?name=' + encodeURIComponent(v.name), { method: 'DELETE', headers: { 'X-Admin-Key': kunci } })
+        .then(r => r.ok ? r.json() : r.text().then(t => Promise.reject(new Error(t))))
+        .then(() => {
+            firebase.database().ref('offline_videos/' + id).remove();
+            if (aktif) firebase.database().ref('settings/livestream_offline').update({ mode: 'thumbnail', videoName: '', videoUrl: '' });
+            alert('Video dihapus.');
+        })
+        .catch(e => alert('Gagal menghapus: ' + e.message));
+}
 </script>
         
 </body>
