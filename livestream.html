@@ -186,18 +186,52 @@
             }
         }
 
-        // Tampilan Ketika Stream Offline
-        function renderOfflineState() {
-            playerWrapper.innerHTML = `
-                <div class="offline-banner-container">
-                    <img src="${offlineImageSrc}" alt="Siaran Offline" class="offline-banner-img">
-                </div>
-            `;
+        // Tampilan Ketika Stream Offline: foto thumbnail ATAU video berulang (diatur di admin.html)
+function renderOfflineImage() {
+    playerWrapper.innerHTML = `
+        <div class="offline-banner-container">
+            <img src="${offlineImageSrc}" alt="Siaran Offline" class="offline-banner-img">
+        </div>
+    `;
+}
 
-            if (viewersText) {
-                viewersText.innerHTML = `⚪ <span style="color: #bbb;">STATUS: SIARAN OFFLINE</span>`;
-            }
-        }
+function renderOfflineVideo(s) {
+    playerWrapper.innerHTML = `
+        <div class="offline-banner-container">
+            <video id="offline-video" class="offline-banner-img" poster="${offlineImageSrc}" loop playsinline
+                   disablepictureinpicture disableremoteplayback
+                   controlslist="nodownload nofullscreen noremoteplayback"
+                   oncontextmenu="return false" style="pointer-events:none; opacity:1;"></video>
+        </div>
+    `;
+    const v = document.getElementById('offline-video');
+    v.onerror = renderOfflineImage; // file belum ada / gagal dimuat: kembali ke foto
+    v.src = s.videoUrl;
+
+    const putarTanpaSuara = () => { v.muted = true; v.play().catch(() => {}); };
+    if (s.muted === false) {
+        v.muted = false;
+        v.play().catch(() => {
+            // Browser memblokir suara otomatis: putar tanpa suara, suara menyala saat pengunjung menyentuh layar
+            putarTanpaSuara();
+            const nyalakan = () => { v.muted = false; };
+            ['click', 'touchstart', 'keydown'].forEach(e => document.addEventListener(e, nyalakan, { once: true }));
+        });
+    } else {
+        putarTanpaSuara();
+    }
+}
+
+function renderOfflineState() {
+    if (viewersText) {
+        viewersText.innerHTML = `⚪ <span style="color: #bbb;">STATUS: SIARAN OFFLINE</span>`;
+    }
+    renderOfflineImage(); // foto tampil dulu supaya tidak kosong
+    firebase.database().ref('settings/livestream_offline').once('value').then(snap => {
+        const s = snap.val() || {};
+        if (s.mode === 'video' && s.videoUrl) renderOfflineVideo(s);
+    }).catch(() => {});
+}
 
         // Kirim Pesan Live Chat
         document.getElementById('live-chat-form').addEventListener('submit', (e) => {
