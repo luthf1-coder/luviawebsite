@@ -198,16 +198,21 @@
                         <div class="carousel-bg" style="background-image: url('${vid.thumb}')"></div>
                         
                         <!-- Overlay Teks & Tombol -->
-                       <div class="carousel-overlay">
-                            <!-- Link ke filter genre -->
-                            <a href="videos.html?genre=${encodeURIComponent(vid.genre || 'Umum')}" class="carousel-badge">${vid.genre || 'Umum'}</a>
-                            
-                            <h2 class="carousel-title">${vid.title}</h2>
-                            <!-- Waktu rilis diselipkan di sini -->
-                           <div class="carousel-meta"><span id="hero-badge-${vid.id}">${icon('eye')} Memuat...</span> • ${icon('clock')} ${timeAgoFormated(vid.uploadDate)}</div>
-                            <p class="carousel-desc">${desc}</p>
-                            <a href="watch.html?id=${vid.id}" class="btn-watch-hero">${icon('play')} Tonton</a>
-                        </div>
+<div class="carousel-overlay">
+    <div class="carousel-featured">Featured</div>
+    <h2 class="carousel-title">${vid.title}</h2>
+    <div class="carousel-meta">
+        <a href="videos.html?genre=${encodeURIComponent(vid.genre || 'Umum')}" class="carousel-tag">${vid.genre || 'Umum'}</a>
+        <span class="meta-dot">•</span>
+        <span id="hero-badge-${vid.id}">${icon('eye')} Memuat...</span>
+        <span class="meta-dot">•</span>
+        <span>${icon('clock')} ${timeAgoFormated(vid.uploadDate)}</span>
+    </div>
+    <div class="carousel-actions">
+        <a href="watch.html?id=${vid.id}" class="btn-watch-hero">${icon('play')} Tonton</a>
+        <a href="watch.html?id=${vid.id}#info-title" class="btn-detail-hero">${icon('info')} Detail</a>
+    </div>
+</div>
                     </div>
                 `;
                 indicatorsHtml += `<div class="dot ${index === 0 ? 'active' : ''}" onclick="goToSlide(${index})"></div>`;
