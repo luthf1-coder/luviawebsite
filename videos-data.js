@@ -635,14 +635,14 @@ function renderTrendingRecommendations(containerId, list = videoList) {
 
     container.innerHTML = ''; // Pastikan bersih tanpa menambahkan kartu Live Streaming
 
-    sortedList.forEach(vid => {
+    sortedList.forEach((vid, i) => {
         const card = document.createElement('a');
         card.href = `watch.html?id=${vid.id}`;
         card.className = 'slider-card';
         const uploadTime = vid.uploadDate ? timeAgoFormated(vid.uploadDate) : '';
         
         card.innerHTML = `
-            <div class="thumb-box"><img src="${vid.thumb}" alt="${vid.title}"></div>
+            <div class="thumb-box"><img src="${vid.thumb}" alt="${vid.title}"><span class="rank-num">${i + 1}</span></div>
             <div class="slider-details">
                 <h3>${vid.title}</h3>
                 <p>
