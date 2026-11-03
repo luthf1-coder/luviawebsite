@@ -2806,3 +2806,90 @@ main.container { margin-top: calc(var(--nav-h) + 1rem) !important; }
     .carousel-overlay { padding: 1rem 1.5rem 1.5rem; }
     .carousel-title { font-size: 1.25rem; }
 }
+
+/* =====================================================
+   BLOK 5: LATAR "GELEMBUNG CAHAYA" BERGERAK (SEMUA HALAMAN)
+   ===================================================== */
+
+/* Matikan 2 cahaya statis lama, sisakan warna dasar gelap */
+body { background: #0a0910 !important; }
+
+/* 4 gelembung: dua di <html>, dua di <body> (pakai pseudo-element, tanpa HTML tambahan) */
+html::before, html::after, body::before, body::after {
+    content: "";
+    position: fixed;
+    top: 0; left: 0;
+    z-index: -1;                 /* di belakang semua konten */
+    pointer-events: none;
+    border-radius: 50%;
+    mix-blend-mode: screen;      /* saat bertumpuk, warnanya "bercampur" */
+    will-change: transform;
+}
+
+/* Ungu besar */
+html::before {
+    width: clamp(22rem, 64vmax, 62rem); height: clamp(22rem, 64vmax, 62rem);
+    background: radial-gradient(circle, rgba(140,82,255,.60) 0%, rgba(140,82,255,0) 68%);
+    animation: blob-a 15s ease-in-out infinite alternate;
+}
+/* Oranye besar */
+html::after {
+    width: clamp(22rem, 68vmax, 66rem); height: clamp(22rem, 68vmax, 66rem);
+    background: radial-gradient(circle, rgba(255,145,77,.50) 0%, rgba(255,145,77,0) 68%);
+    animation: blob-b 18s ease-in-out infinite alternate;
+}
+/* Oranye sedang */
+body::before {
+    width: clamp(16rem, 46vmax, 44rem); height: clamp(16rem, 46vmax, 44rem);
+    background: radial-gradient(circle, rgba(255,145,77,.45) 0%, rgba(255,145,77,0) 68%);
+    animation: blob-c 12s ease-in-out infinite alternate;
+}
+/* Ungu sedang */
+body::after {
+    width: clamp(16rem, 42vmax, 40rem); height: clamp(16rem, 42vmax, 40rem);
+    background: radial-gradient(circle, rgba(140,82,255,.50) 0%, rgba(140,82,255,0) 68%);
+    animation: blob-d 14s ease-in-out infinite alternate;
+}
+
+/* Jalur gerak berbeda-beda supaya saling bertemu lalu berpisah */
+@keyframes blob-a {
+    0%   { transform: translate3d(-25vw,-20vh,0) scale(1); }
+    33%  { transform: translate3d(55vw,5vh,0)   scale(1.2); }
+    66%  { transform: translate3d(20vw,65vh,0)  scale(.9); }
+    100% { transform: translate3d(70vw,45vh,0)  scale(1.15); }
+}
+@keyframes blob-b {
+    0%   { transform: translate3d(75vw,60vh,0)  scale(1.1); }
+    33%  { transform: translate3d(10vw,50vh,0)  scale(.9); }
+    66%  { transform: translate3d(60vw,-10vh,0) scale(1.2); }
+    100% { transform: translate3d(-10vw,10vh,0) scale(1); }
+}
+@keyframes blob-c {
+    0%   { transform: translate3d(30vw,70vh,0)  scale(1); }
+    33%  { transform: translate3d(80vw,20vh,0)  scale(1.3); }
+    66%  { transform: translate3d(0vw,30vh,0)   scale(.9); }
+    100% { transform: translate3d(50vw,-15vh,0) scale(1.15); }
+}
+@keyframes blob-d {
+    0%   { transform: translate3d(60vw,-10vh,0) scale(1.1); }
+    33%  { transform: translate3d(-5vw,40vh,0)  scale(.95); }
+    66%  { transform: translate3d(45vw,75vh,0)  scale(1.25); }
+    100% { transform: translate3d(85vw,35vh,0)  scale(1); }
+}
+
+/* Hormati pengguna yang mematikan animasi */
+@media (prefers-reduced-motion: reduce) {
+    html::before, html::after, body::before, body::after { animation: none; }
+}
+
+/* Hero beranda: hapus pita gelap solid di bawah slide agar gelembung tetap terlihat */
+.carousel-bg {
+    -webkit-mask-image: linear-gradient(to bottom, #000 72%, transparent 100%);
+    mask-image: linear-gradient(to bottom, #000 72%, transparent 100%);
+}
+.carousel-overlay {
+    background: linear-gradient(to top,
+        rgba(10,9,16,0.85) 0%,
+        rgba(10,9,16,0.45) 40%,
+        rgba(10,9,16,0) 75%);
+}
