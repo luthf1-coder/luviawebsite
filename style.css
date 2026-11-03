@@ -2631,3 +2631,92 @@ a:focus-visible, button:focus-visible, [tabindex]:focus-visible {
 @media (prefers-reduced-motion: reduce) {
     *, *::before, *::after { transition-duration: 0.01ms !important; animation-duration: 0.01ms !important; }
 }
+
+
+/* =====================================================
+   BLOK 3: REVISI - samakan dengan gambar referensi
+   ===================================================== */
+:root {
+    --nav-h: calc(3.4rem + 20px);               /* tinggi navbar */
+    --hero-h: clamp(14rem, 34vw, 40rem);        /* tinggi hero (di luar navbar) */
+}
+
+/* Jarak aman dari navbar di semua halaman */
+.hero-banner-full { margin-top: var(--nav-h); }
+main.container { margin-top: calc(var(--nav-h) + 1rem) !important; }
+
+/* ---------- HERO ---------- */
+.hero-carousel { height: var(--hero-h); margin-top: var(--nav-h); }
+.carousel-overlay { padding: 1rem clamp(1rem, 4vw, 5rem) 2rem; }
+.carousel-featured {
+    display: flex; align-items: center; gap: .5rem; font-size: .6875rem; font-weight: 500;
+    letter-spacing: 1.5px; text-transform: uppercase; color: #ff914d; margin-bottom: .5rem;
+}
+.carousel-featured::before { content: ""; width: 1.375rem; height: 2px; border-radius: 1px; background: linear-gradient(90deg, #8c52ff, #ff914d); }
+.carousel-title { font-size: clamp(1.375rem, 2.6vw, 3.4rem); font-weight: 500; line-height: 1.2; letter-spacing: -0.2px; margin: 0 0 .5rem; }
+.carousel-meta { display: flex; align-items: center; flex-wrap: wrap; gap: .5rem; font-size: .75rem; color: rgba(255,255,255,0.75); margin-bottom: .875rem; }
+.carousel-meta span { display: inline-flex; align-items: center; gap: .3rem; }
+.carousel-tag { padding: 1px 7px; border-radius: 4px; border: 1px solid rgba(255,255,255,0.4); font-size: .6875rem; color: #fff; text-decoration: none; }
+.carousel-tag:hover { border-color: #ff914d; color: #ff914d; }
+.meta-dot { opacity: .4; }
+.carousel-actions { display: flex; gap: .625rem; }
+.btn-watch-hero { padding: .625rem 1.375rem; font-size: .8125rem; font-weight: 500; border-radius: 10px; box-shadow: 0 6px 24px rgba(255,145,77,0.42); }
+.btn-detail-hero {
+    display: inline-flex; align-items: center; gap: .4rem; padding: .625rem 1.125rem; border-radius: 10px;
+    font-size: .8125rem; color: #fff; text-decoration: none; background: rgba(255,255,255,0.10);
+    border: 1px solid rgba(255,255,255,0.28); backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px);
+}
+.carousel-indicators { bottom: .625rem; }
+@media (min-width: 769px) {
+    .carousel-featured { font-size: .8rem; }
+    .carousel-meta { font-size: .9rem; }
+    .carousel-tag { font-size: .8rem; }
+    .btn-watch-hero, .btn-detail-hero { font-size: .95rem; }
+}
+
+/* ---------- BARIS VIDEO ---------- */
+.header-recommendation { margin-bottom: .75rem; }
+.header-recommendation h2 { font-size: .9375rem; font-weight: 500; margin-bottom: 0 !important; }
+.btn-more { background: none; border: none; padding: 0; box-shadow: none; font-size: .75rem; font-weight: 400; color: rgba(255,255,255,0.6); }
+.btn-more:hover { color: #ff914d; box-shadow: none; }
+.video-slider { gap: .75rem; margin-right: -20px; padding-right: 20px; padding-bottom: .5rem; scrollbar-width: none; }
+.video-slider::-webkit-scrollbar { display: none; }
+
+/* ---------- KARTU VIDEO (tanpa kotak, thumbnail + teks di bawah) ---------- */
+.slider-card, .video-card { background: none; border: none; border-radius: 0; box-shadow: none; overflow: visible; }
+.slider-card { flex: 0 0 clamp(9.375rem, 38vw, 17rem); }
+.slider-card:hover, .video-card:hover { background: none; box-shadow: none; transform: none; }
+.slider-card .thumb-box, .video-card .thumb-box {
+    height: auto; aspect-ratio: 16 / 9; border-radius: .75rem; border: 1px solid rgba(255,255,255,0.12);
+    transition: border-color .25s, box-shadow .25s, transform .25s;
+}
+.slider-card:hover .thumb-box, .video-card:hover .thumb-box {
+    border-color: rgba(255,145,77,0.75); box-shadow: 0 0 22px rgba(255,145,77,0.35); transform: translateY(-3px);
+}
+.featured-live, .featured-live-card { border: none; box-shadow: none; }
+.featured-live .thumb-box, .featured-live-card .thumb-box { border-color: rgba(229,41,75,0.6); box-shadow: 0 0 22px rgba(229,41,75,0.30); }
+
+.slider-details, .video-details { padding: 0; }
+.slider-details h3, .video-details h3 {
+    display: block; -webkit-line-clamp: unset; font-size: .75rem; font-weight: 500; line-height: 1.35;
+    margin: .5rem 0 .125rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+/* Baris viewers dan waktu upload: sejajar satu baris, genre disembunyikan */
+.slider-details p, .video-details p {
+    display: flex; align-items: center; gap: .375rem; margin: 0; font-size: .6875rem; line-height: 1.4;
+    color: rgba(255,255,255,0.55); white-space: nowrap; overflow: hidden;
+}
+.slider-details p br, .video-details p br, .card-genre-btn { display: none; }
+[id^="view-count-"] { color: inherit; gap: .25rem; }
+
+/* Nomor peringkat Trending */
+.rank-num {
+    position: absolute; z-index: 2; left: .5rem; bottom: -.15rem; font-size: 2.375rem; font-weight: 500; line-height: 1;
+    color: transparent; -webkit-text-stroke: 1.5px rgba(255,255,255,0.85); pointer-events: none;
+}
+
+/* Grid video di HP: 2 kolom seperti referensi */
+@media (max-width: 768px) {
+    .videos-page-grid { grid-template-columns: repeat(2, minmax(0,1fr)) !important; gap: 1rem .75rem !important; }
+    .video-grid { grid-template-columns: repeat(2, minmax(0,1fr)); gap: 1rem .75rem; }
+}
