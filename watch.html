@@ -142,7 +142,7 @@
         } else if (currentVid.rumbleEmbed) {
             playerWrapper.innerHTML = `<iframe src="${currentVid.rumbleEmbed}" allowfullscreen="true" style="border:none;"></iframe>`;
         } else if (currentVid.customEmbed) {
-            playerWrapper.innerHTML = `<iframe src="${currentVid.customEmbed}" allowfullscreen="true" allow="autoplay; encrypted-media" style="border:none;"></iframe>`;
+            playerWrapper.innerHTML = `<iframe src="${currentVid.customEmbed}" allowfullscreen="true" allow="autoplay; encrypted-media; picture-in-picture; fullscreen" referrerpolicy="strict-origin-when-cross-origin" style="border:none;"></iframe>`;
         } else if (currentVid.youtubeId) {
             playerWrapper.innerHTML = `<iframe src="https://www.youtube.com/embed/${currentVid.youtubeId}?enablejsapi=1" allowfullscreen="true" allow="accelerometer; autoplay; encrypted-media; picture-in-picture" style="border:none;"></iframe>`;
        } else {
