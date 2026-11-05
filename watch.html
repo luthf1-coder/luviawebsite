@@ -102,9 +102,20 @@
         function jalankanPemutarVideo() {
             const urlParams = new URLSearchParams(window.location.search);
             const currentVideoId = urlParams.get('id') || 'video1';
-            const currentVid = (typeof videoList !== 'undefined' && videoList.find(v => v.id === currentVideoId)) || {
-                id: currentVideoId, title: 'Video Tidak Ditemukan', description: 'Maaf, video ini tidak tersedia.', defaultViews: 0
-        };
+            const currentVid = (typeof videoListSemua !== 'undefined' && videoListSemua.find(v => v.id === currentVideoId)) || {
+    id: currentVideoId, title: 'Video Tidak Ditemukan', description: 'Maaf, video ini tidak tersedia.', defaultViews: 0
+};
+
+// Video pribadi: hanya admin yang boleh buka
+if (currentVid.visibility === 'pribadi' && !IS_ADMIN_BROWSER) {
+    document.getElementById('player-title').innerText = 'Video Tidak Ditemukan';
+    document.getElementById('info-title').innerText = 'Video Tidak Ditemukan';
+    document.getElementById('desc-text').innerText = 'Maaf, video ini tidak tersedia.';
+    document.getElementById('genre-container').style.display = 'none';
+    document.getElementById('meta-container').style.display = 'none';
+    document.getElementById('comments-section').style.display = 'none';
+    return;
+}
 
         document.getElementById('player-title').innerText = currentVid.title;
         document.getElementById('info-title').innerText = currentVid.title;
