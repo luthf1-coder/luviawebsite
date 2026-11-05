@@ -306,7 +306,7 @@ const videoList = [
 const webConfig = {
     namaWebsite: "Luvia Insight Verse",
     teksFooter: "© 2026 Luvia Insight Verse (Product by Luvia Studio TV). All Right Reserved",
-    logoNavbar: "IMG.logoNavbar", // <--- TAMBAHAN LOGO NAVBAR DI SINI
+    logoNavbar: IMG.logoNavbar, // <--- TAMBAHAN LOGO NAVBAR DI SINI
     
     // DAFTAR MENU SIDEBAR (Edit namanya atau linknya di sini!)
     menuSidebar: [
