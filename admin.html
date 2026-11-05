@@ -44,6 +44,7 @@
             <button class="tab-btn" onclick="switchTab('tab-analitik', this); muatAnalitik();">📊 Analitik Website</button>
             <button class="tab-btn" onclick="switchTab('tab-offline', this); muatOfflineVideo();">📡 Livestream Offline</button>
             <button class="tab-btn" onclick="switchTab('tab-platform-live', this); muatPlatformLive();">📡 Bot Backup Live</button>
+            <button class="tab-btn" onclick="switchTab('tab-popup', this); muatDaftarPopup();">📢 Pop-up</button>
         </div>
 
 <!-- 1. TAMBAH VIDEO -->
@@ -126,7 +127,7 @@
                      <div class="wa-room-header" style="justify-content: space-between; display: flex; width: 100%; box-sizing: border-box;">
                         
                         <div style="display:flex; align-items:center; gap:15px;">
-                            <img src="Asset Foto/Thumbnimail .png" class="wa-contact-img" id="wa-room-img">
+                            <img data-img="logoBulat" class="wa-contact-img" id="wa-room-img">
                             <div style="color:white; font-weight:bold;" id="wa-room-name">Nama Pengguna</div>
                         </div>
                         
@@ -291,6 +292,42 @@
     <div id="off-list"><p style="color:#bbb; font-size:13px;">Memuat...</p></div>
 </div>
         
+        <div id="tab-popup" class="panel">
+    <h3 style="margin-top:0;">📢 Pesan Pop-up</h3>
+    <input type="hidden" id="pop-edit-id" value="">
+
+    <div class="admin-form-group"><label>Posisi</label>
+        <select id="pop-posisi"><option value="tengah">🎯 Tengah layar</option><option value="bawah">⬇️ Bawah layar</option></select></div>
+    <div class="admin-form-group"><label>Kapan ditampilkan</label>
+        <select id="pop-tampil">
+            <option value="setiap">Setiap pengunjung datang (sekali tiap kunjungan)</option>
+            <option value="baru">Hanya pengunjung baru (sekali, di kunjungan pertama)</option>
+        </select></div>
+    <div class="admin-form-group"><label>Status</label>
+        <select id="pop-aktif"><option value="1">✅ Aktif</option><option value="0">⏸️ Nonaktif</option></select></div>
+    <div class="admin-form-group"><label>Judul</label><input type="text" id="pop-judul" placeholder="Judul pesan..."></div>
+    <div class="admin-form-group"><label>Isi Pesan</label><textarea id="pop-isi" placeholder="Tulis pesan..."></textarea></div>
+    <div class="admin-form-group"><label>Link Gambar (opsional, boleh IMG:namaKunci)</label><input type="text" id="pop-gambar" placeholder="https://..."></div>
+
+    <div class="admin-form-group">
+        <label>Tombol</label>
+        <div id="pop-tombol-list"></div>
+        <button type="button" class="btn-edit" onclick="popTambahTombol()">➕ Tambah Tombol</button>
+        <p style="font-size:12px; color:#999; margin:8px 0 0;">Kolom "Tujuan" dikosongkan = tombol hanya menutup pesan.</p>
+    </div>
+    <datalist id="dl-tujuan">
+        <option value="index.html"><option value="videos.html"><option value="posts.html">
+        <option value="livestream.html"><option value="support.html"><option value="https://">
+    </datalist>
+
+    <div style="display:flex; gap:10px; flex-wrap:wrap;">
+        <button class="btn-submit-comment" style="flex:1;" onclick="simpanPopup()">💾 Simpan Pop-up</button>
+        <button class="btn-submit-comment" style="flex:1; background:#00a884;" onclick="previewDariForm()">👁️ Pratinjau</button>
+        <button class="btn-submit-comment" style="background:#ff4d4d; width:auto; padding:12px 20px;" onclick="popBatal()">✖ Reset</button>
+    </div>
+    <div id="pop-daftar" style="margin-top:30px;"></div>
+</div>
+        
         <!-- 5. TAMBAH / KELOLA POSTINGAN -->
 <div id="tab-postingan" class="panel">
     <h3 style="margin-top:0;">Upload & Kelola Postingan</h3>
@@ -379,7 +416,7 @@
         function munculkanNotifHP(judul, isi) {
             if (Notification.permission === "granted") {
                 navigator.serviceWorker.ready.then(reg => {
-                    reg.showNotification(judul, { body: isi, icon: "Asset Foto/Thumbnimail .png", badge: "Asset Foto/Thumbnimail .png", vibrate: [200, 100, 200] });
+                    reg.showNotification(judul, { body: isi, icon: IMG.logoBulat, badge: IMG.logoBulat, vibrate: [200, 100, 200] });
                 });
             }
         }
@@ -691,7 +728,7 @@ function hapusProgram(id) {
                 allVideos.reverse().forEach(item => {
                     const k = item.key; const v = item.data;
                     const visStatus = v.visibility === 'pribadi' ? '🔒 Pribadi' : (v.visibility === 'unlisted' ? '🔗 Tdk Publik' : '🌍 Publik');
-                    const thumbImg = v.thumb ? v.thumb : 'Asset Foto/Thumbnimail .png';
+                    const thumbImg = v.thumb ? v.thumb : IMG.logoBulat;
                     const safeTitle = v.title.replace(/'/g, "\\'");
                     const badgeBot = item.source === 'bot' ? '<span style="background:#8c52ff; color:white; padding:2px 5px; border-radius:3px; font-size:9px; margin-left:5px;">🤖 BOT</span>' : '<span style="background:#ff914d; color:white; padding:2px 5px; border-radius:3px; font-size:9px; margin-left:5px;">🔥 ADMIN</span>';
                     
@@ -831,7 +868,7 @@ function hapusProgram(id) {
                     
                     listHtml += `
                     <div class="wa-contact-item ${isActive}" onclick="bukaChatRoom('${did}', '${g.name.replace(/'/g, "\\'")}')">
-                        <img src="Asset Foto/Thumbnimail .png" class="wa-contact-img">
+                        <img src="${IMG.logoBulat}" class="wa-contact-img">
                         <div class="wa-contact-info">
                             <div class="wa-contact-name">${g.name} <span class="wa-contact-time">${timeStr}</span></div>
                             <div class="wa-contact-last">${g.lastMsg}</div>
@@ -1466,6 +1503,114 @@ function togglePasswordVisibility() {
             }
         }
 
+// ====== PESAN POP-UP ======
+let popTombol = [{ teks: 'Tutup', link: '' }];
+let popCache = {};
+let popListenerAktif = false;
+
+function popEsc(s) {
+    return String(s == null ? '' : s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+}
+
+function popRenderTombol() {
+    document.getElementById('pop-tombol-list').innerHTML = popTombol.map((t, i) => `
+        <div class="pop-trow">
+            <input type="text" placeholder="Teks tombol" value="${popEsc(t.teks)}" oninput="popTombol[${i}].teks=this.value">
+            <input type="text" list="dl-tujuan" placeholder="Tujuan (kosong = tutup)" value="${popEsc(t.link)}" oninput="popTombol[${i}].link=this.value">
+            <button type="button" class="btn-delete" onclick="popHapusTombol(${i})">🗑️</button>
+        </div>`).join('') || '<p style="color:#bbb; font-size:12px;">Belum ada tombol (pesan hanya bisa ditutup dengan ✖).</p>';
+}
+function popTambahTombol() { popTombol.push({ teks: '', link: '' }); popRenderTombol(); }
+function popHapusTombol(i) { popTombol.splice(i, 1); popRenderTombol(); }
+
+function popAmbilForm() {
+    return {
+        posisi: document.getElementById('pop-posisi').value,
+        tampil: document.getElementById('pop-tampil').value,
+        aktif: document.getElementById('pop-aktif').value === '1',
+        judul: document.getElementById('pop-judul').value.trim(),
+        isi: document.getElementById('pop-isi').value.trim(),
+        gambar: document.getElementById('pop-gambar').value.trim(),
+        tombol: popTombol.filter(t => (t.teks || '').trim() || (t.link || '').trim())
+                         .map(t => ({ teks: (t.teks || '').trim() || 'Buka', link: (t.link || '').trim() }))
+    };
+}
+
+function simpanPopup() {
+    const d = popAmbilForm();
+    if (!d.judul && !d.isi) return alert('Isi judul atau pesan dulu!');
+    const editId = document.getElementById('pop-edit-id').value;
+    const ref = editId ? firebase.database().ref('popups/' + editId) : firebase.database().ref('popups').push();
+    const lama = editId ? popCache[editId] : null;
+    d.id = ref.key;
+    d.urutan = lama && lama.urutan ? lama.urutan : Date.now();
+    d.versi = Date.now();                       // diedit = dianggap pesan baru
+    ref.set(d).then(() => { alert('Pop-up tersimpan!'); popBatal(); });
+}
+
+function popBatal() {
+    document.getElementById('pop-edit-id').value = '';
+    ['pop-judul', 'pop-isi', 'pop-gambar'].forEach(i => document.getElementById(i).value = '');
+    document.getElementById('pop-posisi').value = 'tengah';
+    document.getElementById('pop-tampil').value = 'setiap';
+    document.getElementById('pop-aktif').value = '1';
+    popTombol = [{ teks: 'Tutup', link: '' }];
+    popRenderTombol();
+}
+
+function editPopup(id) {
+    const p = popCache[id]; if (!p) return;
+    document.getElementById('pop-edit-id').value = id;
+    document.getElementById('pop-posisi').value = p.posisi || 'tengah';
+    document.getElementById('pop-tampil').value = p.tampil || 'setiap';
+    document.getElementById('pop-aktif').value = p.aktif === false ? '0' : '1';
+    document.getElementById('pop-judul').value = p.judul || '';
+    document.getElementById('pop-isi').value = p.isi || '';
+    document.getElementById('pop-gambar').value = p.gambar || '';
+    popTombol = (Array.isArray(p.tombol) ? p.tombol : Object.values(p.tombol || {})).map(t => ({ teks: t.teks || '', link: t.link || '' }));
+    popRenderTombol();
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+function togglePopupAktif(id) {
+    firebase.database().ref('popups/' + id).update({ aktif: popCache[id].aktif === false, versi: Date.now() });
+}
+function hapusPopup(id) { if (confirm('Hapus pop-up ini?')) firebase.database().ref('popups/' + id).remove(); }
+function previewDariForm() { tampilkanPreviewPopup(popAmbilForm()); }
+function previewPopupId(id) { tampilkanPreviewPopup(popCache[id]); }
+
+function muatDaftarPopup() {
+    popRenderTombol();
+    if (popListenerAktif) return;
+    popListenerAktif = true;
+    firebase.database().ref('popups').on('value', snap => {
+        popCache = snap.val() || {};
+        const keys = Object.keys(popCache).sort((a, b) => (popCache[b].urutan || 0) - (popCache[a].urutan || 0));
+        document.getElementById('pop-daftar').innerHTML =
+            `<h4 style="color:#ff914d; border-top:1px solid #333; padding-top:12px;">Daftar Pop-up (${keys.length})</h4>` +
+            (keys.map(k => {
+                const p = popCache[k];
+                return `
+                <div class="list-item" style="align-items:flex-start; gap:10px; flex-wrap:wrap;">
+                    <div style="flex:1; min-width:180px;">
+                        <div style="font-weight:bold;">${popEsc(p.judul || '(tanpa judul)')}</div>
+                        <div style="font-size:11px; color:#bbb; margin-top:4px;">
+                            ${p.posisi === 'bawah' ? '⬇️ Bawah' : '🎯 Tengah'} •
+                            ${p.tampil === 'baru' ? 'Pengunjung baru' : 'Setiap datang'} •
+                            ${p.aktif === false ? '⏸️ Nonaktif' : '✅ Aktif'}
+                        </div>
+                    </div>
+                    <div style="display:flex; gap:5px; flex-wrap:wrap;">
+                        <button class="btn-stats" onclick="previewPopupId('${k}')">👁️</button>
+                        <button class="btn-edit" onclick="editPopup('${k}')">✎ Edit</button>
+                        <button class="btn-edit" style="background:#555;" onclick="togglePopupAktif('${k}')">${p.aktif === false ? 'Aktifkan' : 'Nonaktifkan'}</button>
+                        <button class="btn-delete" onclick="hapusPopup('${k}')">🗑️</button>
+                    </div>
+                </div>`;
+            }).join('') || '<p style="color:#bbb; font-size:13px;">Belum ada pop-up.</p>');
+    });
+}
+    
     </script>
         
         <script>
