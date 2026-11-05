@@ -38,7 +38,7 @@
             <!-- LAYER 1: INFO & CAPTION (Muncul Pertama) -->
             <div class="post-layer-info" id="post-layer-info">
                 <div class="post-header" style="border-bottom: 1px solid rgba(255,255,255,0.3); padding-bottom: 15px; display: flex; align-items: center; gap: 10px;">
-                    <img src="Asset Foto/Thumbnimail .png" style="width: 40px; height: 40px; border-radius: 50%;" alt="Luvia Studio TV">
+                    <img data-img="logoBulat" style="width: 40px; height: 40px; border-radius: 50%;" alt="Luvia Studio TV">
                     <div>
                         <h4 style="margin: 0; font-size: 1rem;">LUVIA STUDIO TV</h4>
                         <p id="post-time-display" style="margin: 2px 0 0; font-size: 0.8rem; color: #bbb;">Beberapa waktu lalu</p>
@@ -181,7 +181,7 @@
             }
 
             if (isVideo) {
-                const thumbUrl = data.thumbnailUrl || 'Asset Foto/Thumbnimail .png'; 
+                const thumbUrl = data.thumbnailUrl || IMG.logoBulat; 
                 mediaContainer.innerHTML = `
                     <div class="plyr-wrapper">
                         <video id="plyr-post-player" playsinline poster="${thumbUrl}">
@@ -350,7 +350,7 @@
 
             let html = `
             <div style="margin-bottom: 15px; display: flex; gap: 12px; ${isReply ? 'margin-left: 40px; margin-top: 10px;' : ''}">
-                <img src="Asset Foto/Thumbnimail .png" style="width: ${isReply ? '28px' : '34px'}; height: ${isReply ? '28px' : '34px'}; border-radius: 50%; background: rgba(255,255,255,0.2); flex-shrink: 0;" alt="Avatar">
+                <img src="${IMG.logoBulat}" style="width: ${isReply ? '28px' : '34px'}; height: ${isReply ? '28px' : '34px'}; border-radius: 50%; background: rgba(255,255,255,0.2); flex-shrink: 0;" alt="Avatar">
                 <div style="flex: 1;">
                     <div style="font-size: 0.85rem; font-weight: bold; color: #fff;">
                         @${c.name} <span style="font-size: 0.75rem; color: #bbb; font-weight: normal; margin-left: 6px;">${timeAgo(c.timestamp)}</span>
