@@ -924,3 +924,14 @@ window.addEventListener('videoDataReady', () => {
         initVideosPage();
     }
 });
+
+function terapkanGambar(root) {
+    (root || document).querySelectorAll('[data-img]').forEach(el => {
+        const u = IMG[el.dataset.img];
+        if (!u) return;
+        if (el.tagName === 'IMG') el.src = u;
+        else if (el.tagName === 'LINK') el.href = u;
+        else el.style.backgroundImage = `url("${u}")`;
+    });
+}
+document.addEventListener('DOMContentLoaded', () => terapkanGambar());
