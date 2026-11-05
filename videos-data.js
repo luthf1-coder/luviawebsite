@@ -61,7 +61,7 @@ const videoList = [
     "id": "kick_vod_134882134",
     "title": "VOD PLAY LIVE STREAMING LUVIA STUDIO TV",
     "defaultViews": 0,
-    "thumb": "Asset Foto/Thumbnimail_VOD_LIVE.png",
+    "thumb": "IMG:vodLive",
     "sources": [],
     "driveEmbed": "https://drive.google.com/file/d/1URGaJsj7tcV4EXXJeWJUGJQNkICdFIbv/preview",
     "youtubeId": "",
@@ -75,7 +75,7 @@ const videoList = [
     "id": "kick_vod_133969675",
     "title": "VOD PLAY LIVE STREAMING LUVIA STUDIO TV",
     "defaultViews": 0,
-    "thumb": "Asset Foto/Thumbnimail_VOD_LIVE.png",
+    "thumb": "IMG:vodLive",
     "sources": [],
     "driveEmbed": "https://drive.google.com/file/d/1cWPBhueR2YyeZfGRyA4QtMqhOd_m0pDi/preview",
     "youtubeId": "",
@@ -89,7 +89,7 @@ const videoList = [
     "id": "kick_vod_129368659",
     "title": "VOD PLAY LIVE STREAMING LUVIA STUDIO TV",
     "defaultViews": 0,
-    "thumb": "Asset Foto/Thumbnimail_VOD_LIVE.png",
+    "thumb": "IMG:vodLive",
     "sources": [],
     "driveEmbed": "https://drive.google.com/file/d/1F1cEEiDLuJWyoTgciYURIFWhbg7mt2oF/preview",
     "youtubeId": "",
@@ -103,7 +103,7 @@ const videoList = [
     "id": "kick_vod_127079161",
     "title": "VOD PLAY LIVE STREAMING LUVIA STUDIO TV",
     "defaultViews": 0,
-    "thumb": "Asset Foto/Thumbnimail_VOD_LIVE.png",
+    "thumb": "IMG:vodLive",
     "sources": [],
     "driveEmbed": "https://drive.google.com/file/d/1DL-OUZH1G6ku0dYnyaJnxItqWbhghktQ/preview",
     "youtubeId": "",
@@ -131,7 +131,7 @@ const videoList = [
     "id": "kick_vod_124783423",
     "title": "VOD PLAY LIVE STREAMING LUVIA STUDIO TV",
     "defaultViews": 0,
-    "thumb": "Asset Foto/Thumbnimail_VOD_LIVE.png",
+    "thumb": "IMG:vodLive",
     "sources": [],
     "driveEmbed": "https://drive.google.com/file/d/13rV-LjZl1VW8z2ZLbphqWIeJDA1XneVu/preview",
     "youtubeId": "",
@@ -145,7 +145,7 @@ const videoList = [
     "id": "kick_vod_123490654",
     "title": "VOD PLAY LIVE STREAMING LUVIA STUDIO TV",
     "defaultViews": 0,
-    "thumb": "Asset Foto/Thumbnimail_VOD_LIVE.png",
+    "thumb": "IMG:vodLive",
     "sources": [],
     "driveEmbed": "https://drive.google.com/file/d/1GDOsTvewAmRzVIY1wyaZV2GdPk7-DMB4/preview",
     "youtubeId": "",
@@ -306,7 +306,7 @@ const videoList = [
 const webConfig = {
     namaWebsite: "Luvia Insight Verse",
     teksFooter: "© 2026 Luvia Insight Verse (Product by Luvia Studio TV). All Right Reserved",
-    logoNavbar: "Asset Foto/Logo Luvia Insight V﻿erse.png", // <--- TAMBAHAN LOGO NAVBAR DI SINI
+    logoNavbar: "IMG.logoNavbar", // <--- TAMBAHAN LOGO NAVBAR DI SINI
     
     // DAFTAR MENU SIDEBAR (Edit namanya atau linknya di sini!)
     menuSidebar: [
@@ -321,10 +321,10 @@ const webConfig = {
 
     // DAFTAR SOSIAL MEDIA
     sosialMedia: [
-        { nama: "YouTube", link: "https://www.youtube.com/@luthfi-fx", gambar: "Asset Foto/logo/2.png" },
-        { nama: "Instagram", link: "https://www.instagram.com/fauzanlathif_86", gambar: "Asset Foto/logo/1.png" },
-        { nama: "TikTok", link: "https://www.tiktok.com/@fauzan_lathif", gambar: "Asset Foto/logo/3.png" },
-        { nama: "UVideo", link: "https://www.dubbindo.site/@luviastudioofficialtv", gambar: "Asset Foto/logo/5.png" }
+        { nama: "YouTube", link: "https://www.youtube.com/@luthfi-fx", gambar: "IMG.sosialYoutube" },
+        { nama: "Instagram", link: "https://www.instagram.com/fauzanlathif_86", gambar: "IMG.sosialInstagram" },
+        { nama: "TikTok", link: "https://www.tiktok.com/@fauzan_lathif", gambar: "IMG.sosialTiktok" },
+        { nama: "UVideo", link: "https://www.dubbindo.site/@luviastudioofficialtv", gambar: "IMG.sosialUvideo" }
     ]
 };
 
@@ -383,7 +383,7 @@ document.addEventListener('DOMContentLoaded', () => {
             <div class="sidebar" id="sidebar">
                 <div class="sidebar-header">
                     <a href="index.html" class="sidebar-brand">
-                        <img src="Asset Foto/Thumbnimail .png" alt="Logo">
+                        <img src="${IMG.logoBulat}" alt="Logo">
                         <span class="nama-web-otomatis">${webConfig.namaWebsite}</span>
                     </a>
                     <button class="close-btn" onclick="toggleSidebar()">×</button>
@@ -614,7 +614,7 @@ function renderSliderRecommendations(containerId, list = videoList) {
         <a href="livestream.html" class="slider-card featured-live">
             <div class="thumb-box">
                 <span id="kick-home-badge" class="badge-live">🔍 Memeriksa...</span>
-                <img src="Asset Foto/live stream.png" alt="Live Streaming">
+                <img src="${IMG.liveCard}" alt="Live Streaming">
             </div>
             <div class="slider-details">
                 <h3>LIVE STREAMING LUVIA STUDIO TV</h3>
@@ -862,6 +862,8 @@ document.addEventListener('DOMContentLoaded', () => {
 // KODE TAMBAHAN UNTUK JALUR HYBRID (BOT GITHUB + ADMIN FIREBASE)
 // =================================================================
 
+videoList.forEach(selesaikanThumb);   // <-- baris ini taruh SEBELUM "const botVideos = [...videoList];"
+
 // 1. Simpan salinan video dari bot
 const botVideos = [...videoList]; 
 
@@ -875,7 +877,7 @@ function selesaikanThumb(v) {
     }
     return v;
 }
-videoList.forEach(selesaikanThumb);   // <-- baris ini taruh SEBELUM "const botVideos = [...videoList];"
+
 
 function muatDataDariFirebase() {
     if (typeof firebase === 'undefined') return;
@@ -935,3 +937,5 @@ function terapkanGambar(root) {
     });
 }
 document.addEventListener('DOMContentLoaded', () => terapkanGambar());
+
+
