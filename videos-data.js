@@ -18,6 +18,38 @@ if (typeof firebase !== 'undefined' && !firebase.apps.length) {
     firebase.initializeApp(firebaseConfig);
 }
 
+// ===== PUSAT GAMBAR (ganti gambar cukup di sini) =====
+const IMG = {
+    logoBulat:       "Asset Foto/Thumbnimail .png",
+    logoNavbar:      "Asset Foto/Logo Luvia Insight Verse.png",
+    banner:          "Asset Foto/Banner Thumbnail.png",
+    bannerProgram:   "Asset Foto/Thumbnimail  Banner YT.png",
+    liveCard:        "Asset Foto/live stream.png",
+    streamOffline:   "Asset Foto/stream offline.png",
+    vodLive:         "Asset Foto/Thumbnimail_VOD_LIVE.png",
+    sosialYoutube:   "Asset Foto/logo/2.png",
+    sosialInstagram: "Asset Foto/logo/1.png",
+    sosialTiktok:    "Asset Foto/logo/3.png",
+    sosialUvideo:    "Asset Foto/logo/5.png"
+};
+
+// Browser ini milik admin? (ditandai saat login admin)
+const IS_ADMIN_BROWSER = (function () {
+    try { return localStorage.getItem('luvia_no_track') === '1'; } catch (e) { return false; }
+})();
+
+// Pengunjung baru? Dihitung SEKARANG, sebelum analytics-tracker.js memberi tanda
+const PENGUNJUNG_BARU = (function () {
+    try {
+        const sudah = localStorage.getItem('luvia_first') || localStorage.getItem('luvia_popup_first');
+        if (!sudah) {
+            localStorage.setItem('luvia_popup_first', String(Date.now()));
+            sessionStorage.setItem('luvia_sesi_baru', '1');
+        }
+        return sessionStorage.getItem('luvia_sesi_baru') === '1';
+    } catch (e) { return false; }
+})();
+
 // IKON GAMBAR (SVG) - sumber: Asset Foto/icons.svg
 function icon(name, extraClass) {
     return '<svg class="ic ' + (extraClass || '') + '" aria-hidden="true"><use href="Asset%20Foto/icons.svg#' + name + '"></use></svg>';
@@ -833,31 +865,44 @@ document.addEventListener('DOMContentLoaded', () => {
 // 1. Simpan salinan video dari bot
 const botVideos = [...videoList]; 
 
-// 2. Fungsi untuk menarik video manual dari Admin Panel Firebase
-// 2. Fungsi untuk menarik video manual dari Admin Panel Firebase
+// Semua video apa pun visibilitasnya (untuk admin & pembukaan lewat link)
+const videoListSemua = [];
+
+// Thumbnail boleh ditulis "IMG:vodLive" supaya ikut pusat gambar
+function selesaikanThumb(v) {
+    if (v && typeof v.thumb === 'string' && v.thumb.indexOf('IMG:') === 0) {
+        v.thumb = IMG[v.thumb.slice(4)] || '';
+    }
+    return v;
+}
+videoList.forEach(selesaikanThumb);   // <-- baris ini taruh SEBELUM "const botVideos = [...videoList];"
+
 function muatDataDariFirebase() {
     if (typeof firebase === 'undefined') return;
-    
+
     firebase.database().ref('videos_manual').on('value', (snapshot) => {
         let adminVideos = [];
-        let adminIds = []; // Simpan ID dari Firebase
-        
+        let adminIds = [];
+
         if (snapshot.exists()) {
             const data = snapshot.val();
             Object.keys(data).forEach(key => {
-                adminVideos.push(data[key]);
+                adminVideos.push(selesaikanThumb(data[key]));
                 adminIds.push(data[key].id);
             });
         }
-        
-        // PENTING: Ambil video Bot yang ID-nya TIDAK ADA di Firebase (Mencegah Duplikat)
+
         const filteredBotVideos = botVideos.filter(v => !adminIds.includes(v.id));
-        
-        // Gabungkan video Bot (yang tidak diedit) + Video Admin (Firebase)
-        videoList.length = 0; 
-        videoList.push(...filteredBotVideos, ...adminVideos); 
-        
-        // Beri sinyal ke website untuk memperbarui tampilan video
+
+        videoListSemua.length = 0;
+        videoListSemua.push(...filteredBotVideos, ...adminVideos);
+
+        // videoList = yang boleh tampil di daftar/slider/pencarian/program
+        videoList.length = 0;
+        videoList.push(...videoListSemua.filter(v =>
+            IS_ADMIN_BROWSER || (v.visibility || 'publik') === 'publik'
+        ));
+
         window.dispatchEvent(new Event('videoDataReady'));
     });
 }
