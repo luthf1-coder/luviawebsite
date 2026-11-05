@@ -320,9 +320,9 @@ const webConfig = {
 
     // DAFTAR SOSIAL MEDIA
     sosialMedia: [
-        { nama: "YouTube", link: "https://www.youtube.com/@luthfi-fx", gambar: "IMG.sosialYoutube" },
-        { nama: "Instagram", link: "https://www.instagram.com/fauzanlathif_86", gambar: "IMG.sosialInstagram" },
-        { nama: "TikTok", link: "https://www.tiktok.com/@fauzan_lathif", gambar: "IMG.sosialTiktok" },
+        { nama: "YouTube", link: "https://www.youtube.com/@luthfi-fx", gambar: IMG.sosialYoutube },
+        { nama: "Instagram", link: "https://www.instagram.com/fauzanlathif_86", gambar: IMG.sosialInstagram },
+        { nama: "TikTok", link: "https://www.tiktok.com/@fauzan_lathif", gambar: IMG.sosialTiktok },
         { nama: "UVideo", link: "https://www.dubbindo.site/@luviastudioofficialtv", gambar: "IMG.sosialUvideo" }
     ]
 };
