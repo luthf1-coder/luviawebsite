@@ -21,7 +21,6 @@ if (typeof firebase !== 'undefined' && !firebase.apps.length) {
 // ===== PUSAT GAMBAR (ganti gambar cukup di sini) =====
 const IMG = {
     logoBulat:       "Asset Foto/Thumbnimail .png",
-    logoNavbar:      "Asset Foto/Logo Luvia Insight Verse.png",
     banner:          "Asset Foto/Banner Thumbnail.png",
     bannerProgram:   "Asset Foto/Thumbnimail  Banner YT.png",
     liveCard:        "Asset Foto/live stream.png",
