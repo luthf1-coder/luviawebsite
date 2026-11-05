@@ -10,6 +10,8 @@
 
     // Browser admin tidak ikut dihitung (ditandai saat login admin)
     try { if (localStorage.getItem('luvia_no_track') === '1') return; } catch (e) { return; }
+    // Hanya jalan setelah pengunjung menekan "Setuju" pada pesan cookie
+try { if (localStorage.getItem('luvia_cookie_consent') !== 'ya') return; } catch (e) { return; }
 
     var db = firebase.database();
     var pad = function (n) { return (n < 10 ? '0' : '') + n; };
