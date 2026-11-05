@@ -939,3 +939,183 @@ function terapkanGambar(root) {
 document.addEventListener('DOMContentLoaded', () => terapkanGambar());
 
 
+// ==========================================
+// PUSAT POP-UP, COOKIE & CEK BROWSER
+// ==========================================
+const HALAMAN_ADMIN = /admin(\.html)?$/i.test(location.pathname);
+const KEY_CONSENT = 'luvia_cookie_consent';
+
+function simpanLokal(k, v) { try { localStorage.setItem(k, v); return true; } catch (e) { return false; } }
+function bacaLokal(k) { try { return localStorage.getItem(k); } catch (e) { return null; } }
+function simpanSesi(k, v) { try { sessionStorage.setItem(k, v); } catch (e) {} }
+function bacaSesi(k) { try { return sessionStorage.getItem(k); } catch (e) { return null; } }
+function escHtmlGlobal(s) {
+    return String(s == null ? '' : s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+}
+
+function cekStorage() {
+    try {
+        localStorage.setItem('__luvia_t', '1'); localStorage.removeItem('__luvia_t');
+        sessionStorage.setItem('__luvia_t', '1'); sessionStorage.removeItem('__luvia_t');
+        return navigator.cookieEnabled !== false;
+    } catch (e) { return false; }
+}
+
+// ---------- Pembangun pop-up (tengah / bawah) ----------
+function bangunPopup(p, onTutup) {
+    const tengah = p.posisi !== 'bawah';
+    const wrap = document.createElement('div');
+    wrap.className = tengah ? 'pop-overlay' : 'pop-bawah';
+
+    const card = document.createElement('div');
+    card.className = 'pop-card';
+    if (p.gambar) {
+        const g = p.gambar.indexOf('IMG:') === 0 ? (IMG[p.gambar.slice(4)] || '') : p.gambar;
+        if (g) card.innerHTML += `<img class="pop-img" src="${escHtmlGlobal(g)}" alt="">`;
+    }
+    card.innerHTML += `<div class="pop-body">
+        ${p.judul ? `<h3 class="pop-judul">${escHtmlGlobal(p.judul)}</h3>` : ''}
+        ${p.isi ? `<p class="pop-isi">${escHtmlGlobal(p.isi)}</p>` : ''}
+        <div class="pop-btns"></div></div>`;
+
+    let sudahTutup = false;
+    const tutup = () => { if (sudahTutup) return; sudahTutup = true; wrap.remove(); if (onTutup) onTutup(); };
+
+    const x = document.createElement('button');
+    x.className = 'pop-x'; x.type = 'button'; x.textContent = '✕'; x.setAttribute('aria-label', 'Tutup');
+    x.addEventListener('click', tutup);
+    card.insertBefore(x, card.firstChild);
+
+    const area = card.querySelector('.pop-btns');
+    let tombol = Array.isArray(p.tombol) ? p.tombol : Object.values(p.tombol || {});
+    if (!tombol.length) tombol = [{ teks: 'Tutup', link: '' }];
+    tombol.forEach(t => {
+        const link = (t.link || '').trim();
+        if (/^\s*javascript:/i.test(link)) return;            // keamanan
+        const el = document.createElement(link ? 'a' : 'button');
+        el.className = 'pop-btn' + (link ? '' : ' sekunder');
+        el.textContent = t.teks || (link ? 'Buka' : 'Tutup');
+        if (link) {
+            el.href = link;
+            if (/^https?:\/\//i.test(link) && link.indexOf(location.origin) !== 0) { el.target = '_blank'; el.rel = 'noopener'; }
+        } else { el.type = 'button'; }
+        el.addEventListener('click', tutup);
+        area.appendChild(el);
+    });
+
+    if (tengah) wrap.addEventListener('click', e => { if (e.target === wrap) tutup(); });
+    wrap.appendChild(card);
+    return wrap;
+}
+
+window.tampilkanPreviewPopup = function (p) { document.body.appendChild(bangunPopup(p, null)); };
+
+// ---------- Antrean pop-up dari Firebase ----------
+function kunciPopup(p) { return 'luvia_popup_' + p.id + '_' + (p.versi || 0); }
+
+function layakTampil(p) {
+    if (bacaSesi(kunciPopup(p))) return false;                 // sudah tampil di kunjungan ini
+    if (p.tampil === 'baru' && !PENGUNJUNG_BARU) return false; // khusus pengunjung baru
+    return true;
+}
+
+function tampilkanAntrean(antrean) {
+    if (!antrean.length) return;
+    const p = antrean.shift();
+    simpanSesi(kunciPopup(p), '1');
+    document.body.appendChild(bangunPopup(p, () => setTimeout(() => tampilkanAntrean(antrean), 350)));
+}
+
+async function jalankanPopup() {
+    if (HALAMAN_ADMIN || typeof firebase === 'undefined' || !firebase.apps.length) return;
+    let daftar = [];
+    try {
+        const snap = await firebase.database().ref('popups').once('value');
+        const d = snap.val() || {};
+        daftar = Object.keys(d).map(k => Object.assign({ id: k }, d[k]));
+    } catch (e) { return; }
+    daftar = daftar.filter(p => p.aktif !== false && layakTampil(p)).sort((a, b) => (a.urutan || 0) - (b.urutan || 0));
+    const antrean = daftar.filter(p => p.posisi !== 'bawah').concat(daftar.filter(p => p.posisi === 'bawah'));
+    tampilkanAntrean(antrean);
+}
+
+// ---------- Pesan cookie (tengah layar: Setuju / Keluar) ----------
+function keluarSitus() {
+    try { window.close(); } catch (e) {}
+    location.replace('about:blank');
+}
+
+function tampilkanCookie(lanjut) {
+    const wrap = document.createElement('div');
+    wrap.className = 'pop-overlay ck-top';
+    wrap.innerHTML = `
+        <div class="pop-card">
+            <div class="pop-body">
+                <h3 class="pop-judul">🍪 Website ini menggunakan cookie</h3>
+                <p class="pop-isi">Kami memakai cookie dan penyimpanan lokal di perangkatmu untuk menghitung jumlah pengunjung dan penonton, serta mengingat nama chat, like, dan komentar milikmu. Video yang disematkan dari YouTube, Google Drive, atau Kick juga dapat menyimpan cookie dari pihak mereka sendiri. Pilih "Setuju" untuk melanjutkan.</p>
+                <div class="pop-btns">
+                    <button type="button" class="pop-btn" id="ck-setuju">Setuju</button>
+                    <button type="button" class="pop-btn sekunder" id="ck-keluar">Keluar</button>
+                </div>
+            </div>
+        </div>`;
+    document.body.appendChild(wrap);
+    wrap.querySelector('#ck-setuju').addEventListener('click', () => {
+        simpanLokal(KEY_CONSENT, 'ya');
+        wrap.remove();
+        lanjut();
+    });
+    wrap.querySelector('#ck-keluar').addEventListener('click', keluarSitus);
+}
+
+// ---------- Peringatan browser yang memblokir ----------
+function tampilkanPeringatanBrowser(masalah) {
+    const wrap = document.createElement('div');
+    wrap.className = 'pop-overlay ck-top2';
+    wrap.innerHTML = `
+        <div class="pop-card">
+            <div class="pop-body">
+                <h3 class="pop-judul">⚠️ Browser kamu memblokir fitur yang dibutuhkan</h3>
+                <p class="pop-isi">${masalah.map(m => '• ' + escHtmlGlobal(m)).join('\n')}
+
+Website ini tidak dapat berjalan normal kalau cookie, penyimpanan data situs, atau koneksi pihak ketiga (Google/Firebase, YouTube, Google Drive, Kick) diblokir.
+
+Rekomendasi: buka memakai browser biasa seperti Google Chrome, Microsoft Edge, atau Firefox dengan pengaturan standar, atau matikan sementara pemblokir/pelindung pelacakan untuk situs ini. Mode Samaran (Incognito/Private) dan pemblokir ketat dapat menyebabkan masalah ini.</p>
+                <div class="pop-btns"><button type="button" class="pop-btn" id="wb-ok">Saya Mengerti</button></div>
+            </div>
+        </div>`;
+    document.body.appendChild(wrap);
+    wrap.querySelector('#wb-ok').addEventListener('click', () => wrap.remove());
+}
+
+function cekBrowserBermasalah() {
+    if (bacaSesi('luvia_warn_browser')) return;
+    const masalah = [];
+    if (!cekStorage()) masalah.push('Cookie / penyimpanan data situs diblokir, sehingga like, komentar, nama chat, dan statistik tidak bisa tersimpan.');
+
+    const tampil = () => {
+        if (!masalah.length || bacaSesi('luvia_warn_browser')) return;
+        simpanSesi('luvia_warn_browser', '1');
+        tampilkanPeringatanBrowser(masalah);
+    };
+
+    if (typeof firebase !== 'undefined' && firebase.apps.length) {
+        let tersambung = false;
+        firebase.database().ref('.info/connected').on('value', s => { if (s.val() === true) tersambung = true; });
+        setTimeout(() => {
+            if (!tersambung && navigator.onLine !== false) {
+                masalah.push('Koneksi ke server data (Firebase / Google) terblokir oleh browser atau ekstensi pemblokir.');
+            }
+            tampil();
+        }, 10000);
+    } else { tampil(); }
+}
+
+// ---------- Jalankan semuanya ----------
+document.addEventListener('DOMContentLoaded', () => {
+    if (HALAMAN_ADMIN) return;
+    const storageOk = cekStorage();
+    if (storageOk && bacaLokal(KEY_CONSENT) !== 'ya') tampilkanCookie(jalankanPopup);
+    else jalankanPopup();
+    cekBrowserBermasalah();
+});
