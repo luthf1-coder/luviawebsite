@@ -21,6 +21,7 @@ if (typeof firebase !== 'undefined' && !firebase.apps.length) {
 // ===== PUSAT GAMBAR (ganti gambar cukup di sini) =====
 const IMG = {
     logoBulat:       "Asset Foto/Thumbnimail .png",
+    logoNavbar:      "Asset Foto/Logo Luvia Insight Verse.png",
     banner:          "Asset Foto/Banner Thumbnail.png",
     bannerProgram:   "Asset Foto/Thumbnimail  Banner YT.png",
     liveCard:        "Asset Foto/live stream.png",
@@ -305,7 +306,7 @@ const videoList = [
 const webConfig = {
     namaWebsite: "Luvia Insight Verse",
     teksFooter: "© 2026 Luvia Insight Verse (Product by Luvia Studio TV). All Right Reserved",
-    logoNavbar: "Asset Foto/Logo Luvia Insight Verse.png", // <--- TAMBAHAN LOGO NAVBAR DI SINI
+    logoNavbar: IMG.logoNavbar, // <--- TAMBAHAN LOGO NAVBAR DI SINI
     
     // DAFTAR MENU SIDEBAR (Edit namanya atau linknya di sini!)
     menuSidebar: [
@@ -323,7 +324,7 @@ const webConfig = {
         { nama: "YouTube", link: "https://www.youtube.com/@luthfi-fx", gambar: IMG.sosialYoutube },
         { nama: "Instagram", link: "https://www.instagram.com/fauzanlathif_86", gambar: IMG.sosialInstagram },
         { nama: "TikTok", link: "https://www.tiktok.com/@fauzan_lathif", gambar: IMG.sosialTiktok },
-        { nama: "UVideo", link: "https://www.dubbindo.site/@luviastudioofficialtv", gambar: "IMG.sosialUvideo" }
+        { nama: "UVideo", link: "https://www.dubbindo.site/@luviastudioofficialtv", gambar: IMG.sosialUvideo }
     ]
 };
 
