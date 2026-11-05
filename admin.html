@@ -39,7 +39,6 @@
         <div class="tab-container">
             <button class="tab-btn active" onclick="switchTab('tab-video', this)">➕ Tambah Video</button>
             <button class="tab-btn" onclick="switchTab('tab-buat-program', this)">📺 Buat Program Baru</button>
-            <button class="tab-btn" onclick="switchTab('tab-isi-program', this)">📂 Video ke Program</button>
             <button class="tab-btn" onclick="switchTab('tab-komplain', this)">💬 Support & Notif (HP)</button>
             <button class="tab-btn" onclick="switchTab('tab-postingan', this)">📸 Tambah Postingan</button>
             <button class="tab-btn" onclick="switchTab('tab-analitik', this); muatAnalitik();">📊 Analitik Website</button>
@@ -91,21 +90,26 @@
         </div>
         <!-- 2. BUAT PROGRAM -->
         <div id="tab-buat-program" class="panel">
-            <div class="admin-form-group"><label>ID Program (tanpa spasi)</label><input type="text" id="prog-id" placeholder="bioskop_malam"></div>
-            <div class="admin-form-group"><label>Nama Program</label><input type="text" id="prog-title" placeholder="Bioskop Liburan..."></div>
-            <div class="admin-form-group"><label>Link Banner</label><input type="text" id="prog-banner" placeholder="https://..."></div>
-            <div class="admin-form-group"><label>Jadwal</label><input type="text" id="prog-schedule"></div>
-            <div class="admin-form-group"><label>Deskripsi</label><textarea id="prog-desc"></textarea></div>
-            <button class="btn-submit-comment" onclick="buatProgramBaru()">Buat Program TV</button>
-        </div>
+    <h3 style="margin-top:0;">Buat / Edit Program TV</h3>
+    <div class="admin-form-group"><label>ID Program (tanpa spasi)</label><input type="text" id="prog-id" placeholder="bioskop_malam"></div>
+    <div class="admin-form-group"><label>Nama Program</label><input type="text" id="prog-title" placeholder="Bioskop Liburan..."></div>
+    <div class="admin-form-group"><label>Link Banner</label><input type="text" id="prog-banner" placeholder="https://..."></div>
+    <div class="admin-form-group"><label>Jadwal</label><input type="text" id="prog-schedule"></div>
+    <div class="admin-form-group"><label>Deskripsi</label><textarea id="prog-desc"></textarea></div>
 
-        <!-- 3. ISI KE PROGRAM -->
-        <div id="tab-isi-program" class="panel">
-            <div class="admin-form-group"><label>Pilih Program</label><select id="select-prog" onchange="muatIsiProgramPlaylist()"></select></div>
-            <div class="admin-form-group"><label>Pilih Video</label><select id="select-vid"></select></div>
-            <button class="btn-submit-comment" onclick="masukkanVideoKeProgram()">Tambahkan ke Playlist</button>
-            <div id="list-playlist-prog" style="margin-top:20px; border-top:1px solid #333; padding-top:15px;"></div>
-        </div>
+    <div style="display:flex; gap:10px;">
+        <button id="btn-simpan-program" class="btn-submit-comment" style="flex:1;" onclick="buatProgramBaru()">Buat Program TV</button>
+        <button id="btn-batal-program" class="btn-submit-comment" style="display:none; background:#ff4d4d; width:auto; padding:12px 20px;" onclick="batalEditProgram()">✖ Batal</button>
+    </div>
+
+    <!-- Muncul setelah program disimpan / diedit -->
+    <div id="prog-video-area" class="pv-area" style="display:none;">
+        <h4>🎬 Video di Program: <span id="prog-video-nama"></span> (<span id="prog-video-jumlah">0</span> video)</h4>
+        <div class="admin-form-group"><input type="text" id="prog-video-cari" placeholder="🔍 Cari video..." oninput="renderPilihVideoProgram()"></div>
+        <div id="prog-video-list"></div>
+    </div>
+</div>
+
 
 <!-- 4. SUPPORT & NOTIF (WA WEB STYLE) -->
         <div id="tab-komplain" class="panel">
@@ -540,66 +544,126 @@ function ambilSrcEmbed(teks) {
         // ==========================================
         // FITUR 2: BUAT PROGRAM & MASUKKAN VIDEO
         // ==========================================
-        // FITUR BUAT DAN EDIT PROGRAM TV
-        function buatProgramBaru() {
-            const idInput = document.getElementById('prog-id').value.trim();
-            const id = idInput.replace(/\s+/g, '_').toLowerCase();
-            if(!id) return alert("ID Program wajib diisi!");
-            
-            firebase.database().ref('programs_info/' + id).set({
-                id: id, 
-                title: document.getElementById('prog-title').value, 
-                banner: document.getElementById('prog-banner').value, 
-                schedule: document.getElementById('prog-schedule').value, 
-                desc: document.getElementById('prog-desc').value
-            }).then(() => { 
-                alert('Program Berhasil Disimpan!'); 
-                document.getElementById('prog-id').disabled = false; // Buka kunci ID
-                document.querySelector('#tab-buat-program .btn-submit-comment').innerText = "Buat Program TV Baru";
-                muatPilihanDropdown(); 
-            });
-        }
+// ====== PROGRAM TV + VIDEO DI DALAMNYA ======
+let progAktifId = '';
+let progAktifRef = null;
+let progAktifIsi = {};
+let cacheViewsAdmin = {};
+let viewsAdminDimuat = false;
 
-        // FUNGSI MEMUAT DATA PROGRAM KE FORM EDIT
-        function editProgram(id) {
-            firebase.database().ref('programs_info/' + id).once('value').then(snap => {
-                const p = snap.val();
-                if(!p) return;
-                
-                document.getElementById('prog-id').value = p.id;
-                document.getElementById('prog-id').disabled = true; // Kunci ID agar tidak berubah
-                document.getElementById('prog-title').value = p.title || '';
-                document.getElementById('prog-banner').value = p.banner || '';
-                document.getElementById('prog-schedule').value = p.schedule || '';
-                document.getElementById('prog-desc').value = p.desc || '';
-                
-                document.querySelector('#tab-buat-program .btn-submit-comment').innerText = "💾 Simpan Perubahan Program";
-                
-                // Pindah ke tab Buat Program
-                document.querySelectorAll('.tab-btn')[1].click(); 
-                window.scrollTo({ top: 0, behavior: 'smooth' });
-            });
-        }
+function muatPilihanDropdown() { if (progAktifId) renderPilihVideoProgram(); }  // tinggal pengait kosong
 
-        function muatPilihanDropdown() {
-            const selVid = document.getElementById('select-vid');
-            if(typeof videoList !== 'undefined') {
-                selVid.innerHTML = ''; [...videoList].reverse().forEach(v => selVid.innerHTML += `<option value="${v.id}">${v.title}</option>`);
-            }
-            firebase.database().ref('programs_info').once('value', snap => {
-                const selProg = document.getElementById('select-prog');
-                selProg.innerHTML = '';
-                if(snap.exists()) {
-                    const progs = snap.val(); Object.keys(progs).forEach(k => selProg.innerHTML += `<option value="${k}">${progs[k].title}</option>`);
-                }
-            });
-        }
+function pvLabelVis(v) {
+    return v.visibility === 'pribadi' ? '🔒 Pribadi' : (v.visibility === 'unlisted' ? '🔗 Tdk Publik' : '🌍 Publik');
+}
 
-        function masukkanVideoKeProgram() {
-            const prog = document.getElementById('select-prog').value;
-            const vid = document.getElementById('select-vid').value;
-            firebase.database().ref('program_playlists/' + prog + '/' + vid).set(true).then(() => alert('Berhasil Dimasukkan ke Playlist Program TV!'));
-        }
+function muatCacheViews() {
+    if (viewsAdminDimuat) return;
+    viewsAdminDimuat = true;
+    firebase.database().ref('video_views').on('value', s => { cacheViewsAdmin = s.val() || {}; renderPilihVideoProgram(); });
+    window.addEventListener('videoDataReady', renderPilihVideoProgram);
+}
+
+function bukaVideoProgram(id, judul) {
+    if (progAktifRef) progAktifRef.off();
+    progAktifId = id;
+    document.getElementById('prog-video-area').style.display = 'block';
+    document.getElementById('prog-video-nama').innerText = judul || id;
+    muatCacheViews();
+    progAktifRef = firebase.database().ref('program_playlists/' + id);
+    progAktifRef.on('value', s => { progAktifIsi = s.val() || {}; renderPilihVideoProgram(); });
+}
+
+function renderPilihVideoProgram() {
+    const box = document.getElementById('prog-video-list');
+    if (!box || !progAktifId) return;
+    const q = (document.getElementById('prog-video-cari').value || '').toLowerCase().trim();
+
+    let semua = (typeof videoListSemua !== 'undefined') ? [...videoListSemua] : [];
+    if (q) semua = semua.filter(v => (v.title || '').toLowerCase().includes(q) || (v.genre || '').toLowerCase().includes(q));
+    semua.sort((a, b) => {
+        const ia = progAktifIsi[a.id] ? 1 : 0, ib = progAktifIsi[b.id] ? 1 : 0;
+        if (ia !== ib) return ib - ia;                                   // yang sudah masuk program di atas
+        return new Date(b.uploadDate || 0) - new Date(a.uploadDate || 0);
+    });
+
+    document.getElementById('prog-video-jumlah').innerText = Object.keys(progAktifIsi).length;
+    box.innerHTML = semua.map(v => {
+        const ada = !!progAktifIsi[v.id];
+        const views = (v.defaultViews || 0) + (cacheViewsAdmin[anAman(v.id)] || 0);
+        return `
+        <div class="pv-row ${ada ? 'pv-on' : ''}">
+            <img class="pv-thumb" src="${v.thumb || IMG.logoBulat}" alt="">
+            <div class="pv-info">
+                <div class="pv-judul">${v.title}</div>
+                <div class="pv-meta">👁️ ${views.toLocaleString('id-ID')} penonton • ${pvLabelVis(v)}</div>
+            </div>
+            <button class="${ada ? 'btn-delete' : 'btn-stats'}" onclick="toggleVideoProgram('${v.id}')">${ada ? '✖ Keluarkan' : '➕ Tambahkan'}</button>
+        </div>`;
+    }).join('') || '<p style="color:#bbb; font-size:13px;">Video tidak ditemukan.</p>';
+}
+
+function toggleVideoProgram(vidId) {
+    if (!progAktifId) return;
+    const ref = firebase.database().ref('program_playlists/' + progAktifId + '/' + vidId);
+    if (progAktifIsi[vidId]) ref.remove(); else ref.set(true);
+}
+
+function buatProgramBaru() {
+    const id = document.getElementById('prog-id').value.trim().replace(/\s+/g, '_').toLowerCase();
+    if (!id) return alert("ID Program wajib diisi!");
+    const judul = document.getElementById('prog-title').value;
+
+    firebase.database().ref('programs_info/' + id).set({
+        id: id, title: judul,
+        banner: document.getElementById('prog-banner').value,
+        schedule: document.getElementById('prog-schedule').value,
+        desc: document.getElementById('prog-desc').value
+    }).then(() => {
+        alert('Program tersimpan! Sekarang pilih video untuk program ini di bawah.');
+        document.getElementById('prog-id').value = id;
+        document.getElementById('prog-id').disabled = true;
+        document.getElementById('btn-simpan-program').innerText = "💾 Simpan Perubahan Program";
+        document.getElementById('btn-batal-program').style.display = 'block';
+        bukaVideoProgram(id, judul);
+    });
+}
+
+function editProgram(id) {
+    firebase.database().ref('programs_info/' + id).once('value').then(snap => {
+        const p = snap.val();
+        if (!p) return;
+        document.getElementById('prog-id').value = p.id;
+        document.getElementById('prog-id').disabled = true;
+        document.getElementById('prog-title').value = p.title || '';
+        document.getElementById('prog-banner').value = p.banner || '';
+        document.getElementById('prog-schedule').value = p.schedule || '';
+        document.getElementById('prog-desc').value = p.desc || '';
+        document.getElementById('btn-simpan-program').innerText = "💾 Simpan Perubahan Program";
+        document.getElementById('btn-batal-program').style.display = 'block';
+        bukaVideoProgram(p.id, p.title);
+        document.querySelectorAll('.tab-btn')[1].click();
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+    });
+}
+
+function batalEditProgram() {
+    if (progAktifRef) progAktifRef.off();
+    progAktifRef = null; progAktifId = ''; progAktifIsi = {};
+    ['prog-id', 'prog-title', 'prog-banner', 'prog-schedule', 'prog-desc'].forEach(i => document.getElementById(i).value = '');
+    document.getElementById('prog-id').disabled = false;
+    document.getElementById('prog-video-area').style.display = 'none';
+    document.getElementById('btn-simpan-program').innerText = "Buat Program TV";
+    document.getElementById('btn-batal-program').style.display = 'none';
+}
+
+function hapusProgram(id) {
+    if (!confirm("Yakin hapus program ini beserta isi playlistnya?")) return;
+    firebase.database().ref('programs_info/' + id).remove();
+    firebase.database().ref('program_playlists/' + id).remove();
+    if (progAktifId === id) batalEditProgram();
+}
+
 
         // ==========================================
         // FITUR 3: HAPUS VIDEO, PROGRAM, DAN KOMPLAIN
@@ -664,7 +728,7 @@ function ambilSrcEmbed(teks) {
                             <span>📺 ${data[k].title}</span> 
                             <div>
                                 <button class="btn-edit" onclick="editProgram('${k}')">✎ Edit</button>
-                                <button class="btn-delete" onclick="hapusData('programs_info/${k}'); hapusData('program_playlists/${k}')">🗑️ Hapus</button>
+                                <button class="btn-delete" onclick="hapusProgram('${k}')">🗑️ Hapus</button>
                             </div>
                         </div>`; 
                     });
@@ -676,24 +740,6 @@ function ambilSrcEmbed(teks) {
             });
         }
     
-        // 4. FUNGSI KELOLA PLAYLIST DI DALAM PROGRAM (Bisa Hapus Video di Program)
-        function muatIsiProgramPlaylist() {
-            const prog = document.getElementById('select-prog').value;
-            if(!prog) return;
-            firebase.database().ref('program_playlists/' + prog).on('value', snap => {
-                let html = '<h4 style="color:#ff914d; margin:0 0 10px 0;">Daftar Video di Program Ini</h4>';
-                if(snap.exists()){
-                    const data = snap.val();
-                    Object.keys(data).forEach(vidId => {
-                        html += `<div style="background:#111; padding:10px; margin-bottom:5px; border-left:3px solid #ff914d; display:flex; justify-content:space-between; align-items:center;">
-                            <span style="font-size:13px;">${vidId}</span>
-                            <button style="background:#ff4d4d; border:none; color:white; padding:4px 8px; border-radius:4px; cursor:pointer;" onclick="hapusData('program_playlists/${prog}/${vidId}')">Hapus</button>
-                        </div>`;
-                    });
-                } else { html += '<p style="color:#bbb; font-size:13px;">Program ini belum ada videonya.</p>'; }
-                document.getElementById('list-playlist-prog').innerHTML = html;
-            });
-        }
 
         // 5. FUNGSI BUKA MODAL DIAGRAM ANALITIK
         let myChartInstance = null;
@@ -1460,7 +1506,7 @@ function anBandingkan(now, prev, hari) {
     return Math.abs(pct) + '% ' + (pct > 0 ? 'lebih tinggi' : 'lebih rendah') + ' daripada ' + hari + ' hari sebelumnya';
 }
 function anJudulVideo(key) {
-    const v = (typeof videoList !== 'undefined') ? videoList.find(x => anAman(x.id) === key) : null;
+    const v = (typeof videoListSemua !== 'undefined') ? videoListSemua.find(x => anAman(x.id) === key) : null;
     return v ? { judul: v.title, tgl: v.uploadDate || '' } : { judul: key, tgl: '' };
 }
 function anSet(id, html) { const el = document.getElementById(id); if (el) el.innerHTML = html; }
@@ -1596,9 +1642,9 @@ function renderPerformaTerbaru() {
 
     // ---- Video terbaru ----
     let htmlVideo = '<div><p style="color:#bbb;">Belum ada video.</p></div>';
-    const terbaru = (typeof videoList !== 'undefined' ? [...videoList] : [])
+        const terbaru = (typeof videoListSemua !== 'undefined' ? [...videoListSemua] : [])
         .sort((a, b) => new Date(b.uploadDate || 0) - new Date(a.uploadDate || 0)).slice(0, 4);
-
+    
     const pVideo = terbaru.length ? Promise.all(terbaru.map(x =>
         db.ref('video_views/' + anAman(x.id)).once('value').then(s => (x.defaultViews || 0) + (s.val() || 0))
     )).then(totals => {
