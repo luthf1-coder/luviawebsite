@@ -278,6 +278,7 @@
             const res = await fetch(`https://kick.com/api/v2/channels/${kickUsername}`);
             const data = await res.json();
             if (data.livestream && data.livestream.is_live) {
+                offTampil = false; offKunci = '';
                 live = true;
                 viewers = data.livestream.viewer_count || 0;
                 mulai = parseUTC(data.livestream.created_at || data.livestream.start_time);
@@ -291,6 +292,7 @@
             }
             if (viewersText) viewersText.innerHTML = `🔴 <span style="color:#ff4d4d; font-weight:bold;">SEDANG LIVE</span> • 👁️ ${viewers} Penonton Saat Ini`;
             nyalakanChat(mulai || FALLBACK_MULAI);
+            
         } else {
             if (statusTerakhir !== false) renderOfflineState();
             matikanChat();
@@ -298,9 +300,63 @@
         statusTerakhir = live;
     }
 
-    function renderOfflineState() {
+    // ---------- LAYAR OFFLINE: FOTO ATAU VIDEO (diatur dari tab Offline di admin) ----------
+    let offSet = { mode: 'thumbnail', videoUrl: '', videoName: '', muted: true };
+    let offSiap = false;     // pengaturan dari Firebase sudah diterima?
+    let offTampil = false;   // layar offline sedang dipakai?
+    let offKunci = '';       // penanda tampilan terakhir, supaya video tidak diputar ulang terus
+
+    firebase.database().ref('settings/livestream_offline').on('value', snap => {
+        offSet = Object.assign({ mode: 'thumbnail', videoUrl: '', videoName: '', muted: true }, snap.val() || {});
+        offSiap = true;
+        if (offTampil) renderOfflineState();       // admin ganti pengaturan: langsung berubah
+    });
+    // Jika Firebase lambat/terblokir, jangan biarkan layar kosong
+    setTimeout(() => { if (!offSiap) { offSiap = true; if (offTampil) renderOfflineState(); } }, 4000);
+
+    function tampilkanFotoOffline() {
+        offKunci = 'foto';
         playerWrapper.innerHTML = `<div class="offline-banner-container"><img src="${IMG.streamOffline}" alt="Siaran Offline" class="offline-banner-img"></div>`;
+    }
+
+    function renderOfflineState() {
+        offTampil = true;
         if (viewersText) viewersText.innerHTML = `⚪ <span style="color:#bbb;">STATUS: SIARAN OFFLINE</span>`;
+        setStatusChat(false);
+        if (!offSiap) return;                       // tunggu pengaturan dari admin
+
+        const pakaiVideo = offSet.mode === 'video' && offSet.videoUrl;
+        const kunci = pakaiVideo ? 'video|' + offSet.videoUrl + '|' + (offSet.muted ? 'm' : 's') : 'foto';
+        if (kunci === offKunci) return;             // tampilan sama, jangan digambar ulang
+        if (!pakaiVideo) { tampilkanFotoOffline(); return; }
+
+        offKunci = kunci;
+        playerWrapper.innerHTML = `
+            <div class="offline-banner-container" style="background:#000;">
+                <video id="offline-video" playsinline loop ${offSet.muted ? 'muted' : 'controls'} poster="${IMG.streamOffline}"
+                       style="width:100%; height:100%; object-fit:contain; background:#000;"></video>
+                <button type="button" id="offline-suara" style="display:none; position:absolute; bottom:12px; right:12px; z-index:5; background:rgba(0,0,0,0.65); color:#fff; border:1px solid rgba(255,255,255,0.4); border-radius:999px; padding:8px 14px; font-size:13px; font-weight:bold; cursor:pointer;">🔊 Nyalakan suara</button>
+            </div>`;
+
+        const v = document.getElementById('offline-video');
+        v.muted = !!offSet.muted;
+        v.src = encodeURI(offSet.videoUrl);
+        v.onerror = () => {
+            console.error('Video offline gagal dimuat:', offSet.videoUrl);
+            tampilkanFotoOffline();                 // cadangan: kembali ke foto
+        };
+
+        const p = v.play();
+        if (p && p.catch) p.catch(() => {
+            // Browser menolak putar otomatis dengan suara: putar tanpa suara + tombol untuk menyalakan
+            v.muted = true;
+            v.play().catch(() => {});
+            const b = document.getElementById('offline-suara');
+            if (b) {
+                b.style.display = 'block';
+                b.onclick = () => { v.muted = false; v.play(); b.style.display = 'none'; };
+            }
+        });
     }
 
     cekStatusKick();
