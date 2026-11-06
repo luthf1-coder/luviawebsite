@@ -3005,3 +3005,7 @@ body::after {
 .lc-edited { font-size: .65rem; color: rgba(255,255,255,0.4); margin-left: .35rem; }
 .lc-editbar { display: flex; align-items: center; justify-content: space-between; font-size: .75rem; color: #ff914d; background: rgba(255,145,77,0.10); border-left: 3px solid #ff914d; border-radius: 6px; padding: .3rem .6rem; }
 .lc-editbar button { background: none; border: none; color: #ff8a8a; cursor: pointer; font-size: .75rem; }
+
+:where(.av) { width: 2rem; height: 2rem; border-radius: 50%; object-fit: cover; flex-shrink: 0; background: #333; }
+.av-huruf { display: inline-flex; align-items: center; justify-content: center; font-weight: 700; color: #14111f; font-size: .85rem; line-height: 1; }
+.avatar-sm.av-huruf { font-size: .7rem; }
