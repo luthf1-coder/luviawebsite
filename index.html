@@ -293,7 +293,12 @@
         }
 
         // Panggil render saat halaman di-load
-        renderHeroCarousel();
+        let heroSudah = false;
+window.addEventListener('videoDataReady', () => {
+    if (heroSudah) return;
+    heroSudah = true;
+    renderHeroCarousel();
+});
 
     </script>
 </body>
