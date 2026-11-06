@@ -40,18 +40,18 @@
         </div>
 
         <div class="tab-container">
-            <button class="tab-btn active" onclick="switchTab('tab-video', this)">➕ Tambah Video</button>
+            <button class="tab-btn active" id="btn-tab-analitik" onclick="switchTab('tab-analitik', this); muatAnalitik();">📊 Analitik Website</button>
+            <button class="tab-btn" id="btn-tab-komplain" onclick="switchTab('tab-komplain', this)">💬 Support & Notif (HP)</button>
+            <button class="tab-btn" id="btn-tab-video" onclick="switchTab('tab-video', this)">➕ Tambah Video</button>
             <button class="tab-btn" onclick="switchTab('tab-buat-program', this)">📺 Program TV</button>
-            <button class="tab-btn" onclick="switchTab('tab-komplain', this)">💬 Support & Notif (HP)</button>
             <button class="tab-btn" onclick="switchTab('tab-postingan', this)">📸 Tambah Postingan</button>
-            <button class="tab-btn" onclick="switchTab('tab-analitik', this); muatAnalitik();">📊 Analitik Website</button>
             <button class="tab-btn" onclick="switchTab('tab-offline', this); muatOfflineVideo();">📡 Livestream Offline</button>
             <button class="tab-btn" onclick="switchTab('tab-platform-live', this); muatPlatformLive();">📡 Bot Backup Live</button>
             <button class="tab-btn" onclick="switchTab('tab-popup', this); muatDaftarPopup();">📢 Pop-up</button>
         </div>
 
 <!-- 1. TAMBAH VIDEO -->
-        <div id="tab-video" class="panel active">
+        <div id="tab-video" class="panel">
             <h3 style="margin-top:0;">Tambah / Edit Video Manual</h3>
             
             <!-- INPUT TERSEMBUNYI UNTUK EDIT -->
@@ -194,7 +194,7 @@
             </div>
         </div>
 
-<div id="tab-analitik" class="panel">
+<div id="tab-analitik" class="panel active">
 
     <h3 style="margin-top:0;">📊 Analitik Website</h3>
     <div class="an-range">
@@ -457,6 +457,7 @@ function togglePengunjung() {
                 muatLogNotifikasi(); // <--- TAMBAHKAN BARIS INI
                 muatDaftarHapus(); 
                 muatDaftarPostingan();
+                muatAnalitik();
             } else { document.getElementById('login-error').style.display = 'block'; }
         }
 
@@ -568,7 +569,7 @@ function ambilSrcEmbed(teks) {
                 document.getElementById('btn-batal-edit').style.display = "block"; // Munculkan tombol batal
                 
                 // Pindah ke tab video
-                document.querySelectorAll('.tab-btn')[0].click();
+                document.getElementById('btn-tab-video').click();
                 window.scrollTo({ top: 0, behavior: 'smooth' });
             });
         }
