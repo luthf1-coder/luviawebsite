@@ -304,6 +304,48 @@ const videoList = [
 
 
 // ==========================================
+// PUSAT AVATAR / FOTO PROFIL (kendalikan di sini)
+// ==========================================
+const AVATAR = {
+    // "huruf"  = lingkaran berwarna + huruf depan nama penonton
+    // "gambar" = semua penonton memakai gambarDefault
+    // "acak"   = tiap nama dapat gambar dari daftar pilihan
+    mode: "huruf",
+    gambarDefault: IMG.logoBulat,     // dipakai mode "gambar" & penonton tanpa nama
+    gambarAdmin:   IMG.logoBulat,     // foto profil admin / CS / LUVIA STUDIO TV
+    pilihan: [],                      // contoh: ["Asset Foto/avatar/1.png", "Asset Foto/avatar/2.png"]
+    warna: ["#ff914d", "#b794ff", "#ffd166", "#6ee7b7", "#7dd3fc", "#f9a8d4", "#fca5a5"]
+};
+
+function hashAvatar(s) {
+    let h = 0;
+    for (let i = 0; i < s.length; i++) h = (h * 31 + s.charCodeAt(i)) >>> 0;
+    return h;
+}
+function warnaAvatar(nama) {
+    return AVATAR.warna[hashAvatar(String(nama || '')) % AVATAR.warna.length];
+}
+// opsi: { kelas: 'nama-kelas-css', ukuran: 28 (px), admin: true }
+function buatAvatar(nama, opsi) {
+    opsi = opsi || {};
+    const kelas = opsi.kelas || '';
+    const ukuran = opsi.ukuran ? `width:${opsi.ukuran}px;height:${opsi.ukuran}px;` : '';
+    const n = String(nama || '').trim();
+
+    if (opsi.admin) return `<img class="av ${kelas}" src="${AVATAR.gambarAdmin}" alt="" style="${ukuran}">`;
+
+    if (AVATAR.mode === 'huruf' && n) {
+        const huruf = escHtmlGlobal(Array.from(n)[0].toUpperCase());
+        return `<span class="av av-huruf ${kelas}" style="${ukuran}background:${warnaAvatar(n)}">${huruf}</span>`;
+    }
+    if (AVATAR.mode === 'acak' && n && AVATAR.pilihan.length) {
+        const src = AVATAR.pilihan[hashAvatar(n) % AVATAR.pilihan.length];
+        return `<img class="av ${kelas}" src="${src}" alt="" style="${ukuran}">`;
+    }
+    return `<img class="av ${kelas}" src="${AVATAR.gambarDefault}" alt="" style="${ukuran}">`;
+}
+
+// ==========================================
 // PUSAT KOMANDO GLOBAL WEBSITE LUVIA
 // ==========================================
 const webConfig = {
@@ -951,6 +993,11 @@ function terapkanGambar(root) {
         else if (el.tagName === 'LINK') el.href = u;
         else el.style.backgroundImage = `url("${u}")`;
     });
+
+    (root || document).querySelectorAll('[data-avatar]').forEach(el => {
+        el.src = (el.dataset.avatar === 'admin') ? AVATAR.gambarAdmin : AVATAR.gambarDefault;
+    });
+  
 }
 document.addEventListener('DOMContentLoaded', () => terapkanGambar());
 
