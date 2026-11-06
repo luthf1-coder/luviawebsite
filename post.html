@@ -155,12 +155,9 @@
             }
 
             // 3. RENDER VIDEO ACAK (Menarik fungsi dari videos-data.js)
-            // Memastikan data videoList sudah siap sebelum merender grid
-            setTimeout(() => {
-                if (typeof renderGridRecommendations === 'function') {
-                    renderGridRecommendations('random-video-grid', videoList);
-                }
-            }, 500);
+           window.addEventListener('videoDataReady', () => {
+    if (typeof renderGridRecommendations === 'function') renderGridRecommendations('random-video-grid', videoList);
+});
         });
 
         // ==========================================
