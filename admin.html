@@ -33,7 +33,10 @@
     <div id="admin-dashboard">
         <div style="display: flex; justify-content: space-between; border-bottom: 1px solid #333; padding-bottom: 15px; margin-bottom: 20px;">
             <h2 style="margin:0; color:#ff914d;">Control Panel</h2>
-            <a href="index.html" style="color: #bbb; text-decoration: none;">❮ Ke Website</a>
+            <div style="display:flex; gap:12px; align-items:center; flex-wrap:wrap;">
+    <button id="btn-mode-pengunjung" onclick="togglePengunjung()" style="background:#333; color:#fff; border:1px solid #555; padding:8px 12px; border-radius:6px; cursor:pointer; font-size:12px;">👁️ Uji sebagai Pengunjung</button>
+    <a href="index.html" style="color: #bbb; text-decoration: none;">❮ Ke Website</a>
+</div>
         </div>
 
         <div class="tab-container">
@@ -401,6 +404,24 @@
 <script>
         const passwordAdmin = "luthfi"; 
         let waktuLoginAdmin = 0;
+    let modePengunjung = false;
+function tandaiAdmin() {
+    if (!modePengunjung) { try { localStorage.setItem('luvia_admin_view', String(Date.now())); } catch (e) {} }
+}
+setInterval(tandaiAdmin, 60000);
+function togglePengunjung() {
+    modePengunjung = !modePengunjung;
+    const b = document.getElementById('btn-mode-pengunjung');
+    if (modePengunjung) {
+        try { localStorage.removeItem('luvia_admin_view'); } catch (e) {}
+        b.textContent = '👤 Mode Pengunjung AKTIF (klik untuk kembali admin)';
+        b.style.background = '#00a884';
+    } else {
+        tandaiAdmin();
+        b.textContent = '👁️ Uji sebagai Pengunjung';
+        b.style.background = '#333';
+    }
+}
 
         // DAFTARKAN MESIN NOTIFIKASI BROWSER HP (sw.js)
         if ('serviceWorker' in navigator) { navigator.serviceWorker.register('sw.js'); }
@@ -426,6 +447,7 @@
             if (isAuto || inputPass === passwordAdmin) {
                 sessionStorage.setItem('admin_logged_in', 'true'); // Simpan sesi login
                 localStorage.setItem('luvia_no_track', '1');
+                                tandaiAdmin();
                 document.getElementById('login-overlay').style.display = 'none';
                 document.getElementById('admin-dashboard').style.display = 'block';
                 waktuLoginAdmin = Date.now();
@@ -1457,7 +1479,7 @@ function simpanPlatformLive() {
     const code = m[1].toLowerCase();
     const id = 'rumble_' + code;
 
-    if (typeof videoList !== 'undefined' && videoList.some(v => v.id === id)) {
+    if (typeof videoList !== 'undefined' && videoListSemua.some(v => v.id === id)) {
         return alert('Kartu untuk video ini sudah ada!');
     }
 
