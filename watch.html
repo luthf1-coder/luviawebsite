@@ -42,7 +42,7 @@
                         <h3><span id="comment-count">0</span> Komentar</h3>
 
                         <div class="comment-input-area">
-                            <img data-img="logoBulat" class="comment-avatar" alt="Avatar">
+                            <img data-avatar="default" class="comment-avatar" alt="Avatar">
                             <form id="comment-form" class="comment-form">
                                 <input type="text" id="comment-name" placeholder="Nama Anda..." required>
                                 <textarea id="comment-text" placeholder="Tambahkan komentar..." required></textarea>
@@ -302,7 +302,7 @@ if (currentVid.visibility === 'pribadi' && !IS_ADMIN_BROWSER) {
 
             let html = `
                 <div class="yt-comment-wrapper" id="comment-${id}">
-                    <img src="${defaultAvatarURL}" class="comment-avatar ${isReply ? 'avatar-sm' : ''}" alt="Avatar">
+                    ${buatAvatar(c.name, { kelas: 'comment-avatar ' + (isReply ? 'avatar-sm' : '') })}
                     <div class="comment-content">
                         <div class="comment-header">
                             <span class="comment-name">@${c.name}</span>
@@ -332,7 +332,7 @@ if (currentVid.visibility === 'pribadi' && !IS_ADMIN_BROWSER) {
             if (!isReply) {
                 html += `
                         <div class="reply-form-container" id="reply-form-${id}" style="display: none;">
-                            <img src="${defaultAvatarURL}" class="comment-avatar avatar-sm" alt="Avatar">
+                            ${buatAvatar('', { kelas: 'comment-avatar avatar-sm' })}
                             <div style="flex:1;">
                                 <input type="text" id="reply-name-${id}" placeholder="Nama..." required class="reply-input-name">
                                 <textarea id="reply-text-${id}" placeholder="Balas komentar..." required></textarea>
