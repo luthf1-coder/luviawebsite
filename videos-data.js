@@ -35,7 +35,10 @@ const IMG = {
 
 // Browser ini milik admin? (ditandai saat login admin)
 const IS_ADMIN_BROWSER = (function () {
-    try { return localStorage.getItem('luvia_no_track') === '1'; } catch (e) { return false; }
+    try {
+        const t = Number(localStorage.getItem('luvia_admin_view') || 0);
+        return t > 0 && (Date.now() - t) < 30 * 60 * 1000;   // admin aktif maksimal 30 menit
+    } catch (e) { return false; }
 })();
 
 // Pengunjung baru? Dihitung SEKARANG, sebelum analytics-tracker.js memberi tanda
@@ -627,7 +630,7 @@ function renderSliderRecommendations(containerId, list = videoList) {
     `;
 
     if (sortedList.length === 0) {
-        html += `<div style="padding: 20px; color: #ffffff; font-weight: bold;">Video tidak ditemukan.</div>`;
+        html += `<div style="padding: 20px; color: #ffffff; font-weight: bold;">${window.videoDataSiap ? 'Video tidak ditemukan.' : 'Memuat video...'}</div>`;
         container.innerHTML = html;
     } else {
         container.innerHTML = html;
@@ -867,6 +870,9 @@ videoList.forEach(selesaikanThumb);   // <-- baris ini taruh SEBELUM "const botV
 // 1. Simpan salinan video dari bot
 const botVideos = [...videoList]; 
 
+videoList.length = 0;              // kosongkan dulu, diisi setelah Firebase menjawab
+window.videoDataSiap = false;
+
 // Semua video apa pun visibilitasnya (untuk admin & pembukaan lewat link)
 const videoListSemua = [];
 
@@ -905,11 +911,21 @@ function muatDataDariFirebase() {
             IS_ADMIN_BROWSER || (v.visibility || 'publik') === 'publik'
         ));
 
+        window.videoDataSiap = true;
+      
         window.dispatchEvent(new Event('videoDataReady'));
     });
 }
 // Jalankan sistem hybrid
 muatDataDariFirebase();
+
+setTimeout(() => {
+    if (window.videoDataSiap) return;
+    videoListSemua.push(...botVideos);
+    videoList.push(...botVideos);
+    window.videoDataSiap = true;
+    window.dispatchEvent(new Event('videoDataReady'));
+}, 8000);
 
 // 3. Update tampilan otomatis saat data siap
 window.addEventListener('videoDataReady', () => {
