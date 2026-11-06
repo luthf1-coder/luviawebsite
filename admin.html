@@ -701,7 +701,7 @@ function editProgram(id) {
         document.getElementById('btn-simpan-program').innerText = "💾 Simpan Perubahan Program";
         document.getElementById('btn-batal-program').style.display = 'block';
         bukaVideoProgram(p.id, p.title);
-        document.querySelectorAll('.tab-btn')[1].click();
+        document.getElementById('btn-tab-buat-program').click();
         window.scrollTo({ top: 0, behavior: 'smooth' });
     });
 }
