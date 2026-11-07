@@ -760,11 +760,13 @@ function hapusProgram(id) {
                     
                     html += `
                     <div class="admin-list-item">
-                        <img src="${thumbImg}" class="admin-list-thumb">
-                        <div class="admin-list-info">
-                            <div style="font-weight:bold; font-size:14px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">${v.title}</div>
-                            <div style="font-size:11px; color:#bbb; margin-top:4px;">${visStatus} ${badgeBot} • ID: ${k}</div>
-                        </div>
+                        <a href="watch.html?id=${encodeURIComponent(k)}" class="admin-list-thumb-link" onclick="return bukaPratinjau(this.href)"><img src="${thumbImg}" class="admin-list-thumb"></a>
+<div class="admin-list-info">
+    <a href="watch.html?id=${encodeURIComponent(k)}" class="admin-link" onclick="return bukaPratinjau(this.href)">
+        <div style="font-weight:bold; font-size:14px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">${v.title}</div>
+    </a>
+    <div style="font-size:11px; color:#bbb; margin-top:4px;">${visStatus} ${badgeBot} • ID: ${k}</div>
+</div>
                         <div class="admin-list-actions">
                             <button class="btn-stats" onclick="bukaAnalitik('${k}', '${safeTitle}')">📊</button>
                             <button class="btn-edit" onclick="editVideoManual('${k}')">✎ Edit</button>
@@ -1342,12 +1344,13 @@ function muatDaftarPostingan() {
                 
                 html += `
                 <div class="admin-list-item">
-                    ${isVideo ? 
+                    <a href="post.html?id=${k}" class="admin-list-thumb-link" onclick="return bukaPratinjau(this.href)">${isVideo ? 
                         `<video src="${p.videoUrl}" class="admin-list-thumb" style="object-fit:cover;"></video>` : 
                         `<img src="${p.videoUrl}" class="admin-list-thumb">`
-                    }
+                      
+                    } </a>
                     <div class="admin-list-info">
-                        <div style="font-weight:bold; font-size:13px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">${p.caption || 'Tanpa Caption'}</div>
+                        <a href="post.html?id=${k}" class="admin-link" onclick="return bukaPratinjau(this.href)"><div style="font-weight:bold; font-size:13px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">${p.caption || 'Tanpa Caption'}</div></a>
                         <div style="font-size:11px; color:#bbb; margin-top:4px;">ID: ${k}</div>
                     </div>
                     <div class="admin-list-actions">
