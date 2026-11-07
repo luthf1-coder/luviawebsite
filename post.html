@@ -1,110 +1,101 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="id">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>LIHAT POSTINGAN - LUVIA STUDIO</title>
-    <!-- CSS Bawaan -->
+    <link rel="stylesheet" href="https://cdn.plyr.io/3.7.8/plyr.css" />
     <link rel="stylesheet" href="style.css" />
     <link rel="icon" type="image/png" data-img="logoBulat">
-    
-    <!-- CSS PLYR -->
-    <link rel="stylesheet" href="https://cdn.plyr.io/3.7.8/plyr.css" />
 
-    <!-- FIREBASE SDK -->
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-database-compat.js"></script>
-
-
 </head>
-<body class="page-post">
-
-  <!-- WADAH NAVBAR OTOMATIS DARI PUSAT KOMANDO -->
+<body>
     <nav id="navbar-container"></nav>
-    
     <div id="sidebar-container"></div>
 
-    <!-- BACKGROUND GELAP HP SAAT BUKA KOMENTAR -->
-    <div class="mobile-comment-backdrop" id="mobile-comment-backdrop" onclick="toggleKomentar(false)"></div>
+    <div class="pp-backdrop" id="pp-backdrop"></div>
 
-    <!-- AREA POSTINGAN UTAMA -->
-    <div class="post-container">
-        <div class="post-media-section" id="post-media-container">
-            <p style="color: #bbb; padding: 50px;">Memuat media...</p>
-        </div>
-        
-        <div class="post-sidebar-section" style="position: relative; overflow: hidden;">
-            
-            <!-- LAYER 1: INFO & CAPTION (Muncul Pertama) -->
-            <div class="post-layer-info" id="post-layer-info">
-                <div class="post-header" style="border-bottom: 1px solid rgba(255,255,255,0.3); padding-bottom: 15px; display: flex; align-items: center; gap: 10px;">
-                    <img data-avatar="admin" style="width: 40px; height: 40px; border-radius: 50%;" alt="Luvia Studio TV">
-                    <div>
-                        <h4 style="margin: 0; font-size: 1rem;">LUVIA STUDIO TV</h4>
-                        <p id="post-time-display" style="margin: 2px 0 0; font-size: 0.8rem; color: #bbb;">Beberapa waktu lalu</p>
+    <main class="pp-page">
+        <article class="pp-card" id="pp-card">
+
+            <!-- HEADER AKUN -->
+            <header class="pp-head">
+                <div class="pp-ring"><img data-avatar="admin" alt="Luvia Studio TV"></div>
+                <div class="pp-head-info">
+                    <div class="pp-user">LUVIA STUDIO TV <span data-ikon="centang" class="pp-verified"></span></div>
+                    <div class="pp-sub" id="post-time-display">Memuat...</div>
+                </div>
+                <button type="button" class="pp-icon-btn" id="btn-more" aria-label="Salin link"><span data-ikon="lainnya"></span></button>
+            </header>
+
+            <!-- MEDIA -->
+            <div class="pp-media" id="post-media-container">
+                <p class="pp-loading">Memuat media...</p>
+            </div>
+
+            <!-- CAPTION -->
+            <div class="pp-caption" id="pp-caption">
+                <img data-avatar="admin" class="pp-cap-ava" alt="">
+                <div class="pp-cap-text"><b>LUVIA STUDIO TV</b> <span id="post-caption-display">Memuat deskripsi...</span><button type="button" id="cap-toggle" class="pp-more-link" style="display:none;">selengkapnya</button></div>
+            </div>
+
+            <!-- DAFTAR KOMENTAR + INPUT (di HP menjadi bottom sheet) -->
+            <div class="pp-sheet" id="pp-sheet">
+                <div class="pp-sheet-head">
+                    <span>Komentar</span>
+                    <button type="button" class="pp-icon-btn" id="pp-sheet-close" aria-label="Tutup"><span data-ikon="tutup"></span></button>
+                </div>
+
+                <div class="pp-list" id="post-comments-list">
+                    <p class="pp-empty">Memuat komentar...</p>
+                </div>
+
+                <form class="pp-input" id="post-comment-form" autocomplete="off">
+                    <div id="pc-reply-bar" class="pp-replybar" style="display:none;">
+                        <span id="pc-reply-text"></span>
+                        <button type="button" id="pc-reply-batal" aria-label="Batal"><span data-ikon="tutup"></span></button>
                     </div>
-                </div>
-                
-                <div class="post-caption" id="post-caption-display" style="padding: 15px 0; border-bottom: 1px solid rgba(255,255,255,0.3); flex: 1; overflow-y: auto;">
-                    Memuat deskripsi postingan...
-                </div>
-                
-                <div class="post-actions" style="padding: 15px 0 0 0; border-bottom: none; gap: 20px; display: flex;">
-                    <button class="post-action-btn" id="btn-like-post"><svg class="ic"><use href="Asset%20Foto/icons.svg#heart"></use></svg> <span id="post-like-count">0</span> Suka</button>
-                    <!-- Klik tombol ini akan memicu animasi geser komentar dari bawah -->
-                    <button class="post-action-btn" onclick="toggleKomentar(true)"><svg class="ic"><use href="Asset%20Foto/icons.svg#message"></use></svg> Komentar</button>
-                </div>
+                    <div id="pc-name-row"><input type="text" id="post-comment-name" placeholder="Nama Anda..." maxlength="24"></div>
+                    <div id="pc-who-row" class="pp-who" style="display:none;"></div>
+                    <div class="pp-input-row">
+                        <input type="text" id="post-comment-text" placeholder="Tambahkan komentar..." maxlength="500">
+                        <button type="submit" class="pp-post-btn" id="pc-kirim">Kirim</button>
+                    </div>
+                </form>
             </div>
 
-            <!-- LAYER 2: KOMENTAR MENTOK BAWAH & SAMPING -->
-            <div class="post-layer-comments" id="post-layer-comments">
-                <div class="comments-header-top" style="border-bottom: 1px solid rgba(255,255,255,0.3); padding: 15px; display: flex; align-items: center; justify-content: space-between; color: white; font-weight: bold;">
-                    <span>Komentar (<span id="comment-count-header">0</span>)</span>
-                    <button class="btn-tutup-komentar" onclick="toggleKomentar(false)" style="background:none; border:none; color:white; font-size:1.2rem; cursor:pointer;">✖</button>
+            <!-- TOMBOL AKSI -->
+            <div class="pp-actions">
+                <div class="pp-actions-left">
+                    <button type="button" class="pp-act" id="btn-like-post" aria-label="Suka"><span id="ico-like" data-ikon="suka"></span></button>
+                    <button type="button" class="pp-act" id="btn-open-comments" aria-label="Komentar"><span data-ikon="komentar"></span></button>
+                    <button type="button" class="pp-act" id="btn-share-post" aria-label="Bagikan"><span data-ikon="bagikan"></span></button>
                 </div>
-
-                <!-- Daftar Komentar -->
-                <div id="post-comments-list" style="flex: 1; overflow-y: auto; padding: 15px;">
-                    <p style="color: #ddd; text-align: center; font-size: 0.9rem; margin-top: 20px;">Memuat komentar...</p>
-                </div>
-
-               <!-- Form Input Komentar -->
-                <div class="comment-input-area" style="padding: 15px; border-top: 1px solid rgba(255,255,255,0.3); background: rgba(0,0,0,0.4); margin-top: auto;">
-                    <form id="post-comment-form" style="display: flex; flex-direction: column; gap: 8px; width: 100%;">
-                        <input type="text" id="post-comment-name" placeholder="Nama Anda..." required style="width: 100%; box-sizing: border-box; background: transparent; border: none; border-bottom: 1px solid rgba(255, 255, 255, 0.4); color: white; padding: 6px; outline: none; font-size: 0.9rem;">
-                        <textarea id="post-comment-text" placeholder="Tambahkan komentar..." required style="width: 100%; box-sizing: border-box; background: transparent; border: none; border-bottom: 1px solid rgba(255, 255, 255, 0.4); color: white; padding: 6px; outline: none; resize: none; min-height: 35px; font-family: inherit; font-size: 0.9rem;"></textarea>
-                        
-                        <div style="display: flex; justify-content: flex-end; gap: 10px; margin-top: 5px; width: 100%;">
-                            <button type="button" onclick="document.getElementById('post-comment-text').value=''" style="background: transparent; border: none; color: #fff; cursor: pointer; padding: 5px 12px; border-radius: 15px; font-size: 0.85rem;">Batal</button>
-                            <button type="submit" style="background: linear-gradient(45deg, #8c52ff, #ff914d); color: white; border: none; cursor: pointer; padding: 5px 15px; border-radius: 15px; font-weight: bold; font-size: 0.85rem;">Kirim</button>
-                        </div>
-                    </form>
-                </div>
+                <button type="button" class="pp-act" id="btn-save" aria-label="Simpan"><span id="ico-save" data-ikon="simpan"></span></button>
             </div>
 
-        </div>
-    </div>
+            <!-- INFO SUKA / WAKTU -->
+            <div class="pp-meta">
+                <div class="pp-likes"><span id="post-like-count">0</span> suka &nbsp;·&nbsp; <span class="pp-views"><span data-ikon="dilihat"></span> <span id="post-view-count">0</span></span></div>
+                <button type="button" class="pp-viewall" id="pp-viewall">Lihat semua komentar</button>
+                <div class="pp-time" id="post-time-ago"></div>
+            </div>
+        </article>
 
-    <!-- WADAH GRID BAWAH -->
-    <div class="bottom-sections">
-        <!-- POSTINGAN LAINNYA (Grid Instagram) -->
-        <h2 class="section-title">
-            Postingan Lainnya 
-            <a href="posts.html" style="font-size: 0.8rem; background: rgba(255,255,255,0.2); padding: 5px 12px; border-radius: 15px; color: white; text-decoration: none;">Feed ❯</a>
-        </h2>
-        <div class="instagram-grid" id="other-posts-grid">
-            <p style="color: #888;">Memuat postingan lainnya...</p>
-        </div>
+        <!-- POSTINGAN LAINNYA -->
+        <section class="pp-section">
+            <h2 class="pp-section-title"><span>Postingan Lainnya</span><a href="posts.html" class="pp-pill">Feed <span data-ikon="maju"></span></a></h2>
+            <div class="pp-grid" id="other-posts-grid"><p class="pp-empty">Memuat postingan lainnya...</p></div>
+        </section>
 
-        <!-- VIDEO PILIHAN ACAK (Grid Video Watch.html) -->
-        <h2 class="section-title">
-            Video Pilihan Acak
-            <a href="videos.html" style="font-size: 0.8rem; background: #8c52ff; padding: 5px 12px; border-radius: 15px; color: white; text-decoration: none;">More Videos ❯</a>
-        </h2>
-        <div class="video-grid" id="random-video-grid">
-            <p style="color: #888;">Memuat video acak...</p>
-        </div>
-    </div>
+        <!-- VIDEO PILIHAN -->
+        <section class="pp-section">
+            <h2 class="pp-section-title"><span>Video Pilihan</span><a href="videos.html" class="pp-pill pp-pill-o">Semua Video <span data-ikon="maju"></span></a></h2>
+            <div class="video-grid" id="random-video-grid"><p class="pp-empty">Memuat video...</p></div>
+        </section>
+    </main>
 
     <footer>
         <div class="container footer-container">
@@ -113,461 +104,346 @@
         </div>
     </footer>
 
-    <!-- SCRIPT UTAMA -->
     <script src="https://cdn.plyr.io/3.7.8/plyr.js"></script>
     <script src="videos-data.js"></script>
     <script src="analytics-tracker.js"></script>
-    
+
     <script>
-        document.addEventListener('DOMContentLoaded', () => {
-            const urlParams = new URLSearchParams(window.location.search);
-            const postId = urlParams.get('id');
+    const el = (id) => document.getElementById(id);
+    let postId = null;
+    let player = null;
+    let balasKe = null;        // { id: komentarInduk, nama }
+    let editTarget = null;     // { id, parent, isReply }
+    const balasanTerbuka = new Set();
 
-            if (!postId) {
-                document.getElementById('post-media-container').innerHTML = '<p style="color:red;">Postingan tidak ditemukan.</p>';
-                return;
-            }
+    function waktuLalu(ts) {
+        if (!ts) return 'Baru saja';
+        const m = Math.floor((Date.now() - ts) / 60000);
+        if (m < 1) return 'Baru saja';
+        if (m < 60) return m + ' menit lalu';
+        const j = Math.floor(m / 60);
+        if (j < 24) return j + ' jam lalu';
+        const h = Math.floor(j / 24);
+        if (h < 7) return h + ' hari lalu';
+        return Math.floor(h / 7) + ' minggu lalu';
+    }
+    function ringkasAngka(n) {
+        n = Number(n) || 0;
+        if (n >= 1000000) return (n / 1000000).toFixed(1).replace('.0', '') + 'M';
+        if (n >= 1000) return (n / 1000).toFixed(1).replace('.0', '') + 'K';
+        return String(n);
+    }
+    function setIkon(spanId, nama) { const s = el(spanId); if (s) { s.dataset.ok = ''; s.dataset.ikon = nama; s.innerHTML = icon(IKON[nama]); } }
 
-            if (typeof firebase !== 'undefined') {
-                // 1. AMBIL DATA POSTINGAN INI
-                firebase.database().ref('posts/' + postId).once('value').then(snap => {
-                    if (snap.exists()) {
-                        const p = snap.val();
-                        renderMainPost(p, postId);
-                        incrementPostViews(postId);
-                        
-                        // PANGGIL FUNGSI KOMENTAR
-                        initPostComments(postId);
-                    } else {
-                        document.getElementById('post-media-container').innerHTML = '<p style="color:red;">Postingan ini telah dihapus.</p>';
-                    }
-                });
+    document.addEventListener('DOMContentLoaded', () => {
+        terapkanIkon();
+        postId = new URLSearchParams(window.location.search).get('id');
+        if (!postId) { el('post-media-container').innerHTML = '<p class="pp-loading">Postingan tidak ditemukan.</p>'; return; }
 
-                // 2. AMBIL POSTINGAN LAINNYA UNTUK GRID (KECUALI POST INI)
-                firebase.database().ref('posts').once('value').then(snap => {
-                    if(snap.exists()) {
-                        firebase.database().ref('post_views').once('value').then(viewsSnap => {
-                            const viewsData = viewsSnap.exists() ? viewsSnap.val() : {};
-                            renderOtherPosts(snap.val(), viewsData, postId);
-                        }).catch(() => renderOtherPosts(snap.val(), {}, postId));
-                    }
-                });
-            }
-
-            // 3. RENDER VIDEO ACAK (Menarik fungsi dari videos-data.js)
-           window.addEventListener('videoDataReady', () => {
-    if (typeof renderGridRecommendations === 'function') renderGridRecommendations('random-video-grid', videoList);
-});
+        firebase.database().ref('posts/' + postId).once('value').then(snap => {
+            if (!snap.exists()) { el('post-media-container').innerHTML = '<p class="pp-loading">Postingan ini telah dihapus.</p>'; return; }
+            renderPostUtama(snap.val());
+            firebase.database().ref('post_views/' + postId).transaction(n => (n || 0) + 1);
+            mulaiKomentar();
         });
 
-        // ==========================================
-        // FUNGSI RENDER POSTINGAN UTAMA
-        // ==========================================
-        function renderMainPost(data, id) {
-            // PERBAIKAN: Deteksi otomatis apakah ini foto atau video dari database
-            const fileUrl = data.videoUrl || data.imageUrl || '';
-            const isVideo = fileUrl.includes('.mp4');
-            const mediaContainer = document.getElementById('post-media-container');
-            
-            document.getElementById('post-caption-display').innerText = data.caption || "Tidak ada keterangan.";
-            
-            // Logika Waktu
-            if (data.timestamp) {
-                const date = new Date(data.timestamp);
-                document.getElementById('post-time-display').innerText = date.toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' });
-            }
+        firebase.database().ref('post_views/' + postId).on('value', s => { el('post-view-count').innerText = ringkasAngka(s.val() || 0); });
 
-            if (isVideo) {
-                const thumbUrl = data.thumbnailUrl || IMG.logoBulat; 
-                mediaContainer.innerHTML = `
-                    <div class="plyr-wrapper">
-                        <video id="plyr-post-player" playsinline poster="${thumbUrl}">
-                            <source src="${fileUrl}" type="video/mp4" />
-                        </video>
-                    </div>
-                `;
+        firebase.database().ref('posts').once('value').then(snap => {
+            if (!snap.exists()) { el('other-posts-grid').innerHTML = '<p class="pp-empty">Belum ada postingan lain.</p>'; return; }
+            firebase.database().ref('post_views').once('value')
+                .then(v => renderPostLain(snap.val(), v.val() || {}))
+                .catch(() => renderPostLain(snap.val(), {}));
+        });
 
-                const player = new Plyr('#plyr-post-player', {
-                    controls: ['progress', 'current-time', 'duration', 'mute', 'volume', 'fullscreen'],
-                    clickToPlay: true, 
-                    autoplay: true,    
-                    muted: false,      
-                });
+        // Video pilihan: tunggu data video siap
+        const isiVideo = () => { if (typeof renderGridRecommendations === 'function') renderGridRecommendations('random-video-grid', videoList); };
+        window.addEventListener('videoDataReady', isiVideo);
+        if (typeof videoList !== 'undefined' && videoList.length) isiVideo();
+    });
 
-                // FUNGSI KETUK 2X (Double Tap / Double Click) untuk Skip 10 detik
-                let lastTap = 0;
-                const plyrContainer = mediaContainer.querySelector('.plyr-wrapper');
-                
-                // Untuk HP (Touch)
-                plyrContainer.addEventListener('touchend', (e) => {
-                    const currentTime = new Date().getTime();
-                    const tapLength = currentTime - lastTap;
-                    if (tapLength < 300 && tapLength > 0) {
-                        const clickX = e.changedTouches[0].clientX;
-                        if (clickX > window.innerWidth / 2) player.forward(10);
-                        else player.rewind(10);
-                        e.preventDefault(); 
-                    }
-                    lastTap = currentTime;
-                });
+    // =====================================================================
+    //  POSTINGAN UTAMA
+    // =====================================================================
+    function renderPostUtama(data) {
+        const fileUrl = data.videoUrl || data.imageUrl || '';
+        const isVideo = /\.(mp4|webm|mov)(\?|$)/i.test(fileUrl);
+        const wadah = el('post-media-container');
 
-                // Untuk PC (Mouse Double Click)
-                plyrContainer.addEventListener('dblclick', (e) => {
-                    const clickX = e.clientX;
-                    const containerRect = plyrContainer.getBoundingClientRect();
-                    if (clickX > containerRect.left + (containerRect.width / 2)) {
-                        player.forward(10);
-                    } else {
-                        player.rewind(10);
-                    }
-                });
-
-            } else {
-                mediaContainer.innerHTML = `<img src="${fileUrl}" alt="Foto Postingan">`;
-            }
-
-            // Sistem Like Postingan Utama
-            const likeBtn = document.getElementById('btn-like-post');
-            const likeCountEl = document.getElementById('post-like-count');
-            
-            firebase.database().ref('post_likes/' + id).on('value', snap => {
-                const totalLikes = snap.val() || 0;
-                likeCountEl.innerText = totalLikes;
-                likeBtn.style.color = localStorage.getItem('liked_post_' + id) ? '#ff914d' : '#fff';
-            });
-
-            // PERBAIKAN: Update angka langsung di layar (Optimistic UI) & Anti-Spam
-            likeBtn.onclick = function() {
-                // Cegah spam klik (tombol tidak bisa diklik bertubi-tubi dalam waktu sangat cepat)
-                this.disabled = true;
-                setTimeout(() => this.disabled = false, 500);
-
-                let currentHasLiked = localStorage.getItem('liked_post_' + id);
-                const likesRef = firebase.database().ref('post_likes/' + id);
-                
-                // Baca angka yang sedang tampil di layar
-                let currentCount = parseInt(likeCountEl.innerText) || 0;
-                
-                if (currentHasLiked) {
-                    // Batal Suka
-                    localStorage.removeItem('liked_post_' + id);
-                    likeBtn.style.color = '#fff';
-                    likeCountEl.innerText = Math.max(0, currentCount - 1); // Langsung kurangi angka di layar
-                } else {
-                    // Suka
-                    localStorage.setItem('liked_post_' + id, 'true');
-                    likeBtn.style.color = '#ff914d';
-                    likeCountEl.innerText = currentCount + 1; // Langsung tambah angka di layar
-                }
-
-                // Proses kirim ke database tetap berjalan di latar belakang
-                likesRef.transaction(currentLikes => {
-                    let newLikes = currentLikes || 0;
-                    if (currentHasLiked) {
-                        return Math.max(0, newLikes - 1); 
-                    } else {
-                        return newLikes + 1;
-                    }
-                });
-            };
+        // Caption (bisa dilipat)
+        const cap = data.caption || 'Tidak ada keterangan.';
+        el('post-caption-display').innerText = cap;
+        if (cap.length > 140) {
+            const box = el('pp-caption'); box.classList.add('lipat');
+            const tg = el('cap-toggle'); tg.style.display = 'inline';
+            tg.onclick = () => { const l = box.classList.toggle('lipat'); tg.innerText = l ? 'selengkapnya' : 'sembunyikan'; };
         }
-        // ==========================================
-        // FUNGSI RENDER POSTINGAN LAINNYA
-        // ==========================================
-        function renderOtherPosts(postsData, viewsData, currentPostId) {
-            const container = document.getElementById('other-posts-grid');
-            let html = '';
-            
-            const keys = Object.keys(postsData).reverse().filter(k => k !== currentPostId).slice(0, 6);
-            
-            if (keys.length === 0) {
-                container.innerHTML = '<p style="color:#888;">Tidak ada postingan lain.</p>';
+
+        // Waktu
+        if (data.timestamp) {
+            const d = new Date(data.timestamp);
+            el('post-time-display').innerText = d.toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' });
+            el('post-time-ago').innerText = waktuLalu(data.timestamp).toUpperCase();
+        } else { el('post-time-display').innerText = 'Luvia Insight Verse'; }
+
+        if (isVideo) {
+            wadah.innerHTML = '<div class="pp-video-wrap"><video id="plyr-post-player" playsinline loop muted poster="' + escHtmlGlobal(data.thumbnailUrl || '') + '"><source src="' + escHtmlGlobal(fileUrl) + '" type="video/mp4"></video></div>';
+            player = new Plyr('#plyr-post-player', {
+                controls: ['play-large', 'progress', 'current-time', 'mute', 'volume', 'fullscreen'],
+                clickToPlay: true, autoplay: true, muted: true, loop: { active: true }
+            });
+            // ketuk 2x = maju/mundur 10 detik
+            let lastTap = 0;
+            const wrap = wadah.querySelector('.pp-video-wrap');
+            wrap.addEventListener('touchend', (e) => {
+                const now = Date.now(), sel = now - lastTap;
+                if (sel < 300 && sel > 0) {
+                    const k = wrap.getBoundingClientRect();
+                    if (e.changedTouches[0].clientX > k.left + k.width / 2) player.forward(10); else player.rewind(10);
+                    e.preventDefault();
+                }
+                lastTap = now;
+            });
+            wrap.addEventListener('dblclick', (e) => {
+                const k = wrap.getBoundingClientRect();
+                if (e.clientX > k.left + k.width / 2) player.forward(10); else player.rewind(10);
+            });
+        } else {
+            wadah.innerHTML = '<img src="' + escHtmlGlobal(fileUrl) + '" alt="Foto Postingan" class="pp-img"><div class="pp-heart-pop" id="pp-heart-pop">' + icon(IKON.sukaIsi) + '</div>';
+            wadah.addEventListener('dblclick', () => { if (!sudahSuka()) alihkanSuka(true); animasiHati(); });
+            let lastTap = 0;
+            wadah.addEventListener('touchend', () => {
+                const now = Date.now();
+                if (now - lastTap < 300 && now - lastTap > 0) { if (!sudahSuka()) alihkanSuka(true); animasiHati(); }
+                lastTap = now;
+            });
+        }
+
+        mulaiSuka();
+        mulaiSimpan();
+        terapkanIkon();
+    }
+
+    function animasiHati() {
+        const h = el('pp-heart-pop'); if (!h) return;
+        h.classList.remove('jalan'); void h.offsetWidth; h.classList.add('jalan');
+    }
+
+    // ---------- SUKA ----------
+    const sudahSuka = () => !!localStorage.getItem('liked_post_' + postId);
+    function segarkanIkonSuka() {
+        const s = sudahSuka();
+        setIkon('ico-like', s ? 'sukaIsi' : 'suka');
+        el('btn-like-post').classList.toggle('aktif', s);
+    }
+    function alihkanSuka(paksaSuka) {
+        const tombol = el('btn-like-post');
+        if (tombol.dataset.sibuk) return;
+        tombol.dataset.sibuk = '1'; setTimeout(() => delete tombol.dataset.sibuk, 450);
+
+        const ref = firebase.database().ref('post_likes/' + postId);
+        const sudah = sudahSuka();
+        if (paksaSuka === true && sudah) return;
+        if (sudah) localStorage.removeItem('liked_post_' + postId); else localStorage.setItem('liked_post_' + postId, 'true');
+
+        const sekarang = parseInt(el('post-like-count').dataset.n || '0', 10) || 0;
+        const baru = sudah ? Math.max(0, sekarang - 1) : sekarang + 1;
+        el('post-like-count').dataset.n = baru; el('post-like-count').innerText = ringkasAngka(baru);
+        segarkanIkonSuka();
+        ref.transaction(n => sudah ? Math.max(0, (n || 0) - 1) : (n || 0) + 1);
+    }
+    function mulaiSuka() {
+        firebase.database().ref('post_likes/' + postId).on('value', s => {
+            const n = s.val() || 0;
+            el('post-like-count').dataset.n = n; el('post-like-count').innerText = ringkasAngka(n);
+        });
+        segarkanIkonSuka();
+        el('btn-like-post').onclick = () => { alihkanSuka(); if (sudahSuka()) animasiHati(); };
+    }
+
+    // ---------- SIMPAN & BAGIKAN ----------
+    function mulaiSimpan() {
+        const tampil = () => { const s = !!localStorage.getItem('saved_post_' + postId); setIkon('ico-save', s ? 'simpanIsi' : 'simpan'); el('btn-save').classList.toggle('aktif', s); };
+        tampil();
+        el('btn-save').onclick = () => {
+            if (localStorage.getItem('saved_post_' + postId)) { localStorage.removeItem('saved_post_' + postId); tampilToast('Dihapus dari tersimpan'); }
+            else { localStorage.setItem('saved_post_' + postId, '1'); tampilToast('Postingan disimpan di perangkat ini'); }
+            tampil();
+        };
+        const bagikan = async () => {
+            try {
+                if (navigator.share) await navigator.share({ title: 'Postingan LUVIA STUDIO TV', url: location.href });
+                else { await navigator.clipboard.writeText(location.href); tampilToast('Link postingan disalin'); }
+            } catch (e) {}
+        };
+        el('btn-share-post').onclick = bagikan;
+        el('btn-more').onclick = async () => { try { await navigator.clipboard.writeText(location.href); tampilToast('Link postingan disalin'); } catch (e) {} };
+    }
+
+    // =====================================================================
+    //  POSTINGAN LAINNYA (grid ala Instagram)
+    // =====================================================================
+    function renderPostLain(postsData, viewsData) {
+        const keys = Object.keys(postsData).reverse().filter(k => k !== postId).slice(0, 9);
+        const wadah = el('other-posts-grid');
+        if (!keys.length) { wadah.innerHTML = '<p class="pp-empty">Tidak ada postingan lain.</p>'; return; }
+        wadah.innerHTML = keys.map(key => {
+            const p = postsData[key];
+            const url = p.videoUrl || p.imageUrl || '';
+            const vid = /\.(mp4|webm|mov)(\?|$)/i.test(url);
+            const media = vid
+                ? '<video src="' + escHtmlGlobal(url) + '" poster="' + escHtmlGlobal(p.thumbnailUrl || '') + '" preload="none" playsinline muted loop onmouseenter="this.play()" onmouseleave="this.pause(); this.load();"></video><span class="pp-g-tipe">' + icon(IKON.video) + '</span>'
+                : '<img src="' + escHtmlGlobal(url) + '" alt="Postingan" loading="lazy">';
+            return '<a href="post.html?id=' + key + '" class="pp-g-item">' + media +
+                   '<span class="pp-g-views">' + icon(IKON.dilihat) + ' ' + ringkasAngka(viewsData[key] || 0) + '</span></a>';
+        }).join('');
+    }
+
+    // =====================================================================
+    //  KOMENTAR (gaya Instagram)
+    // =====================================================================
+    function bukaSheet(buka) {
+        el('pp-sheet').classList.toggle('buka', buka);
+        el('pp-backdrop').classList.toggle('buka', buka && window.innerWidth <= 900);
+        if (buka) setTimeout(() => el('post-comment-text').focus(), 280);
+    }
+
+    function mulaiKomentar() {
+        const commentsRef = firebase.database().ref('post_comments/' + postId);
+        const list = el('post-comments-list');
+        const refKomentar = (id, parent, isReply) => isReply
+            ? commentsRef.child(parent).child('replies').child(id)
+            : commentsRef.child(id);
+
+        // Pembuka / penutup panel komentar (HP)
+        el('btn-open-comments').onclick = () => { if (window.innerWidth <= 900) bukaSheet(true); else el('post-comment-text').focus(); };
+        el('pp-viewall').onclick = () => bukaSheet(true);
+        el('pp-sheet-close').onclick = () => bukaSheet(false);
+        el('pp-backdrop').onclick = () => bukaSheet(false);
+
+        // Identitas pengirim
+        function segarkanNama() {
+            const row = el('pc-name-row'), who = el('pc-who-row');
+            if (IS_ADMIN_BROWSER) {
+                row.style.display = 'none'; who.style.display = 'block';
+                who.innerHTML = icon(IKON.perisai) + ' Mode Admin: tampil sebagai <b>' + escHtmlGlobal(ADMIN_PROFIL.nama) + '</b>';
                 return;
             }
-
-            const eyeSVG = `<svg viewBox="0 0 24 24" width="12" height="12" fill="currentColor"><path d="M12 4.5C7 4.5 2.73 7.61 1 12c1.73 4.39 6 7.5 11 7.5s9.27-3.11 11-7.5c-1.73-4.39-6-7.5-11-7.5zM12 17c-2.76 0-5-2.24-5-5s2.24-5 5-5 5 2.24 5 5-2.24 5-5 5zm0-8c-1.66 0-3 1.34-3 3s1.34 3 3 3 3-1.34 3-3-1.34-3-3-3z"/></svg>`;
-
-            keys.forEach(key => {
-                const p = postsData[key];
-                const fileUrl = p.videoUrl || p.imageUrl || '';
-                const isVideo = fileUrl.includes('.mp4');
-                
-                let totalViews = viewsData[key] || 0;
-                let formattedViews = totalViews >= 1000 ? (totalViews / 1000).toFixed(1).replace('.0', '') + 'K' : totalViews;
-
-                const thumb = p.thumbnailUrl || ''; 
-                const mediaTag = isVideo 
-                    ? `<video src="${fileUrl}" poster="${thumb}" preload="none" playsinline muted loop onmouseenter="this.play()" onmouseleave="this.pause(); this.load();"></video><div class="video-indicator">${icon('play')}</div>`
-                    : `<img src="${fileUrl}" alt="Postingan" loading="lazy">`;
-                
-                html += `
-                <a href="post.html?id=${key}" class="grid-item">
-                    ${mediaTag}
-                    <div class="viewer-badge">${eyeSVG} ${formattedViews}</div>
-                </a>`;
-            });
-            
-            container.innerHTML = html;
+            const n = bacaLokal('luvia_comment_name');
+            row.style.display = n ? 'none' : 'block';
+            who.style.display = n ? 'block' : 'none';
+            if (n) { who.innerHTML = 'Komentar sebagai <b>' + escHtmlGlobal(n) + '</b> · <button type="button" id="pc-ganti">ganti</button>'; el('pc-ganti').onclick = () => { try { localStorage.removeItem('luvia_comment_name'); } catch (e) {} segarkanNama(); el('post-comment-name').focus(); }; }
         }
-        
-        function incrementPostViews(id) {
-            firebase.database().ref('post_views/' + id).transaction(current => (current || 0) + 1);
+        segarkanNama();
+
+        function setBalasan(target) {
+            balasKe = target;
+            el('pc-reply-bar').style.display = (target || editTarget) ? 'flex' : 'none';
+            if (target) { el('pc-reply-text').innerText = 'Membalas @' + target.nama; if (!el('post-comment-text').value) el('post-comment-text').value = '@' + target.nama + ' '; el('post-comment-text').focus(); }
         }
+        function batalAksi() {
+            balasKe = null; editTarget = null;
+            el('pc-reply-bar').style.display = 'none';
+            el('post-comment-text').value = ''; el('pc-kirim').innerText = 'Kirim';
+        }
+        el('pc-reply-batal').onclick = batalAksi;
 
-// ==========================================
-        // FITUR KOMENTAR V2 (BALAS & EDIT INLINE TANPA POP-UP)
-        // ==========================================
-        const iconThumbOutline = `<svg viewBox="0 0 24 24" width="14" height="14" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"><path d="M14 9V5a3 3 0 0 0-3-3l-4 9v11h11.28a2 2 0 0 0 2-1.7l1.38-9a2 2 0 0 0-2-2.3zM7 22H4a2 2 0 0 1-2-2v-7a2 2 0 0 1 2-2h3"></path></svg>`;
-        const iconThumbSolid = `<svg viewBox="0 0 24 24" width="14" height="14" stroke="currentColor" stroke-width="2" fill="white" stroke-linecap="round" stroke-linejoin="round"><path d="M14 9V5a3 3 0 0 0-3-3l-4 9v11h11.28a2 2 0 0 0 2-1.7l1.38-9a2 2 0 0 0-2-2.3zM7 22H4a2 2 0 0 1-2-2v-7a2 2 0 0 1 2-2h3"></path></svg>`;
-        const iconTrash = `<svg viewBox="0 0 24 24" width="14" height="14" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2-2v2"></path></svg>`;
-        const iconEdit = `✏️`;
-
-        let editingCommentId = null; 
-        let editingParentId = null; 
-        let editingIsReply = false;
-
-        function timeAgo(ts) {
-            if(!ts) return "Baru saja";
-            const diff = Date.now() - ts;
-            const minutes = Math.floor(diff / 60000);
-            if(minutes < 1) return "Baru saja";
-            if(minutes < 60) return `${minutes} menit yang lalu`;
-            const hours = Math.floor(minutes / 60);
-            if(hours < 24) return `${hours} jam yang lalu`;
-            return `${Math.floor(hours / 24)} hari yang lalu`;
+        function bangunItem(id, c, isReply, parentId) {
+            const sukaKu = localStorage.getItem('liked_post_comment_' + id);
+            const milikku = localStorage.getItem('my_post_comment_' + id) === 'true';
+            const boleh = milikku || IS_ADMIN_BROWSER;
+            const da = 'data-id="' + id + '" data-parent="' + (parentId || '') + '" data-reply="' + (isReply ? 1 : 0) + '" data-nama="' + escHtmlGlobal(c.name) + '"';
+            return '<div class="pc-item' + (isReply ? ' pc-reply' : '') + '" id="pc-' + id + '">' +
+                buatAvatar(c.name, { kelas: 'pc-ava', admin: !!c.isAdmin, ukuran: isReply ? 24 : 32 }) +
+                '<div class="pc-body">' +
+                    '<div class="pc-line"><b class="pc-name">' + escHtmlGlobal(c.name) + '</b>' + (c.isAdmin ? lencanaAdmin() : '') + ' <span class="pc-text">' + escHtmlGlobal(c.text) + '</span></div>' +
+                    '<div class="pc-sub">' +
+                        '<span>' + waktuLalu(c.timestamp) + '</span>' +
+                        ((c.likes || 0) > 0 ? '<span>' + c.likes + ' suka</span>' : '') +
+                        '<button type="button" data-act="reply" ' + da + '>Balas</button>' +
+                        (milikku ? '<button type="button" data-act="edit" ' + da + '>Edit</button>' : '') +
+                        (boleh ? '<button type="button" class="pc-hapus" data-act="del" ' + da + '>Hapus</button>' : '') +
+                    '</div>' +
+                '</div>' +
+                '<button type="button" class="pc-like' + (sukaKu ? ' aktif' : '') + '" data-act="like" ' + da + ' aria-label="Suka">' + icon(sukaKu ? IKON.sukaIsi : IKON.suka) + '</button>' +
+            '</div>';
         }
 
-        // FUNGSI MEMBANGUN STRUKTUR HTML KOMENTAR + BALASAN
-        function buildPostCommentHTML(id, c, postId, isReply = false, parentId = null) {
-            const hasLiked = localStorage.getItem(`liked_post_comment_${id}`);
-            const isMyComment = localStorage.getItem(`my_post_comment_${id}`) === 'true';
-            const likesCount = c.likes || 0;
-            const thumbIcon = hasLiked ? iconThumbSolid : iconThumbOutline;
-            const safeText = encodeURIComponent(c.text || "");
-
-            let html = `
-            <div style="margin-bottom: 15px; display: flex; gap: 12px; ${isReply ? 'margin-left: 40px; margin-top: 10px;' : ''}">
-                ${buatAvatar(c.name, { ukuran: isReply ? 28 : 34 })}
-                <div style="flex: 1;">
-                    <div style="font-size: 0.85rem; font-weight: bold; color: #fff;">
-                        @${c.name} <span style="font-size: 0.75rem; color: #bbb; font-weight: normal; margin-left: 6px;">${timeAgo(c.timestamp)}</span>
-                    </div>
-                    <div style="font-size: 0.9rem; color: #f1f1f1; margin-top: 4px; line-height: 1.4; word-wrap: break-word;">${c.text}</div>
-                    
-                    <div style="display: flex; gap: 15px; margin-top: 8px; align-items: center;">
-                        <button onclick="toggleCommentLike('${id}', '${postId}', ${isReply}, '${parentId}')" style="background:none; border:none; color:#bbb; font-size:0.8rem; cursor:pointer; display:flex; align-items:center; gap:4px; padding:0;">
-                            ${thumbIcon} <span id="like-count-${id}">${likesCount > 0 ? likesCount : ''}</span>
-                        </button>
-                        ${!isReply ? `<button onclick="toggleReplyForm('${id}')" style="background:none; border:none; color:#bbb; font-size:0.8rem; cursor:pointer; padding:0;">Balas</button>` : ''}
-                        ${isMyComment ? `
-                            <button onclick="editCommentInline('${id}', '${postId}',${isReply}, '${parentId}', '${safeText}')" style="background:none; border:none; color:#bbb; font-size:0.8rem; cursor:pointer; display:flex; align-items:center; gap:4px; padding:0;">
-                                ${iconEdit} Edit
-                            </button>
-                            <button onclick="deleteComment('${id}', '${postId}', ${isReply}, '${parentId}')" style="background:none; border:none; color:#ff4d4d; font-size:0.8rem; cursor:pointer; display:flex; align-items:center; gap:4px; padding:0;">
-                                ${iconTrash} Hapus
-                            </button>
-                        ` : ''}
-                    </div>
-
-                    ${!isReply ? `
-                    <div id="reply-form-${id}" style="display: none; margin-top: 10px; background: rgba(0,0,0,0.3); padding: 10px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.1);">
-                        <input type="text" id="reply-name-${id}" placeholder="Nama Anda..." style="width: 100%; box-sizing: border-box; background: transparent; border: none; border-bottom: 1px solid rgba(255, 255, 255, 0.4); color: white; padding: 5px; outline: none; font-size: 0.85rem; margin-bottom: 8px;" required>
-                        <textarea id="reply-text-${id}" placeholder="Tulis balasan..." style="width: 100%; box-sizing: border-box; background: transparent; border: none; border-bottom: 1px solid rgba(255, 255, 255, 0.4); color: white; padding: 5px; outline: none; resize: none; min-height: 30px; font-family: inherit; font-size: 0.85rem;" required></textarea>
-                        <div style="display: flex; justify-content: flex-end; gap: 8px; margin-top: 5px;">
-                            <button onclick="toggleReplyForm('${id}')" style="background: transparent; border: none; color: #fff; cursor: pointer; padding: 4px 10px; border-radius: 12px; font-size: 0.8rem;">Batal</button>
-                            <button onclick="submitReply('${id}', '${postId}')" style="background: linear-gradient(45deg, #8c52ff, #ff914d); color: white; border: none; cursor: pointer; padding: 4px 12px; border-radius: 12px; font-weight: bold; font-size: 0.8rem;">Kirim</button>
-                        </div>
-                    </div>
-                    <div id="replies-list-${id}"></div>
-                    ` : ''}
-                </div>
-            </div>
-            `;
-            return html;
-        }
-
-        function initPostComments(postId) {
-            const commentsRef = firebase.database().ref('post_comments/' + postId);
-            const commentsList = document.getElementById('post-comments-list');
-
-            commentsRef.on('value', (snapshot) => {
-                const data = snapshot.val();
-                let totalComments = 0;
-                
-                if (data) {
-                    const keys = Object.keys(data);
-                    let finalHTML = '';
-                    
-                    keys.forEach(key => {
-                        totalComments++;
-                        const c = data[key];
-                        finalHTML += buildPostCommentHTML(key, c, postId, false, null);
-                    });
-                    
-                    commentsList.innerHTML = finalHTML;
-                    document.getElementById('comment-count-header').innerText = totalComments;
-
-                    // Pasang sub-komentar (Balasan)
-                    keys.forEach(key => {
-                        const c = data[key];
-                        if (c.replies) {
-                            const replyKeys = Object.keys(c.replies);
-                            let repliesHTML = '';
-                            replyKeys.forEach(rKey => {
-                                const rData = c.replies[rKey];
-                                repliesHTML += buildPostCommentHTML(rKey, rData, postId, true, key);
-                            });
-                            document.getElementById(`replies-list-${key}`).innerHTML = repliesHTML;
-                        }
-                    });
-                    setTimeout(() => commentsList.scrollTop = commentsList.scrollHeight, 100);
-                } else {
-                    commentsList.innerHTML = '<p style="color: #ddd; text-align: center; font-size: 0.9rem; margin-top: 20px;">Belum ada komentar. Jadilah yang pertama!</p>';
-                    document.getElementById('comment-count-header').innerText = 0;
+        commentsRef.on('value', (snap) => {
+            const data = snap.val();
+            if (!data) {
+                list.innerHTML = '<p class="pp-empty">Belum ada komentar.<br><small>Mulai percakapan.</small></p>';
+                el('pp-viewall').innerText = 'Tambahkan komentar...';
+                return;
+            }
+            const keys = Object.keys(data);
+            let total = 0, html = '';
+            keys.forEach(k => {
+                const c = data[k]; total++;
+                html += '<div class="pc-group">' + bangunItem(k, c, false, '');
+                if (c.replies) {
+                    const rk = Object.keys(c.replies); total += rk.length;
+                    const buka = balasanTerbuka.has(k);
+                    html += '<button type="button" class="pc-toggle" data-act="toggle" data-id="' + k + '"><span class="pc-garis"></span>' + (buka ? 'Sembunyikan balasan' : 'Lihat ' + rk.length + ' balasan') + '</button>';
+                    html += '<div class="pc-replies" style="' + (buka ? '' : 'display:none;') + '">' + rk.map(r => bangunItem(r, c.replies[r], true, k)).join('') + '</div>';
                 }
+                html += '</div>';
             });
+            list.innerHTML = html;
+            el('pp-viewall').innerText = 'Lihat semua ' + total + ' komentar';
+        });
 
-            // 2. LOGIK KOMENTAR BARU & EDIT INLINE
-            const form = document.getElementById('post-comment-form');
-            if(form) {
-                const newForm = form.cloneNode(true);
-                form.parentNode.replaceChild(newForm, form);
-
-                newForm.addEventListener('submit', (e) => {
-                    e.preventDefault();
-                    const nameInput = document.getElementById('post-comment-name');
-                    const textInput = document.getElementById('post-comment-text');
-
-                    if (nameInput.value && textInput.value) {
-                        if (editingCommentId) {
-                            // JIKA SEDANG MODE EDIT
-                            let targetRef = editingIsReply 
-                                ? commentsRef.child(editingParentId).child('replies').child(editingCommentId)
-                                : commentsRef.child(editingCommentId);
-                                
-                            targetRef.update({ text: textInput.value.trim() });
-                            
-                            // Kembalikan ke mode normal
-                            editingCommentId = null;
-                            editingParentId = null;
-                            editingIsReply = false;
-                            newForm.querySelector('button[type="submit"]').innerText = 'Kirim';
-                            textInput.placeholder = "Tambahkan komentar...";
-                        } else {
-                            // JIKA KOMENTAR BARU
-                            const newCommentRef = commentsRef.push({
-                                name: nameInput.value, text: textInput.value,
-                                timestamp: firebase.database.ServerValue.TIMESTAMP, likes: 0
-                            });
-                            localStorage.setItem(`my_post_comment_${newCommentRef.key}`, 'true');
-                        }
-                        textInput.value = ''; 
-                    }
+        list.addEventListener('click', (e) => {
+            const b = e.target.closest('[data-act]'); if (!b) return;
+            const act = b.dataset.act, id = b.dataset.id, parent = b.dataset.parent, isReply = b.dataset.reply === '1';
+            if (act === 'toggle') { if (balasanTerbuka.has(id)) balasanTerbuka.delete(id); else balasanTerbuka.add(id); const g = b.closest('.pc-group'); const r = g.querySelector('.pc-replies'); const buka = balasanTerbuka.has(id); r.style.display = buka ? '' : 'none'; b.lastChild.textContent = buka ? 'Sembunyikan balasan' : 'Lihat ' + r.children.length + ' balasan'; }
+            else if (act === 'like') {
+                const sudah = localStorage.getItem('liked_post_comment_' + id);
+                refKomentar(id, parent, isReply).child('likes').transaction(n => {
+                    if (sudah) { localStorage.removeItem('liked_post_comment_' + id); return Math.max(0, (n || 1) - 1); }
+                    localStorage.setItem('liked_post_comment_' + id, 'true'); return (n || 0) + 1;
                 });
-
-                // Tombol Batal Reset Form Edit
-                const cancelBtn = newForm.querySelector('button[type="button"]');
-                cancelBtn.onclick = function() {
-                    document.getElementById('post-comment-text').value = '';
-                    if (editingCommentId) {
-                        editingCommentId = null;
-                        newForm.querySelector('button[type="submit"]').innerText = 'Kirim';
-                        document.getElementById('post-comment-text').placeholder = "Tambahkan komentar...";
-                    }
-                };
+            } else if (act === 'reply') {
+                editTarget = null; el('pc-kirim').innerText = 'Kirim'; el('post-comment-text').value = '';
+                setBalasan({ id: isReply ? parent : id, nama: b.dataset.nama });
+            } else if (act === 'edit') {
+                balasKe = null; editTarget = { id, parent, isReply };
+                el('post-comment-text').value = b.closest('.pc-body').querySelector('.pc-text').textContent;
+                el('pc-reply-bar').style.display = 'flex'; el('pc-reply-text').innerText = 'Mengedit komentar';
+                el('pc-kirim').innerText = 'Simpan'; el('post-comment-text').focus();
+            } else if (act === 'del') {
+                if (confirm('Hapus komentar ini?')) { refKomentar(id, parent, isReply).remove(); localStorage.removeItem('my_post_comment_' + id); }
             }
-        }
+        });
 
-        // FUNGSI INLINE EDIT (Masuk kolom bawah)
-        window.editCommentInline = function(commentId, postId, isReply, parentId, encodedOldText) {
-            const oldText = decodeURIComponent(encodedOldText);
-            const textInput = document.getElementById('post-comment-text');
-            
-            textInput.value = oldText;
-            textInput.focus();
-            
-            // Simpan status
-            editingCommentId = commentId;
-            editingIsReply = isReply;
-            editingParentId = parentId;
-            
-            const submitBtn = document.querySelector('#post-comment-form button[type="submit"]');
-            if (submitBtn) submitBtn.innerText = 'Update';
-            textInput.placeholder = "Edit komentar Anda...";
-        };
+        // Kirim / simpan edit
+        el('post-comment-form').addEventListener('submit', (e) => {
+            e.preventDefault();
+            const teks = el('post-comment-text').value.trim();
+            if (!teks) return;
 
-        // FUNGSI BALASAN
-        window.toggleReplyForm = function(id) {
-            const form = document.getElementById(`reply-form-${id}`);
-            form.style.display = form.style.display === 'none' ? 'block' : 'none';
-        };
-
-        window.submitReply = function(parentId, postId) {
-            const nameInput = document.getElementById(`reply-name-${parentId}`);
-            const textInput = document.getElementById(`reply-text-${parentId}`);
-            
-            if(nameInput.value && textInput.value) {
-                const commentsRef = firebase.database().ref('post_comments/' + postId);
-                const newReplyRef = commentsRef.child(parentId).child('replies').push({
-                    name: nameInput.value, text: textInput.value,
-                    timestamp: firebase.database.ServerValue.TIMESTAMP, likes: 0
-                });
-                localStorage.setItem(`my_post_comment_${newReplyRef.key}`, 'true');
-                textInput.value = '';
-                toggleReplyForm(parentId);
+            if (editTarget) {
+                refKomentar(editTarget.id, editTarget.parent, editTarget.isReply).update({ text: teks });
+                batalAksi(); return;
             }
-        };
+            const info = siapkanPengirim(el('post-comment-name').value);
+            if (!info.ok) { alert(info.pesan); el('post-comment-name').focus(); return; }
+            if (!info.isAdmin) { simpanLokal('luvia_comment_name', info.nama); segarkanNama(); }
 
-        window.toggleCommentLike = function(commentId, postId, isReply, parentId) {
-            const hasLiked = localStorage.getItem(`liked_post_comment_${commentId}`);
-            const baseRef = firebase.database().ref(`post_comments/${postId}`);
-            const targetRef = isReply 
-                ? baseRef.child(parentId).child('replies').child(commentId).child('likes')
-                : baseRef.child(commentId).child('likes');
+            const data = { name: info.nama, text: teks, timestamp: firebase.database.ServerValue.TIMESTAMP, likes: 0 };
+            if (info.isAdmin) data.isAdmin = true;
 
-            targetRef.transaction((currentLikes) => {
-                if (hasLiked) {
-                    localStorage.removeItem(`liked_post_comment_${commentId}`);
-                    return (currentLikes || 1) - 1;
-                } else {
-                    localStorage.setItem(`liked_post_comment_${commentId}`, 'true');
-                    return (currentLikes || 0) + 1;
-                }
-            });
-        };
+            let baru;
+            if (balasKe) { baru = commentsRef.child(balasKe.id).child('replies').push(data); balasanTerbuka.add(balasKe.id); }
+            else baru = commentsRef.push(data);
+            localStorage.setItem('my_post_comment_' + baru.key, 'true');
+            batalAksi();
+            setTimeout(() => { list.scrollTop = list.scrollHeight; }, 300);
+        });
+    }
 
-        window.deleteComment = function(commentId, postId, isReply, parentId) {
-            if (confirm("Yakin ingin menarik pesan ini selamanya?")) {
-                const baseRef = firebase.database().ref(`post_comments/${postId}`);
-                const targetRef = isReply 
-                    ? baseRef.child(parentId).child('replies').child(commentId)
-                    : baseRef.child(commentId);
-                    
-                targetRef.remove();
-                localStorage.removeItem(`my_post_comment_${commentId}`);
-            }
-        };
-
-        // ==========================================
-        // FUNGSI ANIMASI POP-UP KOMENTAR & BACKDROP
-        // ==========================================
-        function toggleKomentar(show) {
-            const layer = document.getElementById('post-layer-comments');
-            const backdrop = document.getElementById('mobile-comment-backdrop');
-            
-            if (show) {
-                layer.classList.add('active'); // Pop-Up Naik
-                // Background gelap hanya aktif di layar HP (<768px)
-                if (window.innerWidth <= 768) {
-                    backdrop.classList.add('active');
-                }
-                setTimeout(() => document.getElementById('post-comment-text').focus(), 300);
-            } else {
-                layer.classList.remove('active'); // Turun / Sembunyi
-                backdrop.classList.remove('active');
-            }
-        }
-        
+    // Tutup panel komentar dengan tombol Esc
+    document.addEventListener('keydown', (e) => { if (e.key === 'Escape') bukaSheet(false); });
     </script>
 </body>
 </html>
