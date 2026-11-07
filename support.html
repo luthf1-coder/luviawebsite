@@ -33,7 +33,7 @@
                 <div class="chat-header-left" style="display: flex; align-items: center; gap: 15px;">
                     <img data-avatar="admin" alt="Admin Luvia">
                     <div>
-                        <h3 class="chat-title">CS LUVIA TV</h3>
+                        <h3 class="chat-title">CS LUVIA STUDIO <span class="centang-biru" data-ikon="centang"></span></h3>
                         <p class="chat-status">Online - Chat Dibalas dalam 24 Jam</p>
                     </div>
                 </div>
@@ -72,7 +72,7 @@
                     <input type="hidden" id="edit-id" value="">
                 </div>
                 
-                <input type="text" id="chat-nama" placeholder="Ketik Nama Anda..." autocomplete="off">
+                <div id="chat-nama-wadah"></div>
                 <div class="chat-input-row">
                     <input type="text" id="chat-isi" placeholder="Tulis pesan atau balasan..." onkeypress="if(event.key === 'Enter') kirimPesan()">
                     <button class="btn-send" onclick="kirimPesan()" id="btn-kirim">➤</button>
@@ -85,7 +85,7 @@
     <div id="modal-notif" class="modal-notif-overlay" style="display:none;">
         <div class="modal-notif-box">
             <div style="display:flex; justify-content:space-between; align-items:center; border-bottom:1px solid #333; padding-bottom:10px; margin-bottom:15px;">
-                <h3 style="margin:0; color:#ff914d;">Papan Jawaban Admin</h3>
+                <h3 style="margin:0; color:#ff914d;">Papan Jawaban Admin <span class="centang-biru" data-ikon="centang"></span></h3>
                 <button onclick="document.getElementById('modal-notif').style.display='none'" style="background:none; border:none; color:white; font-size:20px; cursor:pointer;">✖</button>
             </div>
             <div id="list-jawaban-umum" style="max-height: 400px; overflow-y: auto;">
@@ -117,18 +117,19 @@ let deviceId = localStorage.getItem('luvia_device_id');
             localStorage.setItem('luvia_device_id', deviceId);
         }
 
+        let kolomNamaSupport = null;
         let allMessages = {};
         let isSelectMode = false;
 
         document.addEventListener('DOMContentLoaded', () => {
             const chatBody = document.getElementById('chat-body');
-            modeAdminForm('chat-nama');
+            kolomNamaSupport = pasangKolomNama('chat-nama-wadah', 'chat-nama', 'Chat sebagai');
 
             
             if (typeof firebase !== 'undefined') {
                 firebase.database().ref('complaints').on('value', snap => {
                     allMessages = snap.val() || {};
-                    let chatHtml = `<div class="chat-bubble bubble-admin"><span class="chat-name">CS LUVIA STUDIO</span>Halo! Ada pertanyaan atau komplain? Kirim di sini, Admin akan segera merespons! 👇</div>`;
+                    let chatHtml = `<div class="chat-bubble bubble-admin"><span class="chat-name">CS LUVIA STUDIO ${centangBiru()}</span>Halo! Ada pertanyaan atau komplain? Kirim di sini, Admin akan segera merespons! 👇</div>`;
                     let papanHtml = '';
                     let adaPesanBaru = false;
 
@@ -164,7 +165,7 @@ let deviceId = localStorage.getItem('luvia_device_id');
                             const clickEvent = `onclick="handleBubbleClick('${k}')"`;
 
                             if (c.is_admin) {
-                                chatHtml += `<div class="chat-bubble bubble-admin" ${clickEvent}><span class="chat-name" style="color: #ffe5d9;">CS LUVIA STUDIO (Admin)</span>${quoteHtml}${textPesan}${editedTag}${actionBar}</div>`;
+                                chatHtml += `<div class="chat-bubble bubble-admin" ${clickEvent}><span class="chat-name" style="color: #ffe5d9;">CS LUVIA STUDIO (Admin) ${centangBiru()}</span>${quoteHtml}${textPesan}${editedTag}${actionBar}</div>`;
                             } else {
                                 chatHtml += `<div class="chat-bubble bubble-user" ${clickEvent}><span class="chat-name" style="color: #ff914d; text-align:right;">${c.nama}</span>${quoteHtml}${textPesan}${editedTag}${actionBar}</div>`;
                             }
@@ -178,7 +179,7 @@ let deviceId = localStorage.getItem('luvia_device_id');
                             <div class="jawab-item">
                                 <div class="jawab-nama">Menjawab pertanyaan dari @${c.nama} :</div>
                                 <div class="jawab-tanya">"${c.isi}"</div>
-                                <div class="jawab-admin"><strong>Admin LUVIA:</strong> ${c.jawaban_admin}</div>
+                                <div class="jawab-admin"><strong>Admin LUVIA</strong> ${centangBiru()}: ${c.jawaban_admin}</div>
                             </div>`;
                             const lastRead = localStorage.getItem('last_read_complaints') || 0;
                             if(c.answered_at > lastRead) adaPesanBaru = true;
@@ -213,14 +214,15 @@ let deviceId = localStorage.getItem('luvia_device_id');
         }
 
         function resetObrolanUser() {
-            if(confirm("Yakin ingin mereset/menghapus layar obrolan Anda?")) {
+            tampilKonfirmasi("Yakin ingin mereset/menghapus layar obrolan Anda?", { judul: 'Reset obrolan', ya: 'Reset', bahaya: true }).then(ok => {
+                if (!ok) return;
                 Object.keys(allMessages).forEach(k => {
-                    if(allMessages[k].deviceId === deviceId) {
+                    if (allMessages[k].deviceId === deviceId) {
                         firebase.database().ref('complaints/' + k).update({ hidden_by_user: true });
                     }
                 });
                 toggleDropdown();
-            }
+            });
         }
 
         // FUNGSI STANDAR (Balas, Edit, Kirim)
@@ -261,29 +263,25 @@ let deviceId = localStorage.getItem('luvia_device_id');
         }
 
         function opsiHapus(id, canDeleteAll) {
-            const pesan = canDeleteAll 
-                ? "Pilih opsi hapus:\nKetik '1' = Hapus Untuk Saya\nKetik '2' = Hapus Untuk Semua Orang (Menarik Pesan)" 
-                : "Waktu tarik pesan sudah habis (>24 Jam).\nKetik '1' jika ingin Hapus Untuk Saya saja.";
-            
-            const respon = prompt(pesan);
-            if (respon === '1') {
-                firebase.database().ref('complaints/' + id).update({ deleted_by_user: true });
-            } else if (respon === '2' && canDeleteAll) {
-                firebase.database().ref('complaints/' + id).update({ deleted_for_everyone: true });
-            }
+            const pesan = canDeleteAll ? "Pilih cara menghapus pesan ini:" : "Waktu tarik pesan sudah habis (lebih dari 24 jam). Pesan hanya bisa dihapus untuk Anda sendiri.";
+            const pilihan = [{ teks: 'Batal', nilai: null }, { teks: 'Hapus untuk saya', nilai: '1', utama: !canDeleteAll }];
+            if (canDeleteAll) pilihan.push({ teks: 'Hapus untuk semua', nilai: '2', utama: true, bahaya: true });
+            tampilPilihan('Hapus pesan', pesan, pilihan).then(respon => {
+                if (respon === '1') firebase.database().ref('complaints/' + id).update({ deleted_by_user: true });
+                else if (respon === '2' && canDeleteAll) firebase.database().ref('complaints/' + id).update({ deleted_for_everyone: true });
+            });
         }
 
         function kirimPesan() {
+            const info = siapkanPengirim(document.getElementById('chat-nama').value);
             const isi = document.getElementById('chat-isi').value.trim();
             const editId = document.getElementById('edit-id').value;
             const replyId = document.getElementById('reply-id').value;
-            
-            const info = siapkanPengirim(document.getElementById('chat-nama').value);
+
             if (!info.ok) return alert(info.pesan);
+            if (!isi) return alert("Pesan tidak boleh kosong!");
             const nama = info.nama;
-            if(!isi) return alert("Pesan tidak boleh kosong!");
-            
-            if (!info.isAdmin) localStorage.setItem('luvia_chat_name', nama);
+            if (!info.isAdmin) { simpanNama(nama); if (kolomNamaSupport) kolomNamaSupport.segarkan(); }
 
             if (editId) {
                 firebase.database().ref('complaints/' + editId).update({ isi: isi, is_edited: true });
@@ -302,10 +300,7 @@ let deviceId = localStorage.getItem('luvia_device_id');
             });
         }
 
-        window.onload = function() {
-            const savedName = localStorage.getItem('luvia_chat_name');
-            if (savedName && !IS_ADMIN_BROWSER) document.getElementById('chat-nama').value = savedName;
-        }
+        
         // SISTEM PENCARIAN LIVE (AUTOCOMPLETE) 
 document.addEventListener('DOMContentLoaded', () => {
     const searchInput = document.getElementById('navSearchInput');
