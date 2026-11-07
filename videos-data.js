@@ -35,11 +35,25 @@ const IMG = {
 
 // Browser ini milik admin? (ditandai saat login admin)
 const IS_ADMIN_BROWSER = (function () {
-    try {
-        const t = Number(localStorage.getItem('luvia_admin_view') || 0);
-        return t > 0 && (Date.now() - t) < 30 * 60 * 1000;   // admin aktif maksimal 30 menit
-    } catch (e) { return false; }
+    try { return localStorage.getItem('luvia_admin_mode') === '1'; } catch (e) { return false; }
 })();
+function setModeAdmin(aktif) {
+    try {
+        if (aktif) localStorage.setItem('luvia_admin_mode', '1');
+        else localStorage.removeItem('luvia_admin_mode');
+    } catch (e) {}
+}
+// Izin sekali-buka (20 detik) saat admin menekan sebuah video dari daftar admin
+const IZIN_PRATINJAU = (function () {
+    try { const t = Number(localStorage.getItem('luvia_preview_ok') || 0); return t > 0 && (Date.now() - t) < 20000; }
+    catch (e) { return false; }
+})();
+function bukaPratinjau(url) {
+    try { localStorage.setItem('luvia_preview_ok', String(Date.now())); } catch (e) {}
+    window.open(url, '_blank');
+    return false;
+}
+
 
 // Pengunjung baru? Dihitung SEKARANG, sebelum analytics-tracker.js memberi tanda
 const PENGUNJUNG_BARU = (function () {
@@ -303,17 +317,34 @@ const videoList = [
 ];
 
 
-// ==========================================
-// PUSAT AVATAR / FOTO PROFIL (kendalikan di sini)
-// ==========================================
+// ===== NAMA IKON (ganti di sini jika nama di icons.svg-mu berbeda) =====
+const IKON = {
+    suka: 'ig-heart',      sukaIsi: 'ig-heart-fill',
+    komentar: 'ig-comment', bagikan: 'ig-send',   kirim: 'ig-send',
+    simpan: 'ig-bookmark', simpanIsi: 'ig-bookmark-fill',
+    lainnya: 'ig-more',    putar: 'ig-play',      video: 'ig-video',
+    tutup: 'ig-close',     edit: 'ig-edit',       hapus: 'ig-trash',
+    balas: 'ig-reply',     salin: 'ig-link',      centang: 'ig-verified',
+    jam: 'ig-clock',       unduh: 'ig-download',  grid: 'ig-grid',
+    suaraOn: 'ig-volume',  suaraOff: 'ig-mute',
+    jempol: 'ig-thumb',    jempolIsi: 'ig-thumb-fill',
+    perisai: 'ig-shield',
+    dilihat: 'eye', kembali: 'arrow-left', maju: 'arrow-right'
+};
+
+// ===== IDENTITAS ADMIN & NAMA YANG DILARANG UNTUK PENGUNJUNG =====
+const ADMIN_PROFIL = { nama: "ADMIN LUVIA TV" };
+const NAMA_TERLARANG = ["admin", "administrator", "moderator", "cs luvia", "luvia studio", "admin luvia", "admin luvia tv"];
+
+// ===== PUSAT AVATAR / FOTO PROFIL =====
 const AVATAR = {
-    // "huruf"  = lingkaran berwarna + huruf depan nama penonton
+    // "huruf"  = lingkaran berwarna + huruf depan nama
     // "gambar" = semua penonton memakai gambarDefault
-    // "acak"   = tiap nama dapat gambar dari daftar pilihan
+    // "acak"   = gambar dari daftar "pilihan" (konsisten per nama)
     mode: "huruf",
-    gambarDefault: IMG.logoBulat,     // dipakai mode "gambar" & penonton tanpa nama
-    gambarAdmin:   IMG.logoBulat,     // foto profil admin / CS / LUVIA STUDIO TV
-    pilihan: [],                      // contoh: ["Asset Foto/avatar/1.png", "Asset Foto/avatar/2.png"]
+    gambarDefault: IMG.logoBulat,
+    gambarAdmin:   IMG.logoBulat,
+    pilihan: [],
     warna: ["#ff914d", "#b794ff", "#ffd166", "#6ee7b7", "#7dd3fc", "#f9a8d4", "#fca5a5"]
 };
 
@@ -322,28 +353,85 @@ function hashAvatar(s) {
     for (let i = 0; i < s.length; i++) h = (h * 31 + s.charCodeAt(i)) >>> 0;
     return h;
 }
-function warnaAvatar(nama) {
-    return AVATAR.warna[hashAvatar(String(nama || '')) % AVATAR.warna.length];
-}
-// opsi: { kelas: 'nama-kelas-css', ukuran: 28 (px), admin: true }
+function warnaAvatar(nama) { return AVATAR.warna[hashAvatar(String(nama || '')) % AVATAR.warna.length]; }
+
+// opsi: { kelas, ukuran (px), admin: true }
 function buatAvatar(nama, opsi) {
     opsi = opsi || {};
     const kelas = opsi.kelas || '';
-    const ukuran = opsi.ukuran ? `width:${opsi.ukuran}px;height:${opsi.ukuran}px;` : '';
+    const ukuran = opsi.ukuran ? 'width:' + opsi.ukuran + 'px;height:' + opsi.ukuran + 'px;' : '';
     const n = String(nama || '').trim();
 
-    if (opsi.admin) return `<img class="av ${kelas}" src="${AVATAR.gambarAdmin}" alt="" style="${ukuran}">`;
-
+    if (opsi.admin) return '<img class="av av-admin ' + kelas + '" src="' + AVATAR.gambarAdmin + '" alt="" style="' + ukuran + '">';
     if (AVATAR.mode === 'huruf' && n) {
         const huruf = escHtmlGlobal(Array.from(n)[0].toUpperCase());
-        return `<span class="av av-huruf ${kelas}" style="${ukuran}background:${warnaAvatar(n)}">${huruf}</span>`;
+        return '<span class="av av-huruf ' + kelas + '" style="' + ukuran + 'background:' + warnaAvatar(n) + '">' + huruf + '</span>';
     }
     if (AVATAR.mode === 'acak' && n && AVATAR.pilihan.length) {
-        const src = AVATAR.pilihan[hashAvatar(n) % AVATAR.pilihan.length];
-        return `<img class="av ${kelas}" src="${src}" alt="" style="${ukuran}">`;
+        return '<img class="av ' + kelas + '" src="' + AVATAR.pilihan[hashAvatar(n) % AVATAR.pilihan.length] + '" alt="" style="' + ukuran + '">';
     }
-    return `<img class="av ${kelas}" src="${AVATAR.gambarDefault}" alt="" style="${ukuran}">`;
+    return '<img class="av ' + kelas + '" src="' + AVATAR.gambarDefault + '" alt="" style="' + ukuran + '">';
 }
+
+// ===== ATURAN NAMA & IDENTITAS PENGIRIM =====
+function normalisasiNama(s) {
+    const peta = { '4': 'a', '@': 'a', '1': 'i', '!': 'i', '|': 'i', '0': 'o', '3': 'e', '5': 's', '$': 's', '7': 't' };
+    return String(s || '').toLowerCase().replace(/[4@1!|035$7]/g, c => peta[c]).replace(/[^a-z]/g, '');
+}
+function namaTerlarang(nama) {
+    if (IS_ADMIN_BROWSER) return false;
+    const x = normalisasiNama(nama);
+    return NAMA_TERLARANG.some(k => x.indexOf(normalisasiNama(k)) !== -1);
+}
+// Dipakai semua form komentar/chat.  Mengembalikan { ok, nama, isAdmin, pesan }
+function siapkanPengirim(namaInput) {
+    if (IS_ADMIN_BROWSER) return { ok: true, nama: ADMIN_PROFIL.nama, isAdmin: true };
+    const nama = String(namaInput || '').trim().slice(0, 24);
+    if (!nama) return { ok: false, pesan: 'Isi nama kamu dulu ya.' };
+    if (namaTerlarang(nama)) return { ok: false, pesan: 'Nama itu tidak boleh dipakai (khusus admin). Silakan pakai nama lain.' };
+    return { ok: true, nama: nama, isAdmin: false };
+}
+function lencanaAdmin() { return '<span class="lencana-admin">' + icon(IKON.centang) + ' ADMIN</span>'; }
+
+// Mode admin: sembunyikan kolom nama, isi otomatis
+function modeAdminForm(inputId) {
+    if (!IS_ADMIN_BROWSER) return;
+    const inp = document.getElementById(inputId);
+    if (!inp) return;
+    inp.required = false;
+    inp.value = ADMIN_PROFIL.nama;
+    inp.style.display = 'none';
+    if (!inp.parentNode.querySelector('.chip-admin')) {
+        const chip = document.createElement('div');
+        chip.className = 'chip-admin';
+        chip.innerHTML = icon(IKON.perisai) + ' Mode Admin: tampil sebagai <b>' + escHtmlGlobal(ADMIN_PROFIL.nama) + '</b>';
+        inp.parentNode.insertBefore(chip, inp);
+    }
+}
+
+// ===== UTILITAS TAMPILAN =====
+function terapkanIkon(root) {
+    (root || document).querySelectorAll('[data-ikon]').forEach(el => {
+        if (el.dataset.ok === '1') return;
+        el.dataset.ok = '1';
+        el.innerHTML = icon(IKON[el.dataset.ikon] || el.dataset.ikon);
+    });
+}
+function tampilToast(pesan) {
+    const t = document.createElement('div');
+    t.className = 'toast-luvia';
+    t.textContent = pesan;
+    document.body.appendChild(t);
+    setTimeout(() => t.classList.add('tampil'), 10);
+    setTimeout(() => { t.classList.remove('tampil'); setTimeout(() => t.remove(), 300); }, 2200);
+}
+document.addEventListener('DOMContentLoaded', () => {
+    document.querySelectorAll('[data-avatar]').forEach(el => {
+        el.src = (el.dataset.avatar === 'admin') ? AVATAR.gambarAdmin : AVATAR.gambarDefault;
+    });
+    terapkanIkon();
+});
+
 
 // ==========================================
 // PUSAT KOMANDO GLOBAL WEBSITE LUVIA
