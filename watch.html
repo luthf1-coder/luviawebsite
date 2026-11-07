@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="id">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -8,567 +8,630 @@
     <link rel="stylesheet" href="style.css" />
     <link rel="icon" type="image/png" data-img="logoBulat">
 
-    <!-- SDK Firebase Realtime Database -->
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-database-compat.js"></script>
 </head>
 <body>
-<!-- WADAH NAVBAR OTOMATIS DARI PUSAT KOMANDO -->
     <nav id="navbar-container"></nav>
-    
     <div id="sidebar-container"></div>
-    
-    <main class="container page-stream-container">
-        <section class="main-video-section">
-            <h1 id="player-title" class="stream-title">Memuat Video...</h1>
-            <div class="plyr-wrapper" id="video-player-wrapper"></div>
 
-            <div class="video-info">
-                <h2 id="info-title">...</h2>
-                <div id="info-desc">
-                    
-                    <!-- PERUBAHAN: AREA GENRE, WAKTU UPLOAD & JUMLAH DITONTON DIPINDAH KE SINI -->
-                    <div id="genre-container" style="margin-bottom: 12px;">
-                        <a href="#" id="genre-link" style="background: linear-gradient(45deg, #8c52ff, #ff914d); color: white; padding: 6px 14px; border-radius: 20px; text-decoration: none; font-size: 0.85rem; font-weight: bold; display: inline-block; box-shadow: 0 4px 10px rgba(0,0,0,0.2);">Memuat Genre...</a>
-                    </div>
-                    <div id="meta-container" style="font-size: 0.95rem; color: #e0e0e0; margin-bottom: 20px; font-weight: 500; display: flex; align-items: center; gap: 8px;">
-                         <span id="upload-date-display">...</span> <span style="color:#888;">•</span> <span id="views-display-box" style="color: #ff914d; font-weight: bold;">👁️ Memuat jumlah ditonton...</span>
-                    </div>
+    <main class="wp-page">
+        <!-- ================= KOLOM UTAMA ================= -->
+        <div class="wp-main">
+            <section class="wp-player-card">
+                <div class="plyr-wrapper" id="video-player-wrapper"></div>
+            </section>
 
-                    <p id="desc-text" style="line-height: 1.7; margin-bottom: 30px;">Memuat deskripsi...</p>
+            <h1 id="player-title" class="wp-title">Memuat Video...</h1>
 
-                    <!-- MULAI: AREA KOMENTAR ALA YOUTUBE -->
-                    <div id="comments-section" class="comments-section">
-                        <h3><span id="comment-count">0</span> Komentar</h3>
+            <div class="wp-meta" id="meta-container">
+                <a href="#" id="genre-link" class="wp-chip wp-chip-genre">Memuat...</a>
+                <span class="wp-chip"><span data-ikon="jam"></span> <span id="upload-date-display">...</span></span>
+                <span class="wp-chip wp-chip-views" id="views-display-box">Memuat...</span>
+                <span class="wp-chip wp-chip-warn" id="chip-visibilitas" style="display:none;"></span>
+            </div>
 
-                        <div class="comment-input-area">
-                            <img data-avatar="default" class="comment-avatar" alt="Avatar">
-                            <form id="comment-form" class="comment-form">
-                                <input type="text" id="comment-name" placeholder="Nama Anda..." required>
-                                <textarea id="comment-text" placeholder="Tambahkan komentar..." required></textarea>
-                                <div class="form-actions">
-                                    <button type="button" class="btn-cancel" onclick="document.getElementById('comment-text').value=''">Batal</button>
-                                    <button type="submit" class="btn-submit-comment">Komentar</button>
-                                </div>
-                            </form>
+            <div class="wp-actions" id="aksi-container">
+                <button type="button" class="wp-btn" id="btn-share"><span data-ikon="bagikan"></span> Bagikan</button>
+                <span id="download-area"></span>
+            </div>
+
+            <div class="wp-desc collapsed" id="desc-box">
+                <p id="desc-text">Memuat deskripsi...</p>
+                <button type="button" class="wp-desc-toggle" id="desc-toggle" style="display:none;">Selengkapnya</button>
+            </div>
+
+            <!-- ================= KOMENTAR ================= -->
+            <section id="comments-section" class="wp-comments">
+                <h3 class="wp-comments-title"><span data-ikon="komentar"></span> <span id="comment-count">0</span> Komentar</h3>
+
+                <div class="wp-comment-input">
+                    <img data-avatar="default" class="comment-avatar" alt="Avatar">
+                    <form id="comment-form" class="comment-form">
+                        <input type="text" id="comment-name" placeholder="Nama Anda..." maxlength="24" required>
+                        <textarea id="comment-text" placeholder="Tambahkan komentar..." required></textarea>
+                        <div class="form-actions">
+                            <button type="button" class="btn-cancel" onclick="document.getElementById('comment-text').value=''">Batal</button>
+                            <button type="submit" class="btn-submit-comment">Komentar</button>
                         </div>
+                    </form>
+                </div>
 
-                        <div id="comments-list" class="comments-list">
-                            <p style="color:#bbb; font-size:0.9rem; text-align:center;">Memuat komentar...</p>
-                        </div>
-                    </div>
-                    <!-- SELESAI: AREA KOMENTAR ALA YOUTUBE -->
+                <div id="comments-list" class="comments-list">
+                    <p class="wp-empty">Memuat komentar...</p>
+                </div>
+            </section>
+        </div>
 
-                    <div id="download-area"></div>
-                    <!-- views-display-box asalnya di sini sudah dipindah ke atas -->
+        <!-- ================= KOLOM SAMPING ================= -->
+        <aside class="wp-side">
+            <div class="wp-autoplay">
+                <div class="autoplay-header">
+                    <span>Putar Otomatis Video Berikutnya</span>
+                    <label class="switch">
+                        <input type="checkbox" id="autoplay-toggle" checked>
+                        <span class="slider-toggle"></span>
+                    </label>
+                </div>
+                <div id="autoplay-countdown" class="countdown-box">
+                    Memutar video selanjutnya dalam <span id="countdown-timer">20</span> detik...
                 </div>
             </div>
-        </section>
 
-       <section class="other-videos-section">
-            <!-- FITUR AUTOPLAY -->
-            <div class="autoplay-header">
-                <span>Putar Otomatis Video Berikutnya</span>
-                <label class="switch">
-                    <input type="checkbox" id="autoplay-toggle" checked>
-                    <span class="slider-toggle"></span>
-                </label>
-            </div>
-            <div id="autoplay-countdown" class="countdown-box">
-                Memutar video selanjutnya dalam <span id="countdown-timer">20</span> detik...
-            </div>
-            
-            <h2>Video Lainnya</h2>
+            <h2 class="wp-side-title">Video Lainnya</h2>
             <div class="video-grid" id="watch-recommendations-grid"></div>
-        </section>
+        </aside>
     </main>
 
     <footer>
         <div class="container footer-container">
-            <!-- Tempat Ikon Sosial Media (Dikosongkan karena akan diisi otomatis oleh Javascript) -->
             <div class="footer-socials" id="footer-social-container"></div>
-            
-            <!-- Teks Copyright -->
             <p id="teks-footer-copyright">Loading...</p>
         </div>
     </footer>
-    
+
     <script src="https://cdn.plyr.io/3.7.8/plyr.js"></script>
     <script src="videos-data.js"></script>
     <script src="analytics-tracker.js"></script>
 
-   <script>
-       
-        function jalankanPemutarVideo() {
-            const urlParams = new URLSearchParams(window.location.search);
-            const currentVideoId = urlParams.get('id') || 'video1';
-            const currentVid = (typeof videoListSemua !== 'undefined' && videoListSemua.find(v => v.id === currentVideoId)) || {
-    id: currentVideoId, title: 'Video Tidak Ditemukan', description: 'Maaf, video ini tidak tersedia.', defaultViews: 0
-};
+    <script>
+    // =====================================================================
+    //  PEMUTAR: MP4 / WEBM / HLS (.m3u8) / DASH (.mpd) + PILIHAN KUALITAS
+    // =====================================================================
+    const CDN = {
+        hls:  'https://cdn.jsdelivr.net/npm/hls.js@1.5.17/dist/hls.min.js',
+        dash: 'https://cdn.jsdelivr.net/npm/dashjs@4.7.4/dist/dash.all.min.js'
+    };
 
-// Video pribadi: hanya admin yang boleh buka
-if (currentVid.visibility === 'pribadi' && !IS_ADMIN_BROWSER) {
-    document.getElementById('player-title').innerText = 'Video Tidak Ditemukan';
-    document.getElementById('info-title').innerText = 'Video Tidak Ditemukan';
-    document.getElementById('desc-text').innerText = 'Maaf, video ini tidak tersedia.';
-    document.getElementById('genre-container').style.display = 'none';
-    document.getElementById('meta-container').style.display = 'none';
-    document.getElementById('comments-section').style.display = 'none';
-    return;
-}
+    function muatScript(src) {
+        return new Promise((resolve, reject) => {
+            const ada = document.querySelector('script[data-lib="' + src + '"]');
+            if (ada) { if (ada.dataset.siap === '1') return resolve(); ada.addEventListener('load', () => resolve()); ada.addEventListener('error', () => reject()); return; }
+            const s = document.createElement('script');
+            s.src = src; s.dataset.lib = src;
+            s.onload = () => { s.dataset.siap = '1'; resolve(); };
+            s.onerror = () => reject(new Error('Gagal memuat ' + src));
+            document.head.appendChild(s);
+        });
+    }
 
-        document.getElementById('player-title').innerText = currentVid.title;
-        document.getElementById('info-title').innerText = currentVid.title;
-        document.getElementById('desc-text').innerText = currentVid.description || 'Tidak ada deskripsi.';
+    function jenisSumber(url) {
+        const u = String(url || '').toLowerCase();
+        if (/\.m3u8(\?|#|$)/.test(u) || /[?&](format|type)=(m3u8|hls)/.test(u)) return 'hls';
+        if (/\.mpd(\?|#|$)/.test(u)) return 'dash';
+        return 'native';
+    }
 
-        // --- PERUBAHAN: SKRIP INJEKSI GENRE & WAKTU UPLOAD ---
-        const genreName = currentVid.genre || 'Umum';
-        document.getElementById('genre-link').innerText = genreName;
-        document.getElementById('genre-link').href = 'videos.html?genre=' + encodeURIComponent(genreName);
-        
-        const uploadText = currentVid.uploadDate ? `Diupload ${formatDateIndonesian(currentVid.uploadDate)}` : 'Diupload pada tanggal tidak diketahui';
-        document.getElementById('upload-date-display').innerText = uploadText;
-        // ----------------------------------------------------
+    function hancurkanPlayer() {
+        try { if (window.player) window.player.destroy(); } catch (e) {}
+        window.player = null;
+        try { if (window.hlsInst) window.hlsInst.destroy(); } catch (e) {}
+        window.hlsInst = null;
+        try { if (window.dashInst) window.dashInst.reset(); } catch (e) {}
+        window.dashInst = null;
+    }
 
-        let downloadAreaHTML = '';
-        const safeTitle = (currentVid.title || 'video').replace(/'/g, "\\'");
-        if (currentVid.sources && currentVid.sources.length > 0) {
-            const optionsHTML = currentVid.sources.map(s => `<option value="${s.src}">${s.size || 'HD'}p</option>`).join('');
-            downloadAreaHTML = `
-                <div class="download-container">
-                    <span class="download-label">📥 Pilih Resolusi:</span>
-                    <select id="download-quality-select" class="download-select">${optionsHTML}</select>
-                    <button onclick="downloadVideoFile(document.getElementById('download-quality-select').value, '${safeTitle}.mp4')" class="btn-download-action">Download</button>
-                </div>`;
-        } else if (currentVid.downloadUrl || currentVid.archiveSrc) {
-            const url = currentVid.downloadUrl || currentVid.archiveSrc;
-            downloadAreaHTML = `<div class="download-container"><button onclick="downloadVideoFile('${url}', '${safeTitle}.mp4')" class="btn-download-action">📥 Download Video</button></div>`;
+    function buatVideoEl(wrapper, poster) {
+        wrapper.innerHTML = '<video id="plyr-player" playsinline controls' + (poster ? ' poster="' + escHtmlGlobal(poster) + '"' : '') + '></video>';
+        return document.getElementById('plyr-player');
+    }
+
+    function tampilkanErrorPemutar(wrapper, pesan) {
+        wrapper.innerHTML = '<div class="wp-player-error">' + icon(IKON.video) +
+            '<p>' + pesan + '</p><small>Kemungkinan: link mati, format tidak didukung browser, atau server video memblokir akses (CORS).</small></div>';
+    }
+
+    // Opsi Plyr. daftarTinggi = [1080, 720, ...] untuk HLS/DASH; "0" = Auto
+    function opsiPlyr(daftarTinggi, gantiKualitas, kualitasBawaan, ukuranDefault) {
+        const o = {
+            keyboard: { focused: true, global: true },
+            seekTime: 10,
+            controls: ['play-large', 'rewind', 'play', 'fast-forward', 'progress', 'current-time', 'duration', 'mute', 'volume', 'settings', 'pip', 'fullscreen'],
+            settings: ['speed']
+        };
+        if (daftarTinggi && daftarTinggi.length) {
+            o.settings = ['quality', 'speed'];
+            o.quality = { default: 0, options: [0].concat(daftarTinggi), forced: true, onChange: (h) => gantiKualitas(Number(h)) };
+            o.i18n = { qualityLabel: { 0: 'Auto' } };
+        } else if (kualitasBawaan) {
+            o.settings = ['quality', 'speed'];
+            o.quality = { default: ukuranDefault };
         }
-        document.getElementById('download-area').innerHTML = downloadAreaHTML;
+        return o;
+    }
 
-        const playerWrapper = document.getElementById('video-player-wrapper');
-        
-        if (currentVid.driveEmbed) {
-            playerWrapper.innerHTML = `<iframe class="drive-iframe" src="${currentVid.driveEmbed}" allowfullscreen="true" style="border:none;"></iframe>`;
-        } else if (currentVid.rumbleEmbed) {
-            playerWrapper.innerHTML = `<iframe src="${currentVid.rumbleEmbed}" allowfullscreen="true" style="border:none;"></iframe>`;
-        } else if (currentVid.customEmbed) {
-            playerWrapper.innerHTML = `<iframe src="${currentVid.customEmbed}" allowfullscreen="true" allow="autoplay; encrypted-media; picture-in-picture; fullscreen" referrerpolicy="strict-origin-when-cross-origin" style="border:none;"></iframe>`;
-        } else if (currentVid.youtubeId) {
-            playerWrapper.innerHTML = `<iframe src="https://www.youtube.com/embed/${currentVid.youtubeId}?enablejsapi=1" allowfullscreen="true" allow="accelerometer; autoplay; encrypted-media; picture-in-picture" style="border:none;"></iframe>`;
-       } else {
-            playerWrapper.innerHTML = `<video id="plyr-player" controls playsinline poster="${currentVid.thumb || ''}"><source src="${currentVid.archiveSrc || ''}" type="video/mp4" /></video>`;
-            if (document.getElementById('plyr-player') && typeof Plyr !== 'undefined') {
-                // MASUKKAN PLYR KE DALAM VARIABEL WINDOW.PLAYER
-                window.player = new Plyr('#plyr-player', {
-                    keyboard: { focused: true, global: true }, // BARIS BARU: Mengaktifkan shortcut keyboard global
-                    settings: ['quality', 'speed'],
-                    seekTime: 10,
-                    controls: [
-                        'play-large',   
-                        'rewind',       
-                        'play',         
-                        'fast-forward', 
-                        'progress',     
-                        'current-time', 
-                        'duration',     
-                        'mute',         
-                        'volume',       
-                        'settings',     
-                        'fullscreen'    
-                    ]
-                });
-            }
+    function jadikanPlyr(video, opsi) {
+        window.player = new Plyr(video, opsi);
+        aturInteraksiPlayer();
+    }
+
+    // ---------- HLS (.m3u8) ----------
+    async function pasangHls(wrapper, src, poster, setelahNativeGagal) {
+        try { await muatScript(CDN.hls); }
+        catch (e) { return tampilkanErrorPemutar(wrapper, 'Pustaka pemutar HLS gagal dimuat. Periksa koneksi internet.'); }
+
+        const video = buatVideoEl(wrapper, poster);
+
+        if (window.Hls && Hls.isSupported()) {
+            const hls = new Hls({ enableWorker: true });
+            window.hlsInst = hls;
+            let siap = false;
+
+            const ganti = (h) => {
+                if (!h) { hls.currentLevel = -1; return; }          // Auto
+                let idx = -1, best = -1;
+                hls.levels.forEach((l, i) => { if (l.height === h && (l.bitrate || 0) >= best) { best = l.bitrate || 0; idx = i; } });
+                if (idx >= 0) hls.currentLevel = idx;
+            };
+            const buka = (tinggi) => {
+                if (siap) return; siap = true;
+                jadikanPlyr(video, opsiPlyr(tinggi, ganti));
+            };
+
+            hls.on(Hls.Events.MANIFEST_PARSED, () => {
+                const tinggi = Array.from(new Set(hls.levels.map(l => l.height).filter(Boolean))).sort((a, b) => b - a);
+                buka(tinggi.length > 1 ? tinggi : []);
+            });
+            hls.on(Hls.Events.ERROR, (ev, d) => {
+                if (!d.fatal) return;
+                if (d.type === Hls.ErrorTypes.NETWORK_ERROR && siap) { hls.startLoad(); return; }
+                if (d.type === Hls.ErrorTypes.MEDIA_ERROR) { hls.recoverMediaError(); return; }
+                hancurkanPlayer();
+                tampilkanErrorPemutar(wrapper, setelahNativeGagal ? 'Video tidak dapat diputar.' : 'Video HLS tidak dapat dimuat.');
+            });
+            setTimeout(() => buka([]), 7000);     // jaga-jaga jika manifest lambat
+            hls.loadSource(src);
+            hls.attachMedia(video);
+        } else if (video.canPlayType('application/vnd.apple.mpegurl')) {
+            video.src = src;                       // Safari/iOS: HLS bawaan (tanpa menu kualitas manual)
+            jadikanPlyr(video, opsiPlyr([]));
+        } else {
+            tampilkanErrorPemutar(wrapper, 'Browser ini tidak mendukung video HLS.');
+        }
+    }
+
+    // ---------- DASH (.mpd) ----------
+    async function pasangDash(wrapper, src, poster) {
+        try { await muatScript(CDN.dash); }
+        catch (e) { return tampilkanErrorPemutar(wrapper, 'Pustaka pemutar DASH gagal dimuat. Periksa koneksi internet.'); }
+
+        const video = buatVideoEl(wrapper, poster);
+        const dp = dashjs.MediaPlayer().create();
+        window.dashInst = dp;
+        let siap = false;
+
+        const buka = (tinggi, daftar) => {
+            if (siap) return; siap = true;
+            const ganti = (h) => {
+                if (!h) { dp.updateSettings({ streaming: { abr: { autoSwitchBitrate: { video: true } } } }); return; }
+                const it = (daftar || []).filter(x => x.height === h).sort((a, b) => b.bitrate - a.bitrate)[0];
+                if (!it) return;
+                dp.updateSettings({ streaming: { abr: { autoSwitchBitrate: { video: false } } } });
+                dp.setQualityFor('video', it.qualityIndex);
+            };
+            jadikanPlyr(video, opsiPlyr(tinggi, ganti));
+        };
+
+        dp.on(dashjs.MediaPlayer.events.STREAM_INITIALIZED, () => {
+            let daftar = [];
+            try { daftar = dp.getBitrateInfoListFor('video') || []; } catch (e) {}
+            const tinggi = Array.from(new Set(daftar.map(x => x.height).filter(Boolean))).sort((a, b) => b - a);
+            buka(tinggi.length > 1 ? tinggi : [], daftar);
+        });
+        dp.on(dashjs.MediaPlayer.events.ERROR, () => { if (!siap) { hancurkanPlayer(); tampilkanErrorPemutar(wrapper, 'Video DASH tidak dapat dimuat.'); } });
+        setTimeout(() => buka([], []), 7000);
+        dp.initialize(video, src, false);
+    }
+
+    // ---------- MP4 / WEBM / lainnya (+ beberapa resolusi dari "sources") ----------
+    function pasangNative(wrapper, vid) {
+        const video = buatVideoEl(wrapper, vid.thumb);
+        const daftar = (vid.sources && vid.sources.length) ? vid.sources : null;
+        let ukuranMax = 0;
+
+        if (daftar) {
+            daftar.forEach(s => {
+                const el = document.createElement('source');
+                el.src = s.src; el.type = s.type || 'video/mp4';
+                if (s.size) { el.setAttribute('size', s.size); ukuranMax = Math.max(ukuranMax, Number(s.size) || 0); }
+                video.appendChild(el);
+            });
+        } else {
+            video.src = vid.archiveSrc;
+        }
+        jadikanPlyr(video, opsiPlyr(null, null, !!daftar && daftar.length > 1, ukuranMax));
+
+        // Link tanpa ekstensi yang ternyata HLS/DASH: coba HLS sebagai cadangan
+        let sudah = false;
+        video.addEventListener('error', () => {
+            if (sudah) return; sudah = true;
+            const src = vid.archiveSrc || (daftar && daftar[0] && daftar[0].src);
+            if (!src) return tampilkanErrorPemutar(wrapper, 'Video tidak dapat diputar.');
+            hancurkanPlayer();
+            pasangHls(wrapper, src, vid.thumb, true);
+        }, true);
+    }
+
+    // =====================================================================
+    //  INTERAKSI PLAYER (ketuk 2x, autoplay berikutnya)
+    // =====================================================================
+    let countdownInterval = null;
+    let videoSekarang = null;
+
+    function aturInteraksiPlayer() {
+        const wrap = document.getElementById('video-player-wrapper');
+        if (!wrap || !window.player) return;
+
+        // Ketuk 2x untuk maju/mundur 10 detik (HP)
+        if (!wrap.dataset.tapPasang) {
+            wrap.dataset.tapPasang = '1';
+            let lastTap = 0;
+            wrap.addEventListener('touchend', (e) => {
+                if (!window.player) return;
+                const now = Date.now(), selisih = now - lastTap;
+                if (selisih < 300 && selisih > 0) {
+                    const x = e.changedTouches[0].clientX;
+                    const kotak = wrap.getBoundingClientRect();
+                    if (x > kotak.left + kotak.width / 2) window.player.forward(10); else window.player.rewind(10);
+                }
+                lastTap = now;
+            });
         }
 
-        // ==========================================
-        // FITUR KETUK 2X UNTUK SKIP 10 DETIK (KHUSUS HP)
-        // ==========================================
-        let lastTap = 0;
-        const playerContainer = document.querySelector('.plyr-wrapper');
-        
-        if (playerContainer) {
-            playerContainer.addEventListener('touchend', (e) => {
-                if (!window.player) return; // Pastikan player sudah siap
-
-                const currentTime = new Date().getTime();
-                const tapLength = currentTime - lastTap;
-                
-                // Jika jarak ketukan kurang dari 300ms (Ketuk 2x)
-                if (tapLength < 300 && tapLength > 0) {
-                    const screenWidth = window.innerWidth;
-                    const clickX = e.changedTouches[0].clientX;
-                    
-                    // Cek jika ketukan ada di bagian kanan layar (Setengah layar ke kanan)
-                    if (clickX > screenWidth / 2) {
-                        window.player.forward(10); // Lewati 10 detik
-                    } else {
-                        window.player.rewind(10); // Opsional: Lewati mundur 10 detik jika di kiri
+        // Putar otomatis video berikutnya (hitung mundur 20 detik)
+        window.player.on('ended', () => {
+            const toggle = document.getElementById('autoplay-toggle');
+            if (!toggle || !toggle.checked) return;
+            const box = document.getElementById('autoplay-countdown');
+            const timer = document.getElementById('countdown-timer');
+            box.style.display = 'block';
+            let sisa = 20; timer.innerText = sisa;
+            clearInterval(countdownInterval);
+            countdownInterval = setInterval(() => {
+                sisa -= 1; timer.innerText = sisa;
+                if (sisa <= 0) {
+                    clearInterval(countdownInterval);
+                    if (typeof videoList !== 'undefined') {
+                        const urut = [...videoList].sort((a, b) => (b.defaultViews || 0) - (a.defaultViews || 0));
+                        const next = urut.find(v => !videoSekarang || v.id !== videoSekarang.id);
+                        if (next) window.location.href = 'watch.html?id=' + encodeURIComponent(next.id);
                     }
                 }
-                lastTap = currentTime;
-            });
+            }, 1000);
+        });
+        window.player.on('play', () => {
+            clearInterval(countdownInterval);
+            const box = document.getElementById('autoplay-countdown');
+            if (box) box.style.display = 'none';
+        });
+    }
+
+    // =====================================================================
+    //  HALAMAN UTAMA
+    // =====================================================================
+    let halamanSiap = false;
+
+    function jalankanPemutarVideo() {
+        const urlParams = new URLSearchParams(window.location.search);
+        const currentVideoId = urlParams.get('id') || 'video1';
+        const ditemukan = (typeof videoListSemua !== 'undefined') ? videoListSemua.find(v => v.id === currentVideoId) : null;
+
+        const sembunyikanSemua = (judul, pesan) => {
+            document.getElementById('player-title').innerText = judul;
+            document.getElementById('desc-text').innerText = pesan;
+            ['meta-container', 'aksi-container', 'comments-section'].forEach(id => { const el = document.getElementById(id); if (el) el.style.display = 'none'; });
+            document.getElementById('desc-box').classList.remove('collapsed');
+            document.getElementById('video-player-wrapper').innerHTML = '<div class="wp-player-error">' + icon(IKON.video) + '<p>' + judul + '</p></div>';
+        };
+
+        if (!ditemukan) {
+            if (typeof videoListSemua !== 'undefined' && videoListSemua.length === 0) return;   // data belum siap
+            halamanSiap = true;
+            return sembunyikanSemua('Video Tidak Ditemukan', 'Maaf, video ini tidak tersedia.');
+        }
+        halamanSiap = true;
+        const currentVid = ditemukan;
+        videoSekarang = currentVid;
+
+        // Video pribadi: hanya admin (atau pratinjau dari halaman admin)
+        if (currentVid.visibility === 'pribadi' && !(IS_ADMIN_BROWSER || IZIN_PRATINJAU)) {
+            return sembunyikanSemua('Video Tidak Ditemukan', 'Maaf, video ini tidak tersedia.');
         }
 
-        // ==========================================
-        // FITUR AUTOPLAY 20 DETIK
-        // ==========================================
-        let countdownInterval;
-        
-        // Pastikan event berjalan jika player menggunakan Plyr
-        if (window.player) {
-            window.player.on('ended', () => {
-                const autoplayToggle = document.getElementById('autoplay-toggle');
-                
-                // Cek apakah tombol autoplay menyala (checked)
-                if (autoplayToggle && autoplayToggle.checked) {
-                    const countdownEl = document.getElementById('autoplay-countdown');
-                    const timerEl = document.getElementById('countdown-timer');
-                    
-                    countdownEl.style.display = 'block'; // Tampilkan kotak hitung mundur
-                    let timeLeft = 20;
-                    timerEl.innerText = timeLeft;
-                    
-                    // Mulai hitung mundur
-                    countdownInterval = setInterval(() => {
-                        timeLeft -= 1;
-                        timerEl.innerText = timeLeft;
-                        
-                        if (timeLeft <= 0) {
-                            clearInterval(countdownInterval);
-                            
-                            // Ambil video urutan ke-1 dari daftar rekomendasi (Views Tertinggi)
-                            if (typeof videoList !== 'undefined') {
-                                const sortedList = [...videoList].sort((a, b) => (b.defaultViews || 0) - (a.defaultViews || 0));
-                                if(sortedList.length > 0) {
-                                    window.location.href = `watch.html?id=${sortedList[0].id}`;
-                                }
-                            }
-                        }
-                    }, 1000); // 1 detik
-                }
-            });
+        document.title = currentVid.title + ' - LUVIA STUDIO TV';
+        document.getElementById('player-title').innerText = currentVid.title;
 
-            // BATALKAN AUTOPLAY JIKA USER MEMUTAR ULANG VIDEO
-            window.player.on('play', () => {
-                clearInterval(countdownInterval);
-                const countdownEl = document.getElementById('autoplay-countdown');
-                if(countdownEl) countdownEl.style.display = 'none';
-            });
+        // Deskripsi (bisa dilipat)
+        const descEl = document.getElementById('desc-text');
+        descEl.innerText = currentVid.description || 'Tidak ada deskripsi.';
+        const descBox = document.getElementById('desc-box');
+        const descBtn = document.getElementById('desc-toggle');
+        if ((currentVid.description || '').length > 170) {
+            descBtn.style.display = 'inline-block';
+            descBtn.onclick = () => {
+                const lipat = descBox.classList.toggle('collapsed');
+                descBtn.innerText = lipat ? 'Selengkapnya' : 'Sembunyikan';
+            };
+        } else { descBox.classList.remove('collapsed'); }
+
+        // Genre & tanggal
+        const genreName = currentVid.genre || 'Umum';
+        const genreLink = document.getElementById('genre-link');
+        genreLink.innerText = genreName;
+        genreLink.href = 'videos.html?genre=' + encodeURIComponent(genreName);
+        document.getElementById('upload-date-display').innerText = currentVid.uploadDate ? formatDateIndonesian(currentVid.uploadDate) : 'Tanggal tidak diketahui';
+
+        // Penanda visibilitas (hanya terlihat admin / pratinjau)
+        if (currentVid.visibility && currentVid.visibility !== 'publik') {
+            const chip = document.getElementById('chip-visibilitas');
+            chip.style.display = 'inline-flex';
+            chip.innerText = currentVid.visibility === 'pribadi' ? 'Pribadi (hanya admin)' : 'Tidak publik (khusus link)';
         }
 
+        // Pemutar
+        const playerWrapper = document.getElementById('video-player-wrapper');
+        const sumber = currentVid.archiveSrc || (currentVid.sources && currentVid.sources[0] ? currentVid.sources[0].src : '');
+        let jenis = 'iframe';
+        const permit = 'autoplay; encrypted-media; picture-in-picture; fullscreen';
+
+        if (currentVid.driveEmbed) {
+            playerWrapper.innerHTML = '<iframe class="drive-iframe" src="' + currentVid.driveEmbed + '" allowfullscreen="true" style="border:none;"></iframe>';
+        } else if (currentVid.rumbleEmbed) {
+            playerWrapper.innerHTML = '<iframe src="' + currentVid.rumbleEmbed + '" allowfullscreen="true" allow="' + permit + '" style="border:none;"></iframe>';
+        } else if (currentVid.customEmbed) {
+            playerWrapper.innerHTML = '<iframe src="' + currentVid.customEmbed + '" allowfullscreen="true" allow="' + permit + '" referrerpolicy="strict-origin-when-cross-origin" style="border:none;"></iframe>';
+        } else if (currentVid.youtubeId) {
+            playerWrapper.innerHTML = '<iframe src="https://www.youtube.com/embed/' + currentVid.youtubeId + '?enablejsapi=1&rel=0" allowfullscreen="true" allow="accelerometer; ' + permit + '" referrerpolicy="strict-origin-when-cross-origin" style="border:none;"></iframe>';
+        } else if (!sumber) {
+            tampilkanErrorPemutar(playerWrapper, 'Sumber video belum diisi.');
+        } else {
+            jenis = jenisSumber(sumber);
+            if (jenis === 'hls') pasangHls(playerWrapper, sumber, currentVid.thumb);
+            else if (jenis === 'dash') pasangDash(playerWrapper, sumber, currentVid.thumb);
+            else pasangNative(playerWrapper, currentVid);
+        }
+
+        // Tombol unduh (tidak untuk HLS/DASH)
+        let downloadAreaHTML = '';
+        const safeTitle = (currentVid.title || 'video').replace(/[^\w\- ]+/g, '').trim() || 'video';
+        if (jenis !== 'hls' && jenis !== 'dash') {
+            if (currentVid.sources && currentVid.sources.length > 1) {
+                const optionsHTML = currentVid.sources.map((s, i) => '<option value="' + i + '">' + (s.size || 'HD') + 'p</option>').join('');
+                downloadAreaHTML = '<span class="download-container"><span class="download-label">' + icon(IKON.unduh) + ' Resolusi:</span>' +
+                    '<select id="download-quality-select" class="download-select">' + optionsHTML + '</select>' +
+                    '<button type="button" id="btn-unduh" class="btn-download-action">Unduh</button></span>';
+            } else if (currentVid.downloadUrl || currentVid.archiveSrc) {
+                downloadAreaHTML = '<button type="button" id="btn-unduh" class="wp-btn">' + icon(IKON.unduh) + ' Unduh Video</button>';
+            }
+        }
+        const areaUnduh = document.getElementById('download-area');
+        areaUnduh.innerHTML = downloadAreaHTML;
+        const btnUnduh = document.getElementById('btn-unduh');
+        if (btnUnduh) btnUnduh.onclick = () => {
+            let url = currentVid.downloadUrl || currentVid.archiveSrc;
+            const sel = document.getElementById('download-quality-select');
+            if (sel && currentVid.sources) url = currentVid.sources[Number(sel.value)].src;
+            downloadVideoFile(url, safeTitle + '.mp4');
+        };
+
+        // Bagikan
+        document.getElementById('btn-share').onclick = async () => {
+            const url = location.href;
+            try {
+                if (navigator.share) await navigator.share({ title: currentVid.title, url: url });
+                else { await navigator.clipboard.writeText(url); tampilToast('Link video disalin'); }
+            } catch (e) {}
+        };
+
+        // Jumlah tayangan
+        const viewsBox = document.getElementById('views-display-box');
         if (typeof incrementVideoViewsAsync === 'function') {
-            incrementVideoViewsAsync(currentVid.id, currentVid.defaultViews || 0).then(totalViews => {
-                document.getElementById('views-display-box').innerHTML = `${icon('eye')} ${formatViews(totalViews)}`;
-            }).catch(() => {
-                document.getElementById('views-display-box').innerHTML = `${icon('eye')} ${currentVid.defaultViews || 0} Ditonton`;
-            });
+            incrementVideoViewsAsync(currentVid.id, currentVid.defaultViews || 0).then(total => {
+                viewsBox.innerHTML = icon(IKON.dilihat) + ' ' + formatViews(total);
+            }).catch(() => { viewsBox.innerHTML = icon(IKON.dilihat) + ' ' + (currentVid.defaultViews || 0) + ' Ditonton'; });
         }
         if (typeof renderGridRecommendations === 'function') renderGridRecommendations('watch-recommendations-grid');
 
-        // ==========================================
-        // FITUR KOMENTAR ALA YOUTUBE (EDIT & HAPUS LOCALSTORAGE)
-        // ==========================================
+        mulaiKomentar(currentVid);
+        terapkanIkon();
+    }
+
+    // =====================================================================
+    //  KOMENTAR
+    // =====================================================================
+    function waktuLalu(ts) {
+        if (!ts) return 'Baru saja';
+        const m = Math.floor((Date.now() - ts) / 60000);
+        if (m < 1) return 'Baru saja';
+        if (m < 60) return m + ' menit yang lalu';
+        const j = Math.floor(m / 60);
+        if (j < 24) return j + ' jam yang lalu';
+        return Math.floor(j / 24) + ' hari yang lalu';
+    }
+
+    function mulaiKomentar(currentVid) {
         const commentsRef = firebase.database().ref('video_comments_v2/' + currentVid.id);
         const commentsList = document.getElementById('comments-list');
-        const defaultAvatarURL = IMG.logoBulat; 
+        const refKomentar = (id, parent, isReply) => isReply
+            ? commentsRef.child(parent).child('replies').child(id)
+            : commentsRef.child(id);
 
-        const iconThumbOutline = `<svg viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"><path d="M14 9V5a3 3 0 0 0-3-3l-4 9v11h11.28a2 2 0 0 0 2-1.7l1.38-9a2 2 0 0 0-2-2.3zM7 22H4a2 2 0 0 1-2-2v-7a2 2 0 0 1 2-2h3"></path></svg>`;
-        const iconThumbSolid = `<svg viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" stroke-width="2" fill="white" stroke-linecap="round" stroke-linejoin="round"><path d="M14 9V5a3 3 0 0 0-3-3l-4 9v11h11.28a2 2 0 0 0 2-1.7l1.38-9a2 2 0 0 0-2-2.3zM7 22H4a2 2 0 0 1-2-2v-7a2 2 0 0 1 2-2h3"></path></svg>`;
-        const iconTrash = `<svg viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>`;
-        const iconEdit = `✏️`;
+        function bangunKomentar(id, c, isReply, parentId) {
+            const sudahSuka = localStorage.getItem('liked_' + id);
+            const milikku = localStorage.getItem('my_comment_' + id) === 'true';
+            const bisaHapus = milikku || IS_ADMIN_BROWSER;            // admin boleh memoderasi
+            const dataAttr = 'data-id="' + id + '" data-parent="' + (parentId || '') + '" data-reply="' + (isReply ? 1 : 0) + '"';
+            const kelasAva = 'comment-avatar' + (isReply ? ' avatar-sm' : '');
+            const lencana = c.isAdmin ? lencanaAdmin() : '';
 
-        function timeAgo(ts) {
-            if(!ts) return "Baru saja";
-            const diff = Date.now() - ts;
-            const minutes = Math.floor(diff / 60000);
-            if(minutes < 1) return "Baru saja";
-            if(minutes < 60) return `${minutes} menit yang lalu`;
-            const hours = Math.floor(minutes / 60);
-            if(hours < 24) return `${hours} jam yang lalu`;
-            return `${Math.floor(hours / 24)} hari yang lalu`;
-        }
-
-        function buildCommentHTML(id, c, isReply = false) {
-            const hasLiked = localStorage.getItem(`liked_${id}`);
-            // Deteksi jika ini adalah komentar buatan perangkat ini
-            const isMyComment = localStorage.getItem(`my_comment_${id}`) === 'true';
-            
-            const likesCount = c.likes || 0;
-            const thumbIcon = hasLiked ? iconThumbSolid : iconThumbOutline;
-            
-            // Amankan teks dari error tanda kutip saat masuk ke pop-up prompt Edit
-            const safeText = (c.text || "").replace(/'/g, "\\'").replace(/"/g, "&quot;");
-
-            let html = `
-                <div class="yt-comment-wrapper" id="comment-${id}">
-                    ${buatAvatar(c.name, { kelas: 'comment-avatar ' + (isReply ? 'avatar-sm' : '') })}
-                    <div class="comment-content">
-                        <div class="comment-header">
-                            <span class="comment-name">@${c.name}</span>
-                            <span class="comment-time">${timeAgo(c.timestamp)}</span>
-                        </div>
-                        <div class="comment-text">${c.text}</div>
-                        <div class="comment-actions">
-                            <button class="action-btn" onclick="toggleLike('${id}', '${isReply ? c.parentId : id}', ${isReply})">
-                                ${thumbIcon} <span id="like-count-${id}">${likesCount > 0 ? likesCount : ''}</span>
-                            </button>
-            `;
+            let h = '<div class="yt-comment-wrapper" id="comment-' + id + '">' +
+                buatAvatar(c.name, { kelas: kelasAva, admin: !!c.isAdmin }) +
+                '<div class="comment-content">' +
+                    '<div class="comment-header"><span class="comment-name">@' + escHtmlGlobal(c.name) + '</span>' + lencana +
+                    '<span class="comment-time">' + waktuLalu(c.timestamp) + '</span></div>' +
+                    '<div class="comment-text">' + escHtmlGlobal(c.text) + '</div>' +
+                    '<div class="comment-actions">' +
+                        '<button type="button" class="action-btn" data-act="like" ' + dataAttr + '>' + icon(sudahSuka ? IKON.jempolIsi : IKON.jempol) + ' <span>' + ((c.likes || 0) > 0 ? c.likes : '') + '</span></button>' +
+                        (!isReply ? '<button type="button" class="action-btn" data-act="reply" ' + dataAttr + '>' + icon(IKON.balas) + ' Balas</button>' : '') +
+                        (milikku ? '<button type="button" class="action-btn" data-act="edit" ' + dataAttr + '>' + icon(IKON.edit) + ' Edit</button>' : '') +
+                        (bisaHapus ? '<button type="button" class="action-btn delete-btn" data-act="del" ' + dataAttr + '>' + icon(IKON.hapus) + ' Hapus</button>' : '') +
+                    '</div>';
 
             if (!isReply) {
-                html += `<button class="action-btn" onclick="toggleReplyForm('${id}')">Balas</button>`;
+                h += '<div class="reply-form-container" id="reply-form-' + id + '" style="display:none;">' +
+                        buatAvatar('', { kelas: 'comment-avatar avatar-sm' }) +
+                        '<div style="flex:1;">' +
+                            (IS_ADMIN_BROWSER ? '' : '<input type="text" id="reply-name-' + id + '" placeholder="Nama..." maxlength="24" class="reply-input-name" value="' + escHtmlGlobal(bacaLokal('luvia_comment_name') || '') + '">') +
+                            '<textarea id="reply-text-' + id + '" placeholder="Balas komentar..."></textarea>' +
+                            '<div class="form-actions" style="margin-top:5px;">' +
+                                '<button type="button" class="btn-cancel" data-act="reply-cancel" ' + dataAttr + '>Batal</button>' +
+                                '<button type="button" class="btn-submit-comment" data-act="reply-send" ' + dataAttr + '>Balas</button>' +
+                            '</div>' +
+                        '</div>' +
+                     '</div>' +
+                     '<div id="replies-list-' + id + '" class="replies-list"></div>';
             }
-
-            // Tampilkan tombol Edit dan Hapus HANYA untuk komentar milik sendiri
-            if (isMyComment) {
-                html += `
-                            <button class="action-btn" onclick="editComment('${id}', '${isReply ? c.parentId : id}', ${isReply}, '${safeText}')">${iconEdit} Edit</button>
-                            <button class="action-btn delete-btn" onclick="deleteComment('${id}', '${isReply ? c.parentId : id}', ${isReply})">${iconTrash}</button>
-                `;
-            }
-
-            html += `</div>`;
-
-            if (!isReply) {
-                html += `
-                        <div class="reply-form-container" id="reply-form-${id}" style="display: none;">
-                            ${buatAvatar('', { kelas: 'comment-avatar avatar-sm' })}
-                            <div style="flex:1;">
-                                <input type="text" id="reply-name-${id}" placeholder="Nama..." required class="reply-input-name">
-                                <textarea id="reply-text-${id}" placeholder="Balas komentar..." required></textarea>
-                                <div class="form-actions" style="margin-top:5px;">
-                                    <button class="btn-cancel" onclick="toggleReplyForm('${id}')">Batal</button>
-                                    <button class="btn-submit-comment" onclick="submitReply('${id}')">Balas</button>
-                                </div>
-                            </div>
-                        </div>
-                        <div id="replies-list-${id}" class="replies-list"></div>
-                `;
-            }
-
-            html += `</div></div>`;
-            return html;
+            return h + '</div></div>';
         }
 
         commentsRef.on('value', (snapshot) => {
             const data = snapshot.val();
-            let totalComments = 0;
-
-            if (data) {
-                const keys = Object.keys(data).reverse(); 
-                let finalHTML = '';
-
-                keys.forEach(key => {
-                    const c = data[key];
-                    totalComments++;
-                    finalHTML += buildCommentHTML(key, c, false);
-                });
-
-                commentsList.innerHTML = finalHTML;
-                document.getElementById('comment-count').innerText = totalComments;
-
-                keys.forEach(key => {
-                    const c = data[key];
-                    if (c.replies) {
-                        const replyKeys = Object.keys(c.replies); 
-                        let repliesHTML = '';
-                        replyKeys.forEach(rKey => {
-                            const rData = c.replies[rKey];
-                            rData.parentId = key; 
-                            repliesHTML += buildCommentHTML(rKey, rData, true);
-                        });
-                        document.getElementById(`replies-list-${key}`).innerHTML = repliesHTML;
-                    }
-                });
-            } else {
-                commentsList.innerHTML = '<p style="color:#bbb; font-size:1rem; text-align:center; padding: 20px;">Belum ada komentar. Jadilah yang pertama!</p>';
+            if (!data) {
+                commentsList.innerHTML = '<p class="wp-empty">Belum ada komentar. Jadilah yang pertama!</p>';
                 document.getElementById('comment-count').innerText = 0;
+                return;
+            }
+            const keys = Object.keys(data).reverse();
+            commentsList.innerHTML = keys.map(k => bangunKomentar(k, data[k], false, '')).join('');
+            document.getElementById('comment-count').innerText = keys.length;
+            keys.forEach(k => {
+                const c = data[k];
+                if (!c.replies) return;
+                const el = document.getElementById('replies-list-' + k);
+                if (el) el.innerHTML = Object.keys(c.replies).map(rk => bangunKomentar(rk, c.replies[rk], true, k)).join('');
+            });
+        });
+
+        // Satu pendengar klik untuk semua tombol komentar
+        commentsList.addEventListener('click', (e) => {
+            const b = e.target.closest('[data-act]');
+            if (!b) return;
+            const act = b.dataset.act, id = b.dataset.id, parent = b.dataset.parent, isReply = b.dataset.reply === '1';
+            if (act === 'like') {
+                const sudah = localStorage.getItem('liked_' + id);
+                refKomentar(id, parent, isReply).child('likes').transaction(n => {
+                    if (sudah) { localStorage.removeItem('liked_' + id); return Math.max(0, (n || 1) - 1); }
+                    localStorage.setItem('liked_' + id, 'true'); return (n || 0) + 1;
+                });
+            } else if (act === 'reply' || act === 'reply-cancel') {
+                const f = document.getElementById('reply-form-' + id);
+                f.style.display = (act === 'reply' && f.style.display === 'none') ? 'flex' : 'none';
+            } else if (act === 'reply-send') {
+                kirimBalasan(id);
+            } else if (act === 'edit') {
+                const lama = b.closest('.comment-content').querySelector('.comment-text').textContent;
+                const baru = prompt('Edit pesan Anda:', lama);
+                if (baru !== null && baru.trim() !== '' && baru.trim() !== lama) refKomentar(id, parent, isReply).update({ text: baru.trim() });
+            } else if (act === 'del') {
+                if (confirm('Yakin ingin menghapus komentar ini selamanya?')) {
+                    refKomentar(id, parent, isReply).remove();
+                    localStorage.removeItem('my_comment_' + id);
+                }
             }
         });
+
+        function kirimBalasan(parentId) {
+            const nameEl = document.getElementById('reply-name-' + parentId);
+            const textEl = document.getElementById('reply-text-' + parentId);
+            const info = siapkanPengirim(nameEl ? nameEl.value : '');
+            if (!info.ok) { alert(info.pesan); if (nameEl) nameEl.focus(); return; }
+            const isi = textEl.value.trim();
+            if (!isi) return;
+            if (!info.isAdmin) simpanLokal('luvia_comment_name', info.nama);
+            const data = { name: info.nama, text: isi, timestamp: firebase.database.ServerValue.TIMESTAMP, likes: 0 };
+            if (info.isAdmin) data.isAdmin = true;
+            const baru = commentsRef.child(parentId).child('replies').push(data);
+            localStorage.setItem('my_comment_' + baru.key, 'true');
+            if (!info.isAdmin) {
+                firebase.database().ref('admin_notifications').push({
+                    tipe: 'Balasan Komentar',
+                    pesan: info.nama + ' membalas komentar di video "' + currentVid.title + '": "' + isi + '"',
+                    timestamp: Date.now(), read: false
+                });
+            }
+            textEl.value = '';
+        }
+
+        // Form komentar utama
+        modeAdminForm('comment-name');
+        const namaTersimpan = bacaLokal('luvia_comment_name');
+        if (namaTersimpan && !IS_ADMIN_BROWSER) document.getElementById('comment-name').value = namaTersimpan;
 
         document.getElementById('comment-form').addEventListener('submit', (e) => {
             e.preventDefault();
             const nameInput = document.getElementById('comment-name');
             const textInput = document.getElementById('comment-text');
-            if (nameInput.value && textInput.value) {
-                
-                const isiKomen = textInput.value;
-                const nama = nameInput.value;
+            const info = siapkanPengirim(nameInput.value);
+            if (!info.ok) { alert(info.pesan); nameInput.focus(); return; }
+            const isi = textInput.value.trim();
+            if (!isi) return;
+            if (!info.isAdmin) simpanLokal('luvia_comment_name', info.nama);
 
-                // Push ke database & Simpan ID ke perangkat agar tombol Edit/Hapus muncul
-                const newCommentRef = commentsRef.push({
-                    name: nama, text: isiKomen, timestamp: firebase.database.ServerValue.TIMESTAMP, likes: 0
-                });
-                localStorage.setItem(`my_comment_${newCommentRef.key}`, 'true');
+            const data = { name: info.nama, text: isi, timestamp: firebase.database.ServerValue.TIMESTAMP, likes: 0 };
+            if (info.isAdmin) data.isAdmin = true;
+            const baru = commentsRef.push(data);
+            localStorage.setItem('my_comment_' + baru.key, 'true');
 
-                let tipeNotif = "Komentar Baru";
-                if(isiKomen.includes('@admin') || isiKomen.includes('@luvia')) tipeNotif = "Mention Admin 🔔";
-                else if (isiKomen.includes('@')) tipeNotif = "Mention Antar Penonton";
-
+            if (!info.isAdmin) {
+                let tipe = 'Komentar Baru';
+                if (/@admin|@luvia/i.test(isi)) tipe = 'Mention Admin 🔔';
+                else if (isi.includes('@')) tipe = 'Mention Antar Penonton';
                 firebase.database().ref('admin_notifications').push({
-                    tipe: tipeNotif,
-                    pesan: `${nama} berkomentar di video "${currentVid.title}": "${isiKomen}"`,
+                    tipe: tipe,
+                    pesan: info.nama + ' berkomentar di video "' + currentVid.title + '": "' + isi + '"',
                     timestamp: Date.now(), read: false
                 });
-
-                textInput.value = '';
             }
-        });
-
-        window.submitReply = function(parentId) {
-            const nameVal = document.getElementById(`reply-name-${parentId}`).value;
-            const textVal = document.getElementById(`reply-text-${parentId}`).value;
-            if(nameVal && textVal) {
-                // Simpan balasan ke database & Simpan ID ke memori perangkat
-                const newReplyRef = commentsRef.child(parentId).child('replies').push({
-                    name: nameVal, text: textVal, timestamp: firebase.database.ServerValue.TIMESTAMP, likes: 0
-                });
-                localStorage.setItem(`my_comment_${newReplyRef.key}`, 'true');
-
-                firebase.database().ref('admin_notifications').push({
-                    tipe: "Balasan Komentar",
-                    pesan: `${nameVal} membalas komentar di video "${currentVid.title}": "${textVal}"`,
-                    timestamp: Date.now(), read: false
-                });
-
-                document.getElementById(`reply-text-${parentId}`).value = '';
-                toggleReplyForm(parentId);
-            }
-        };
-
-        window.toggleReplyForm = function(id) {
-            const form = document.getElementById(`reply-form-${id}`);
-            form.style.display = form.style.display === 'none' ? 'flex' : 'none';
-        };
-
-        window.toggleLike = function(commentId, parentId, isReply) {
-            const hasLiked = localStorage.getItem(`liked_${commentId}`);
-            let targetRef = isReply 
-                ? commentsRef.child(parentId).child('replies').child(commentId).child('likes')
-                : commentsRef.child(commentId).child('likes');
-
-            targetRef.transaction((currentLikes) => {
-                if (hasLiked) {
-                    localStorage.removeItem(`liked_${commentId}`);
-                    return (currentLikes || 1) - 1;
-                } else {
-                    localStorage.setItem(`liked_${commentId}`, 'true');
-                    return (currentLikes || 0) + 1;
-                }
-            });
-        };
-
-        // FUNGSI HAPUS TANPA JEJAK (TIDAK BUTUH PASSWORD)
-        window.deleteComment = function(commentId, parentId, isReply) {
-            if (confirm("Yakin ingin menarik pesan ini selamanya?")) {
-                let targetRef = isReply 
-                    ? commentsRef.child(parentId).child('replies').child(commentId)
-                    : commentsRef.child(commentId);
-                
-                targetRef.remove(); // Pesan musnah seketika
-                localStorage.removeItem(`my_comment_${commentId}`); // Bersihkan memori HP
-            }
-        };
-
-        // FUNGSI EDIT PESAN
-        window.editComment = function(commentId, parentId, isReply, oldText) {
-            const newText = prompt("Edit pesan Anda:", oldText);
-            
-            // Cek apakah diisi dan ada perubahan
-            if (newText !== null && newText.trim() !== "" && newText !== oldText) {
-                let targetRef = isReply 
-                    ? commentsRef.child(parentId).child('replies').child(commentId)
-                    : commentsRef.child(commentId);
-                
-                targetRef.update({ 
-                    text: newText.trim() // Timpa teks lama di database
-                });
-            }
-        };
-    } // <--- INI PENUTUP FUNGSI (SANGAT PENTING)
-
-        // INI PERINTAH UNTUK MENUNGGU DATA FIREBASE SIAP
-        window.addEventListener('videoDataReady', jalankanPemutarVideo);
-
-// SISTEM PENCARIAN LIVE (AUTOCOMPLETE) 
-document.addEventListener('DOMContentLoaded', () => {
-    const searchInput = document.getElementById('navSearchInput');
-    const searchDropdown = document.getElementById('searchDropdownList');
-    const searchForm = document.getElementById('navSearchForm');
-
-    if (searchInput && searchDropdown) {
-        searchInput.addEventListener('input', function() {
-            const query = this.value.toLowerCase().trim();
-            if (query.length === 0) { searchDropdown.classList.remove('show'); return; }
-
-            if (typeof videoList !== 'undefined') {
-                const results = videoList.filter(vid => 
-                    (vid.title && vid.title.toLowerCase().includes(query)) || 
-                    (vid.genre && vid.genre.toLowerCase().includes(query)) ||
-                    (vid.uploadDate && vid.uploadDate.includes(query)) ||
-                    (vid.description && vid.description.toLowerCase().includes(query))
-                ).slice(0, 6); 
-
-                if (results.length > 0) {
-                    let html = '';
-                    results.forEach(vid => {
-                        html += `
-                            <a href="watch.html?id=${vid.id}" class="search-result-item">
-                                <img src="${vid.thumb}" alt="Thumbnail">
-                                <div class="search-result-info">
-                                    <h4>${vid.title}</h4>
-                                    <!-- ID khusus untuk load data firebase realtime -->
-                                    <p>${vid.genre || 'Umum'} • <span id="search-view-${vid.id}">Memuat...</span></p>
-                                </div>
-                            </a>
-                        `;
-                    });
-                    searchDropdown.innerHTML = html;
-                    searchDropdown.classList.add('show');
-
-                    // LOAD FIREBASE VIEWS
-                    results.forEach(vid => {
-                        if (typeof listenVideoViews === 'function') {
-                            listenVideoViews(vid.id, vid.defaultViews || 0, (totalViews) => {
-                                const viewEl = document.getElementById(`search-view-${vid.id}`);
-                                if (viewEl) viewEl.innerText = `${formatViews(totalViews)}`;
-                            });
-                        }
-                    });
-                } else {
-                    searchDropdown.innerHTML = `<div style="padding: 15px; text-align: center; color: #bbb; font-size: 0.85rem;">Tidak ada hasil untuk "${query}"</div>`;
-                    searchDropdown.classList.add('show');
-                }
-            }
-        });
-
-        document.addEventListener('click', function(e) {
-            if (!searchForm.contains(e.target)) searchDropdown.classList.remove('show');
-        });
-
-        searchForm.addEventListener('submit', (e) => {
-            e.preventDefault();
-            const q = searchInput.value.trim();
-            if (q) {
-                // Paksa pindah ke videos.html dari halaman manapun saat tekan Enter
-                window.location.href = `videos.html?search=${encodeURIComponent(q)}`;
-            }
+            textInput.value = '';
         });
     }
-});
 
-       // MENCEGAH HALAMAN SCROLL SAAT MENEKAN SPASI
-        window.addEventListener('keydown', function(e) {
-            // Cegah Spasi (kode 32) jika pengunjung sedang tidak mengetik di form pencarian atau komentar
-            if (e.keyCode === 32 && e.target.tagName !== 'INPUT' && e.target.tagName !== 'TEXTAREA') {
-                e.preventDefault(); 
-                
-                // Gunakan Spasi untuk Play/Pause video jika player aktif
-                if (window.player) {
-                    window.player.togglePlay(); 
-                }
-            }
-        });
+    // =====================================================================
+    //  PEMICU & UTILITAS
+    // =====================================================================
+    window.addEventListener('videoDataReady', () => { if (!halamanSiap) jalankanPemutarVideo(); });
+    document.addEventListener('DOMContentLoaded', () => {
+        terapkanIkon();
+        if (typeof videoListSemua !== 'undefined' && videoListSemua.length && !halamanSiap) jalankanPemutarVideo();
+    });
+
+    // Spasi = putar/jeda (tanpa menggulung halaman)
+    window.addEventListener('keydown', function (e) {
+        if (e.keyCode === 32 && e.target.tagName !== 'INPUT' && e.target.tagName !== 'TEXTAREA') {
+            e.preventDefault();
+            if (window.player) window.player.togglePlay();
+        }
+    });
     </script>
 </body>
 </html>
