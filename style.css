@@ -3187,7 +3187,6 @@ body::after {
 footer { padding: 22px 20px; }
 @media (max-width: 768px) {
     .section { padding: 20px 16px; }
-    .hero-carousel + .section { margin-top: -14px; }
     #about { padding-top: 28px; }
 }
 
