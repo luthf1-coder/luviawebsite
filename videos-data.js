@@ -329,6 +329,7 @@ const IKON = {
     suaraOn: 'ig-volume',  suaraOff: 'ig-mute',
     jempol: 'ig-thumb',    jempolIsi: 'ig-thumb-fill',
     perisai: 'ig-shield',
+    bintang: 'ig-star',   bintangIsi: 'ig-star-fill',
     dilihat: 'eye', kembali: 'arrow-left', maju: 'arrow-right'
 };
 
@@ -391,8 +392,12 @@ function siapkanPengirim(namaInput) {
     if (namaTerlarang(nama)) return { ok: false, pesan: 'Nama itu tidak boleh dipakai (khusus admin). Silakan pakai nama lain.' };
     return { ok: true, nama: nama, isAdmin: false };
 }
-function lencanaAdmin() { return '<span class="lencana-admin">' + icon(IKON.centang) + ' ADMIN</span>'; }
-
+function centangBiru() {
+    return '<span class="centang-biru" title="Terverifikasi">' + icon(IKON.centang) + '</span>';
+}
+function lencanaAdmin() {
+    return centangBiru() + '<span class="lencana-admin">ADMIN</span>';
+}  
 // Mode admin: sembunyikan kolom nama, isi otomatis
 function modeAdminForm(inputId) {
     if (!IS_ADMIN_BROWSER) return;
@@ -1262,11 +1267,297 @@ function cekBrowserBermasalah() {
     } else { tampil(); }
 }
 
-// ---------- Jalankan semuanya ----------
 document.addEventListener('DOMContentLoaded', () => {
     if (HALAMAN_ADMIN) return;
     const storageOk = cekStorage();
-    if (storageOk && bacaLokal(KEY_CONSENT) !== 'ya') tampilkanCookie(jalankanPopup);
-    else jalankanPopup();
+    if (storageOk && bacaLokal(KEY_CONSENT) !== 'ya') {
+        tampilkanCookie(() => { jalankanPopup(); mulaiRating(); });
+    } else {
+        jalankanPopup();
+        mulaiRating();
+    }
     cekBrowserBermasalah();
 });
+
+
+// =====================================================================
+//  A. DIALOG KUSTOM  (pengganti alert / confirm / prompt bawaan browser)
+//     Tampilannya sama dengan pesan izin cookie.
+// =====================================================================
+function bukaDialog(cfg, selesai) {
+    const wrap = document.createElement('div');
+    wrap.className = 'pop-overlay dlg';
+    const card = document.createElement('div');
+    card.className = 'pop-card dlg-card';
+    card.setAttribute('role', 'dialog');
+    card.setAttribute('aria-modal', 'true');
+
+    let h = '<div class="pop-body">';
+    if (cfg.judul) h += '<h3 class="pop-judul">' + escHtmlGlobal(cfg.judul) + '</h3>';
+    if (cfg.pesan) h += '<p class="pop-isi">' + escHtmlGlobal(cfg.pesan) + '</p>';
+    if (cfg.input) {
+        h += '<input type="text" class="dlg-input" maxlength="' + (cfg.input.maks || 500) + '" value="' +
+             escHtmlGlobal(cfg.input.nilai || '') + '" placeholder="' + escHtmlGlobal(cfg.input.placeholder || '') + '">';
+    }
+    h += '<div class="pop-btns dlg-btns"></div></div>';
+    card.innerHTML = h;
+
+    const area = card.querySelector('.dlg-btns');
+    const inp = card.querySelector('.dlg-input');
+    const nilaiBatal = (cfg.nilaiBatal === undefined) ? null : cfg.nilaiBatal;
+    let tertutup = false;
+
+    function tutupDengan(nilai) {
+        if (tertutup) return;
+        tertutup = true;
+        document.removeEventListener('keydown', onKey, true);
+        wrap.remove();
+        selesai(nilai);
+    }
+    function onKey(e) {
+        if (e.key === 'Escape') { e.stopPropagation(); tutupDengan(nilaiBatal); }
+        else if (e.key === 'Enter' && inp && document.activeElement === inp) {
+            e.preventDefault();
+            const u = cfg.tombol.find(t => t.utama);
+            tutupDengan(u ? (u.nilai === '__input' ? inp.value : u.nilai) : null);
+        }
+    }
+    document.addEventListener('keydown', onKey, true);
+
+    cfg.tombol.forEach(t => {
+        const b = document.createElement('button');
+        b.type = 'button';
+        b.className = 'pop-btn' + (t.utama ? '' : ' sekunder') + (t.bahaya ? ' bahaya' : '');
+        b.textContent = t.teks;
+        b.onclick = () => tutupDengan(t.nilai === '__input' ? inp.value : t.nilai);
+        area.appendChild(b);
+    });
+    wrap.addEventListener('click', e => { if (e.target === wrap) tutupDengan(nilaiBatal); });
+    wrap.appendChild(card);
+    document.body.appendChild(wrap);
+    setTimeout(() => {
+        if (inp) { inp.focus(); inp.select(); }
+        else { const u = area.querySelector('.pop-btn:not(.sekunder)') || area.lastChild; if (u) u.focus(); }
+    }, 30);
+}
+
+// Pemberitahuan (pengganti alert)
+function tampilAlert(pesan, judul) {
+    return new Promise(res => bukaDialog({
+        judul: judul || 'Pemberitahuan', pesan: String(pesan),
+        tombol: [{ teks: 'OK', nilai: true, utama: true }], nilaiBatal: true
+    }, res));
+}
+// Konfirmasi Ya/Batal (pengganti confirm) -> Promise<true|false>
+function tampilKonfirmasi(pesan, opsi) {
+    opsi = opsi || {};
+    return new Promise(res => bukaDialog({
+        judul: opsi.judul || 'Konfirmasi', pesan: String(pesan),
+        tombol: [{ teks: opsi.batal || 'Batal', nilai: false }, { teks: opsi.ya || 'Ya', nilai: true, utama: true, bahaya: !!opsi.bahaya }],
+        nilaiBatal: false
+    }, res));
+}
+// Isian teks (pengganti prompt) -> Promise<string|null>
+function tampilInput(pesan, nilaiAwal, opsi) {
+    opsi = opsi || {};
+    return new Promise(res => bukaDialog({
+        judul: opsi.judul || 'Edit', pesan: pesan,
+        input: { nilai: nilaiAwal || '', placeholder: opsi.placeholder || '' },
+        tombol: [{ teks: 'Batal', nilai: null }, { teks: opsi.simpan || 'Simpan', nilai: '__input', utama: true }],
+        nilaiBatal: null
+    }, res));
+}
+// Pilihan bebas -> Promise<nilai|null>.  daftar: [{ teks, nilai, utama?, bahaya? }]
+function tampilPilihan(judul, pesan, daftar) {
+    return new Promise(res => bukaDialog({ judul: judul, pesan: pesan, tombol: daftar, nilaiBatal: null }, res));
+}
+// Semua alert("...") yang sudah ada otomatis memakai dialog kustom ini
+window.alert = function (pesan) { tampilAlert(pesan); };
+
+
+// =====================================================================
+//  B. NAMA BERSAMA  (isi nama sekali -> terisi otomatis di semua halaman)
+// =====================================================================
+const KUNCI_NAMA = 'luvia_nama_pengguna';
+
+function ambilNama() {
+    // kunci lama ikut dibaca supaya nama yang sudah tersimpan tidak hilang
+    return bacaLokal(KUNCI_NAMA) || bacaLokal('luvia_comment_name') ||
+           bacaLokal('luvia_live_chat_name') || bacaLokal('luvia_chat_name') || '';
+}
+function simpanNama(n) {
+    simpanLokal(KUNCI_NAMA, String(n || '').trim().slice(0, 24));
+}
+
+// Menggambar kolom nama gaya "Komentar sebagai NAMA · ganti" di dalam <div id=wadahId>.
+// Mengembalikan { ambil(), segarkan() }.
+function pasangKolomNama(wadahId, inputId, label) {
+    const wadah = document.getElementById(wadahId);
+    if (!wadah) return null;
+    label = label || 'Komentar sebagai';
+    wadah.classList.add('kn');
+    wadah.innerHTML =
+        '<div class="kn-who" style="display:none;"></div>' +
+        '<div class="kn-edit">' +
+            '<input type="text" id="' + inputId + '" placeholder="Nama Anda..." maxlength="24" autocomplete="off">' +
+            '<button type="button" class="kn-batal" aria-label="Batal" title="Batal">' + icon(IKON.tutup) + '</button>' +
+        '</div>';
+
+    const who = wadah.querySelector('.kn-who');
+    const edit = wadah.querySelector('.kn-edit');
+    const input = wadah.querySelector('input');
+    const batal = wadah.querySelector('.kn-batal');
+    let sedangGanti = false;
+
+    function tampil() {
+        if (IS_ADMIN_BROWSER) {
+            edit.style.display = 'none'; who.style.display = 'block';
+            who.innerHTML = icon(IKON.perisai) + ' Mode Admin: tampil sebagai <b>' + escHtmlGlobal(ADMIN_PROFIL.nama) + '</b>';
+            input.value = ADMIN_PROFIL.nama;
+            return;
+        }
+        const n = ambilNama();
+        if (n && !sedangGanti) {
+            who.style.display = 'block'; edit.style.display = 'none';
+            who.innerHTML = escHtmlGlobal(label) + ' <b>' + escHtmlGlobal(n) + '</b> · <button type="button" class="kn-ganti">ganti</button>';
+            input.value = n;
+            who.querySelector('.kn-ganti').onclick = () => { sedangGanti = true; tampil(); input.focus(); input.select(); };
+        } else {
+            who.style.display = 'none'; edit.style.display = 'flex';
+            batal.style.display = n ? 'inline-flex' : 'none';     // X hanya jika ada nama lama untuk dikembalikan
+        }
+    }
+    batal.onclick = () => { sedangGanti = false; input.value = ambilNama(); tampil(); };
+    window.addEventListener('storage', (e) => { if (e.key === KUNCI_NAMA) { sedangGanti = false; tampil(); } });
+    tampil();
+
+    return {
+        ambil: () => (IS_ADMIN_BROWSER ? ADMIN_PROFIL.nama : (input.value || '').trim()),
+        segarkan: () => { sedangGanti = false; tampil(); }
+    };
+}
+
+
+// =====================================================================
+//  C. RATING WEBSITE  (pop-up bintang 1-5 + kritik & saran)
+// =====================================================================
+// Muncul jika pengunjung sudah total >= 3 jam di website ATAU sering berkunjung.
+const RATING_CONFIG = {
+    detik: 3 * 3600,      // total waktu aktif di website (3 jam)
+    kunjungan: 7,         // atau jumlah kunjungan (tiap kali website dibuka kembali)
+    cekMs: 30000          // seberapa sering syarat dicek (ms)
+};
+const RT_WAKTU = 'luvia_rt_waktu';
+const RT_KUNJUNGAN = 'luvia_rt_kunjungan';
+const RT_SELESAI = 'luvia_rt_selesai';
+const RT_TEKS = ['', 'Sangat buruk', 'Buruk', 'Cukup', 'Bagus', 'Luar biasa'];
+
+function angkaLokal(k) { return parseInt(bacaLokal(k) || '0', 10) || 0; }
+
+function mulaiRating() {
+    if (HALAMAN_ADMIN || IS_ADMIN_BROWSER || !cekStorage()) return;
+    if (bacaLokal(RT_SELESAI) === '1') return;
+
+    // Hitung kunjungan: sekali tiap sesi (tab baru / browser dibuka lagi)
+    if (!bacaSesi('luvia_rt_sesi')) {
+        simpanSesi('luvia_rt_sesi', '1');
+        simpanLokal(RT_KUNJUNGAN, String(angkaLokal(RT_KUNJUNGAN) + 1));
+    }
+
+    // Hitung waktu aktif (hanya saat tab terlihat)
+    let belumDisimpan = 0;
+    const simpanWaktu = () => {
+        if (!belumDisimpan) return;
+        simpanLokal(RT_WAKTU, String(angkaLokal(RT_WAKTU) + belumDisimpan));
+        belumDisimpan = 0;
+    };
+    setInterval(() => { if (document.visibilityState === 'visible') belumDisimpan++; }, 1000);
+    setInterval(simpanWaktu, 10000);
+    document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'hidden') simpanWaktu(); });
+    window.addEventListener('pagehide', simpanWaktu);
+
+    let sudahTampil = false;
+    function layak() {
+        return (angkaLokal(RT_WAKTU) + belumDisimpan) >= RATING_CONFIG.detik || angkaLokal(RT_KUNJUNGAN) >= RATING_CONFIG.kunjungan;
+    }
+    function coba() {
+        if (sudahTampil || bacaLokal(RT_SELESAI) === '1' || !layak()) return;
+        if (document.querySelector('.pop-overlay')) return;               // jangan menumpuk dengan pop-up lain
+        if (window.player && window.player.playing) return;               // tunggu video berhenti dulu
+        sudahTampil = true;
+        tampilkanRating();
+    }
+    setTimeout(coba, 8000);
+    setInterval(coba, RATING_CONFIG.cekMs);
+}
+
+function tampilkanRating() {
+    const wrap = document.createElement('div');
+    wrap.className = 'pop-overlay rt-overlay';
+    wrap.innerHTML =
+        '<div class="pop-card rt-card"><div class="pop-body">' +
+            '<h3 class="pop-judul">Bagaimana tampilan website kami?</h3>' +
+            '<p class="pop-isi">Penilaianmu membantu kami membuat website ini lebih baik.</p>' +
+            '<div class="rt-stars" role="radiogroup" aria-label="Pilih bintang">' +
+                [1, 2, 3, 4, 5].map(n => '<button type="button" class="rt-star" data-n="' + n + '" aria-label="' + n + ' bintang">' + icon(IKON.bintang) + '</button>').join('') +
+            '</div>' +
+            '<div class="rt-label" id="rt-label">Pilih bintang</div>' +
+            '<textarea class="rt-saran" id="rt-saran" rows="3" maxlength="500" placeholder="Kritik dan saran..."></textarea>' +
+            '<div class="rt-info" id="rt-info">Kritik dan saran wajib diisi jika bintang di bawah 5.</div>' +
+            '<div class="rt-err" id="rt-err"></div>' +
+            '<div class="pop-btns"><button type="button" class="pop-btn" id="rt-kirim">Beri Rating</button>' +
+            '<button type="button" class="pop-btn sekunder" id="rt-tidak">Tidak Terimakasih</button></div>' +
+        '</div></div>';
+    document.body.appendChild(wrap);
+
+    let nilai = 0;
+    const bintang = wrap.querySelectorAll('.rt-star');
+    const label = wrap.querySelector('#rt-label');
+    const info = wrap.querySelector('#rt-info');
+    const err = wrap.querySelector('#rt-err');
+    const saran = wrap.querySelector('#rt-saran');
+
+    function gambar(n) {
+        bintang.forEach((b, i) => {
+            const aktif = i < n;
+            b.classList.toggle('on', aktif);
+            b.innerHTML = icon(aktif ? IKON.bintangIsi : IKON.bintang);
+        });
+    }
+    bintang.forEach(b => {
+        b.addEventListener('mouseenter', () => gambar(Number(b.dataset.n)));
+        b.addEventListener('mouseleave', () => gambar(nilai));
+        b.addEventListener('click', () => {
+            nilai = Number(b.dataset.n);
+            gambar(nilai);
+            label.textContent = RT_TEKS[nilai];
+            err.textContent = '';
+            if (nilai === 5) { info.textContent = 'Kritik dan saran (boleh dikosongkan).'; saran.placeholder = 'Kritik dan saran (opsional)...'; }
+            else { info.textContent = 'Kritik dan saran WAJIB diisi agar kami tahu apa yang perlu diperbaiki.'; saran.placeholder = 'Apa yang perlu diperbaiki?'; }
+        });
+    });
+
+    wrap.querySelector('#rt-tidak').onclick = () => {
+        // reset: muncul lagi setelah 3 jam / kunjungan terkumpul kembali
+        simpanLokal(RT_WAKTU, '0');
+        simpanLokal(RT_KUNJUNGAN, '0');
+        wrap.remove();
+    };
+
+    wrap.querySelector('#rt-kirim').onclick = () => {
+        const teks = saran.value.trim();
+        if (!nilai) { err.textContent = 'Pilih jumlah bintang dulu.'; return; }
+        if (nilai < 5 && !teks) { err.textContent = 'Mohon isi kritik dan saran agar kami tahu apa yang perlu diperbaiki.'; saran.focus(); return; }
+        if (typeof firebase === 'undefined' || !firebase.apps.length) { err.textContent = 'Koneksi bermasalah. Coba lagi nanti.'; return; }
+
+        const tombol = wrap.querySelector('#rt-kirim');
+        tombol.disabled = true;
+        firebase.database().ref('ratings').push({ bintang: nilai, saran: teks, waktu: Date.now(), selesai: false })
+            .then(() => {
+                simpanLokal(RT_SELESAI, '1');
+                wrap.remove();
+                tampilToast('Terima kasih atas penilaianmu!');
+            })
+            .catch(() => { tombol.disabled = false; err.textContent = 'Gagal mengirim. Coba lagi nanti.'; });
+    };
+}
