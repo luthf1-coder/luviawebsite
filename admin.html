@@ -34,7 +34,10 @@
         <div style="display: flex; justify-content: space-between; border-bottom: 1px solid #333; padding-bottom: 15px; margin-bottom: 20px;">
             <h2 style="margin:0; color:#ff914d;">Control Panel</h2>
             <div style="display:flex; gap:12px; align-items:center; flex-wrap:wrap;">
-    <button id="btn-mode-pengunjung" onclick="togglePengunjung()" style="background:#333; color:#fff; border:1px solid #555; padding:8px 12px; border-radius:6px; cursor:pointer; font-size:12px;">👁️ Uji sebagai Pengunjung</button>
+    <div class="mode-switch">
+    <button type="button" id="mode-btn-pengunjung" onclick="pilihMode(false)">👤 Pengunjung</button>
+    <button type="button" id="mode-btn-admin" onclick="pilihMode(true)">🛡️ Admin</button>
+</div>
     <a href="index.html" style="color: #bbb; text-decoration: none;">❮ Ke Website</a>
 </div>
         </div>
@@ -447,7 +450,7 @@ function togglePengunjung() {
             if (isAuto || inputPass === passwordAdmin) {
                 sessionStorage.setItem('admin_logged_in', 'true'); // Simpan sesi login
                 localStorage.setItem('luvia_no_track', '1');
-                                tandaiAdmin();
+                segarkanTombolMode();
                 document.getElementById('login-overlay').style.display = 'none';
                 document.getElementById('admin-dashboard').style.display = 'block';
                 waktuLoginAdmin = Date.now();
@@ -1632,6 +1635,18 @@ function muatDaftarPopup() {
                 </div>`;
             }).join('') || '<p style="color:#bbb; font-size:13px;">Belum ada pop-up.</p>');
     });
+}
+
+function segarkanTombolMode() {
+    let a = false;
+    try { a = localStorage.getItem('luvia_admin_mode') === '1'; } catch (e) {}
+    document.getElementById('mode-btn-admin').classList.toggle('aktif', a);
+    document.getElementById('mode-btn-pengunjung').classList.toggle('aktif', !a);
+}
+function pilihMode(admin) {
+    setModeAdmin(admin);
+    segarkanTombolMode();
+    tampilToast(admin ? 'Mode Admin aktif di perangkat ini' : 'Mode Pengunjung aktif di perangkat ini');
 }
     
     </script>
