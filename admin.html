@@ -598,10 +598,10 @@ function ambilSrcEmbed(teks) {
     
         // FUNGSI HAPUS DATA ADMIN
         function hapusData(path) {
-            if(confirm("Yakin ingin menghapus data ini secara permanen dari website?")) {
-                firebase.database().ref(path).remove().then(() => alert("Berhasil dihapus!"));
-            }
-        }
+    tampilKonfirmasi("Yakin ingin menghapus data ini secara permanen dari website?", { judul: 'Hapus data', ya: 'Hapus', bahaya: true }).then(ok => {
+        if (ok) firebase.database().ref(path).remove().then(() => alert("Berhasil dihapus!"));
+    });
+}
         
         // ==========================================
         // FITUR 2: BUAT PROGRAM & MASUKKAN VIDEO
@@ -720,10 +720,12 @@ function batalEditProgram() {
 }
 
 function hapusProgram(id) {
-    if (!confirm("Yakin hapus program ini beserta isi playlistnya?")) return;
-    firebase.database().ref('programs_info/' + id).remove();
-    firebase.database().ref('program_playlists/' + id).remove();
-    if (progAktifId === id) batalEditProgram();
+    tampilKonfirmasi("Yakin hapus program ini beserta isi playlistnya?", { judul: 'Hapus program', ya: 'Hapus', bahaya: true }).then(ok => {
+        if (!ok) return;
+        firebase.database().ref('programs_info/' + id).remove();
+        firebase.database().ref('program_playlists/' + id).remove();
+        if (progAktifId === id) batalEditProgram();
+    });
 }
 
 
@@ -841,10 +843,10 @@ function hapusProgram(id) {
         }
     
         function hapusData(path) {
-            if(confirm("Yakin ingin menghapus ini secara permanen?")) {
-                firebase.database().ref(path).remove().then(() => alert("Berhasil dihapus!"));
-            }
-        }
+    tampilKonfirmasi("Yakin ingin menghapus data ini secara permanen dari website?", { judul: 'Hapus data', ya: 'Hapus', bahaya: true }).then(ok => {
+        if (ok) firebase.database().ref(path).remove().then(() => alert("Berhasil dihapus!"));
+    });
+}
 
 // ==========================================
         // MESIN CHAT WA WEB & SISTEM QUOTE / FAQ
@@ -1004,34 +1006,33 @@ function hapusProgram(id) {
         }
 
         function resetObrolanAdmin() {
-            if(!activeDeviceId) return;
-            if(confirm("Yakin ingin mereset dan mengarsipkan obrolan ini?")) {
-                Object.keys(allComplaints).forEach(k => {
-                    if(allComplaints[k].deviceId === activeDeviceId) {
-                        firebase.database().ref('complaints/' + k).update({ 
-                            archived_by_admin: true,
-                            archive_timestamp: Date.now()
-                        });
-                    }
-                });
-                toggleAdminDropdown();
+    if (!activeDeviceId) return;
+    const did = activeDeviceId;
+    tampilKonfirmasi("Yakin ingin mereset dan mengarsipkan obrolan ini?", { judul: 'Arsipkan obrolan', ya: 'Arsipkan' }).then(ok => {
+        if (!ok) return;
+        Object.keys(allComplaints).forEach(k => {
+            if (allComplaints[k].deviceId === did) {
+                firebase.database().ref('complaints/' + k).update({ archived_by_admin: true, archive_timestamp: Date.now() });
             }
-        }
+        });
+        toggleAdminDropdown();
+    });
+}
 
         function hapusPermanenObrolan() {
-            if(!activeDeviceId) return;
-            if(confirm("PERINGATAN: Yakin ingin menghapus PERMANEN seluruh obrolan dengan pengguna ini? Data akan hilang selamanya dari database!")) {
-                Object.keys(allComplaints).forEach(k => {
-                    if(allComplaints[k].deviceId === activeDeviceId) {
-                        firebase.database().ref('complaints/' + k).remove();
-                    }
-                });
-                toggleAdminDropdown();
-                document.getElementById('wa-chat-area').style.display = 'none';
-                document.getElementById('wa-empty-state').style.display = 'flex';
-                activeDeviceId = null;
-            }
-        }
+    if (!activeDeviceId) return;
+    const did = activeDeviceId;
+    tampilKonfirmasi("Yakin ingin menghapus PERMANEN seluruh obrolan dengan pengguna ini? Data akan hilang selamanya dari database!", { judul: 'Hapus permanen', ya: 'Hapus Permanen', bahaya: true }).then(ok => {
+        if (!ok) return;
+        Object.keys(allComplaints).forEach(k => {
+            if (allComplaints[k].deviceId === did) firebase.database().ref('complaints/' + k).remove();
+        });
+        toggleAdminDropdown();
+        document.getElementById('wa-chat-area').style.display = 'none';
+        document.getElementById('wa-empty-state').style.display = 'flex';
+        activeDeviceId = null;
+    });
+}
     
         function pilihQuote(msgId, text) {
             document.getElementById('quote-preview').style.display = 'block';
@@ -1067,17 +1068,14 @@ function hapusProgram(id) {
         }
 
         function opsiHapusAdmin(id, canDeleteAll) {
-            const pesan = canDeleteAll 
-                ? "Pilih opsi hapus:\nKetik '1' = Hapus Untuk Saya (Hanya hilang di Admin)\nKetik '2' = Hapus Untuk Semua Orang (Ditarik dari penonton)" 
-                : "Waktu tarik pesan > 24 Jam.\nKetik '1' jika ingin Hapus Untuk Saya saja.";
-            
-            const respon = prompt(pesan);
-            if (respon === '1') {
-                firebase.database().ref('complaints/' + id).update({ deleted_by_admin: true });
-            } else if (respon === '2' && canDeleteAll) {
-                firebase.database().ref('complaints/' + id).update({ deleted_for_everyone: true });
-            }
-        }
+    const pesan = canDeleteAll ? "Pilih cara menghapus pesan ini:" : "Waktu tarik pesan lebih dari 24 jam. Pesan hanya bisa dihapus untuk Anda (admin).";
+    const pilihan = [{ teks: 'Batal', nilai: null }, { teks: 'Hapus untuk saya', nilai: '1', utama: !canDeleteAll }];
+    if (canDeleteAll) pilihan.push({ teks: 'Hapus untuk semua', nilai: '2', utama: true, bahaya: true });
+    tampilPilihan('Hapus pesan', pesan, pilihan).then(respon => {
+        if (respon === '1') firebase.database().ref('complaints/' + id).update({ deleted_by_admin: true });
+        else if (respon === '2' && canDeleteAll) firebase.database().ref('complaints/' + id).update({ deleted_for_everyone: true });
+    });
+}
 
         function kirimBalasanAdmin() {
             if(!activeDeviceId) return;
@@ -1174,11 +1172,10 @@ function hapusProgram(id) {
         }
 
         function hapusSemuaNotif() {
-            if(confirm("Yakin ingin menghapus SEMUA log notifikasi? Riwayat tidak bisa dikembalikan.")) {
-                firebase.database().ref('admin_notifications').remove();
-            }
-        }
-
+    tampilKonfirmasi("Yakin ingin menghapus SEMUA log notifikasi? Riwayat tidak bisa dikembalikan.", { judul: 'Hapus semua notifikasi', ya: 'Hapus Semua', bahaya: true }).then(ok => {
+        if (ok) firebase.database().ref('admin_notifications').remove();
+    });
+}
     // ================= FITUR KELOLA PAPAN JAWABAN (FAQ) =================
         function bukaKelolaFAQ() {
             document.getElementById('modal-kelola-faq').style.display = 'flex';
@@ -1209,20 +1206,21 @@ function hapusProgram(id) {
         }
 
         function editFAQ(id, oldText) {
-            const newText = prompt("Edit Jawaban Publik:", oldText);
-            if (newText !== null && newText.trim() !== "") {
-                firebase.database().ref('complaints/' + id).update({ jawaban_admin: newText.trim() });
-                setTimeout(renderKelolaFAQ, 500); // refresh list
-            }
+    tampilInput("Edit jawaban publik:", oldText, { judul: 'Edit jawaban' }).then(newText => {
+        if (newText !== null && newText.trim() !== "") {
+            firebase.database().ref('complaints/' + id).update({ jawaban_admin: newText.trim() });
+            setTimeout(renderKelolaFAQ, 500);
         }
+    });
+}
 
         function hapusFAQ(id) {
-            if(confirm("Hapus jawaban ini dari Papan Publik? (Pesan asli di chat pribadi tidak akan hilang)")) {
-                firebase.database().ref('complaints/' + id).update({ jawaban_admin: null });
-                setTimeout(renderKelolaFAQ, 500);
-            }
-        }
-
+    tampilKonfirmasi("Hapus jawaban ini dari Papan Publik? (Pesan asli di chat pribadi tidak akan hilang)", { judul: 'Hapus jawaban', ya: 'Hapus', bahaya: true }).then(ok => {
+        if (!ok) return;
+        firebase.database().ref('complaints/' + id).update({ jawaban_admin: null });
+        setTimeout(renderKelolaFAQ, 500);
+    });
+}
 // ==========================================
 // SISTEM UPLOAD POSTINGAN VIA CLOUDFLARE API
 // ==========================================
@@ -1421,11 +1419,12 @@ function simpanEditPostingan() {
 
 // Fitur Hapus Postingan
 function hapusPostingan(id) {
-    if(confirm("Yakin ingin menghapus postingan ini secara permanen? Data dan komentar di dalamnya akan ikut terhapus!")) {
+    tampilKonfirmasi("Yakin ingin menghapus postingan ini secara permanen? Data dan komentar di dalamnya akan ikut terhapus!", { judul: 'Hapus postingan', ya: 'Hapus', bahaya: true }).then(ok => {
+        if (!ok) return;
         firebase.database().ref('posts/' + id).remove();
-        firebase.database().ref('post_comments/' + id).remove(); // Hapus komentar
-        firebase.database().ref('post_views/' + id).remove(); // Hapus analitik views
-    }
+        firebase.database().ref('post_comments/' + id).remove();
+        firebase.database().ref('post_views/' + id).remove();
+    });
 }
 
 // Fitur Analitik Postingan (Menggunakan Modal Chart yang sama dengan Video)
@@ -1604,7 +1603,7 @@ function editPopup(id) {
 function togglePopupAktif(id) {
     firebase.database().ref('popups/' + id).update({ aktif: popCache[id].aktif === false, versi: Date.now() });
 }
-function hapusPopup(id) { if (confirm('Hapus pop-up ini?')) firebase.database().ref('popups/' + id).remove(); }
+function hapusPopup(id) { tampilKonfirmasi('Hapus pop-up ini?', { judul: 'Hapus pop-up', ya: 'Hapus', bahaya: true }).then(ok => { if (ok) firebase.database().ref('popups/' + id).remove(); }); }
 function previewDariForm() { tampilkanPreviewPopup(popAmbilForm()); }
 function previewPopupId(id) { tampilkanPreviewPopup(popCache[id]); }
 
@@ -2092,18 +2091,19 @@ function hapusVideoOffline(id) {
     const kunci = document.getElementById('off-key').value.trim() || sessionStorage.getItem('luvia_upload_key');
     if (!kunci) return alert('Isi Kunci Upload Admin dulu (kolom di atas).');
     const aktif = offSettings.videoName === v.name;
-    if (!confirm(aktif
+    tampilKonfirmasi(aktif
         ? 'Video ini sedang AKTIF di livestream. Jika dihapus, livestream kembali menampilkan foto thumbnail. Lanjut hapus?'
-        : 'Hapus video ini permanen dari GitHub?')) return;
-
-    fetch('/api/video-offline?name=' + encodeURIComponent(v.name), { method: 'DELETE', headers: { 'X-Admin-Key': kunci } })
-        .then(r => r.ok ? r.json() : r.text().then(t => Promise.reject(new Error(t))))
-        .then(() => {
-            firebase.database().ref('offline_videos/' + id).remove();
-            if (aktif) firebase.database().ref('settings/livestream_offline').update({ mode: 'thumbnail', videoName: '', videoUrl: '' });
-            alert('Video dihapus.');
-        })
-        .catch(e => alert('Gagal menghapus: ' + e.message));
+        : 'Hapus video ini permanen dari GitHub?', { judul: 'Hapus video offline', ya: 'Hapus', bahaya: true }).then(ok => {
+        if (!ok) return;
+        fetch('/api/video-offline?name=' + encodeURIComponent(v.name), { method: 'DELETE', headers: { 'X-Admin-Key': kunci } })
+            .then(r => r.ok ? r.json() : r.text().then(t => Promise.reject(new Error(t))))
+            .then(() => {
+                firebase.database().ref('offline_videos/' + id).remove();
+                if (aktif) firebase.database().ref('settings/livestream_offline').update({ mode: 'thumbnail', videoName: '', videoUrl: '' });
+                alert('Video dihapus.');
+            })
+            .catch(e => alert('Gagal menghapus: ' + e.message));
+    });
 }
 </script>
         
