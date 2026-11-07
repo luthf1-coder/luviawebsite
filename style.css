@@ -3198,3 +3198,59 @@ footer { padding: 22px 20px; }
 .admin-link { color: inherit; text-decoration: none; display: block; }
 .admin-link:hover { color: #ff914d; }
 .admin-list-thumb-link { display: block; flex-shrink: 0; }
+
+
+/* =====================================================================
+   BLOK 9: PERBAIKAN watch.html (HP, tablet, laptop, TV)
+   ===================================================================== */
+
+/* A. Nama video tampil lagi (menimpa aturan lama #player-title { display:none }) */
+#player-title.wp-title { display: block; margin: 20px 0 14px; }
+
+/* B. Jarak antara player, judul, chip, tombol, dan deskripsi */
+.wp-meta    { margin: 0 0 16px; }
+.wp-actions { margin: 0 0 18px; }
+.wp-desc    { margin: 0 0 26px; }
+.wp-main    { min-width: 0; overflow-wrap: anywhere; }
+.wp-page    { overflow-x: clip; }
+
+/* C. Cegah halaman melebar ke samping (penyebab tampilan HP berantakan) */
+.wp-side { min-width: 0; overflow-x: hidden; }
+.wp-side .video-grid { grid-template-columns: minmax(0, 1fr); }
+.wp-side .video-card { grid-template-columns: 168px minmax(0, 1fr); align-items: start; gap: 0; }
+.wp-side .video-details { min-width: 0; padding: 2px 4px 2px 12px; }
+.wp-side .video-details h3 {
+    white-space: normal; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical;
+    overflow: hidden; font-size: .9rem; line-height: 1.35; margin: 0 0 4px;
+}
+.wp-side .video-details p { white-space: normal; flex-wrap: wrap; }
+
+/* D. Laptop / desktop */
+@media (min-width: 981px) {
+    .wp-page { grid-template-columns: minmax(0, 1fr) clamp(320px, 28vw, 420px); }
+}
+
+/* E. Tablet dan HP */
+@media (max-width: 980px) {
+    .wp-page { grid-template-columns: minmax(0, 1fr); }
+    .wp-side .video-card { grid-template-columns: 140px minmax(0, 1fr); }
+}
+
+/* F. HP kecil */
+@media (max-width: 600px) {
+    .wp-title { font-size: 1.15rem; margin: 16px 0 12px; }
+    .wp-chip { font-size: .78rem; padding: 5px 10px; }
+    .wp-side .video-card { grid-template-columns: 124px minmax(0, 1fr); }
+    .wp-side .video-details h3 { font-size: .82rem; }
+    .wp-comments { padding: 14px; }
+}
+
+/* G. TV / layar sangat lebar */
+@media (min-width: 1600px) {
+    .wp-page { max-width: 1760px; gap: 36px; grid-template-columns: minmax(0, 1fr) 480px; }
+    .wp-title { font-size: 2.05rem; }
+    .wp-chip, .wp-btn { font-size: .95rem; }
+    .wp-desc p { font-size: 1.05rem; }
+    .wp-side .video-card { grid-template-columns: 210px minmax(0, 1fr); }
+    .wp-side .video-details h3 { font-size: 1rem; }
+}
