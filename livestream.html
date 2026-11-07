@@ -51,20 +51,18 @@
     </div>
     <form id="live-chat-form" class="lc-form" autocomplete="off">
         <div id="lc-editbar" class="lc-editbar" style="display:none;">
-            <span>✏️ Mengedit pesanmu</span>
+            <span>Mengedit pesanmu</span>
             <button type="button" id="lc-edit-batal">batal</button>
         </div>
         <div id="lc-name-row"><input type="text" id="chat-name" placeholder="Nama Anda..." maxlength="24"></div>
-        <div id="lc-who-row" class="lc-who" style="display:none;">Chat sebagai <b id="lc-who"></b> · <button type="button" id="lc-ganti">ganti nama</button></div>
+        <div id="lc-who-row" class="lc-who" style="display:none;"></div>
         <div class="lc-input-row">
             <input type="text" id="chat-text" placeholder="Ngobrol di sini..." maxlength="200">
-            <button type="submit" class="lc-send" aria-label="Kirim">
-                <svg viewBox="0 0 24 24" width="18" height="18" fill="currentColor"><path d="M2 21l21-9L2 3v7l15 2-15 2z"/></svg>
-            </button>
+            <button type="submit" class="lc-send" aria-label="Kirim"><span data-ikon="kirim"></span></button>
         </div>
     </form>
 </div>
-                    <!-- SELESAI: AREA LIVE CHAT -->
+<!-- SELESAI: AREA LIVE CHAT -->
 
                 </div>
             </div>
@@ -126,9 +124,6 @@
     const NAMA_KEY = 'luvia_live_chat_name';
     const FALLBACK_MULAI = Date.now() - 6 * 3600 * 1000;   // jika Kick tidak memberi jam mulai
 
-    const iconEdit  = `<svg viewBox="0 0 24 24" width="13" height="13" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4z"/></svg>`;
-    const iconTrash = `<svg viewBox="0 0 24 24" width="13" height="13" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>`;
-
     let uid = null;            // identitas anonim dari Firebase Auth
     let chatQuery = null;
     let chatMulai = null;
@@ -152,19 +147,19 @@
     function isiPesan(el, key, c) {
         const nama = c.name || 'Anonim';
         const jam = c.timestamp ? new Date(c.timestamp).toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' }) : '';
-        el.className = 'lc-msg' + (uid && c.uid === uid ? ' lc-own' : '');
+        el.className = 'lc-msg' + (uid && c.uid === uid ? ' lc-own' : '') + (c.isAdmin ? ' lc-admin' : '');
         el.id = 'chat-' + key;
         el.dataset.key = key;
         el.dataset.uid = c.uid || '';
         el.innerHTML = `
-            ${buatAvatar(nama, { kelas: 'lc-ava', ukuran: 24 })}
+            ${buatAvatar(nama, { kelas: 'lc-ava', ukuran: 24, admin: !!c.isAdmin })}
             <div class="lc-txt">
-                <span class="lc-name" style="color:${warnaAvatar(nama)}">${escHtmlGlobal(nama)}</span><span class="lc-time">${jam}</span>
+                <span class="lc-name" style="color:${c.isAdmin ? '#ff914d' : warnaAvatar(nama)}">${escHtmlGlobal(nama)}</span>${c.isAdmin ? lencanaAdmin() : ''}<span class="lc-time">${jam}</span>
                 <span class="lc-msgtext">${escHtmlGlobal(c.text)}</span>${c.edited ? '<span class="lc-edited">(diedit)</span>' : ''}
             </div>
             <div class="lc-act">
-                <button type="button" class="lc-edit" title="Edit pesanmu">${iconEdit}</button>
-                <button type="button" class="lc-del" title="Hapus pesanmu">${iconTrash}</button>
+                <button type="button" class="lc-edit" title="Edit pesanmu">${icon(IKON.edit)}</button>
+                <button type="button" class="lc-del" title="Hapus pesanmu">${icon(IKON.hapus)}</button>
             </div>`;
     }
 
@@ -190,11 +185,10 @@
     // ---------- NYALA / MATI CHAT MENGIKUTI STATUS LIVE ----------
     function nyalakanChat(mulai) {
         chatSection.style.display = 'block';
-        if (chatMulai === mulai) return;                 // sudah menyala untuk sesi ini
+        if (chatMulai === mulai) return;
         if (chatQuery) chatQuery.off();
         chatMulai = mulai;
         chatList.innerHTML = '';
-        // hanya pesan sejak siaran ini dimulai (pesan siaran lama tidak ikut)
         chatQuery = chatRef.orderByChild('timestamp').startAt(mulai).limitToLast(100);
         chatQuery.on('child_added', onAdded);
         chatQuery.on('child_changed', onChanged);
@@ -225,17 +219,27 @@
     function batalEdit() { editKey = null; inTeks.value = ''; editBar.style.display = 'none'; }
     document.getElementById('lc-edit-batal').addEventListener('click', batalEdit);
 
-    // ---------- NAMA PENGIRIM ----------
+    // ---------- NAMA PENGIRIM (mode admin = otomatis) ----------
     function segarkanNama() {
+        const rowNama = document.getElementById('lc-name-row');
+        const rowWho = document.getElementById('lc-who-row');
+        if (IS_ADMIN_BROWSER) {
+            rowNama.style.display = 'none'; rowWho.style.display = 'block';
+            rowWho.innerHTML = icon(IKON.perisai) + ' Mode Admin: tampil sebagai <b>' + escHtmlGlobal(ADMIN_PROFIL.nama) + '</b>';
+            return;
+        }
         const n = bacaLokal(NAMA_KEY);
-        document.getElementById('lc-name-row').style.display = n ? 'none' : 'block';
-        document.getElementById('lc-who-row').style.display = n ? 'block' : 'none';
-        if (n) document.getElementById('lc-who').textContent = n;
+        rowNama.style.display = n ? 'none' : 'block';
+        rowWho.style.display = n ? 'block' : 'none';
+        if (n) {
+            rowWho.innerHTML = 'Chat sebagai <b>' + escHtmlGlobal(n) + '</b> · <button type="button" id="lc-ganti">ganti nama</button>';
+            document.getElementById('lc-ganti').onclick = () => {
+                try { localStorage.removeItem(NAMA_KEY); } catch (e) {}
+                inNama.value = ''; segarkanNama(); inNama.focus();
+            };
+        }
     }
-    document.getElementById('lc-ganti').addEventListener('click', () => {
-        try { localStorage.removeItem(NAMA_KEY); } catch (e) {}
-        inNama.value = ''; segarkanNama(); inNama.focus();
-    });
+    modeAdminForm('chat-name');
     segarkanNama();
 
     // ---------- KIRIM / SIMPAN EDIT ----------
@@ -252,18 +256,26 @@
             return;
         }
 
-        const nama = (bacaLokal(NAMA_KEY) || inNama.value.trim()).slice(0, 24);
-        if (!nama) { inNama.focus(); return; }
+        const info = siapkanPengirim(bacaLokal(NAMA_KEY) || inNama.value);
+        if (!info.ok) { alert(info.pesan); try { localStorage.removeItem(NAMA_KEY); } catch (e) {} segarkanNama(); inNama.focus(); return; }
         if (Date.now() - terakhirKirim < 1500) return;       // anti-spam
         terakhirKirim = Date.now();
-        simpanLokal(NAMA_KEY, nama);
+        if (!info.isAdmin) simpanLokal(NAMA_KEY, info.nama);
 
-        chatRef.push({ name: nama, text: teks, uid: uid, timestamp: firebase.database.ServerValue.TIMESTAMP })
-            .catch(err => alert('Gagal mengirim: ' + err.message));
+        const data = { name: info.nama, text: teks, uid: uid, timestamp: firebase.database.ServerValue.TIMESTAMP };
+        if (info.isAdmin) data.isAdmin = true;
+        chatRef.push(data).catch(err => alert('Gagal mengirim: ' + err.message));
         inTeks.value = ''; segarkanNama(); inTeks.focus();
     });
 
     // ---------- STATUS LIVE KICK (dicek ulang tiap 60 detik) ----------
+    function setStatusChat(live) {
+        const s = document.getElementById('lc-status');
+        if (!s) return;
+        s.textContent = live ? 'LIVE' : 'OFFLINE';
+        s.className = 'lc-status ' + (live ? 'on' : 'off');
+    }
+
     function parseUTC(s) {
         if (!s) return 0;
         s = String(s).trim().replace(' ', 'T');
@@ -278,7 +290,6 @@
             const res = await fetch(`https://kick.com/api/v2/channels/${kickUsername}`);
             const data = await res.json();
             if (data.livestream && data.livestream.is_live) {
-                offTampil = false; offKunci = '';
                 live = true;
                 viewers = data.livestream.viewer_count || 0;
                 mulai = parseUTC(data.livestream.created_at || data.livestream.start_time);
@@ -288,11 +299,12 @@
 
         if (live) {
             if (statusTerakhir !== true) {
+                offTampil = false; offKunci = '';
                 playerWrapper.innerHTML = `<iframe src="https://player.kick.com/${kickUsername}" allowfullscreen="true" scrolling="no" style="position:absolute; top:0; left:0; width:100%; height:100%; border:none;"></iframe>`;
             }
-            if (viewersText) viewersText.innerHTML = `🔴 <span style="color:#ff4d4d; font-weight:bold;">SEDANG LIVE</span> • 👁️ ${viewers} Penonton Saat Ini`;
+            setStatusChat(true);
+            if (viewersText) viewersText.innerHTML = `🔴 <span style="color:#ff4d4d; font-weight:bold;">SEDANG LIVE</span> • ${icon(IKON.dilihat)} ${viewers} Penonton Saat Ini`;
             nyalakanChat(mulai || FALLBACK_MULAI);
-            
         } else {
             if (statusTerakhir !== false) renderOfflineState();
             matikanChat();
@@ -309,9 +321,8 @@
     firebase.database().ref('settings/livestream_offline').on('value', snap => {
         offSet = Object.assign({ mode: 'thumbnail', videoUrl: '', videoName: '', muted: true }, snap.val() || {});
         offSiap = true;
-        if (offTampil) renderOfflineState();       // admin ganti pengaturan: langsung berubah
+        if (offTampil) renderOfflineState();
     });
-    // Jika Firebase lambat/terblokir, jangan biarkan layar kosong
     setTimeout(() => { if (!offSiap) { offSiap = true; if (offTampil) renderOfflineState(); } }, 4000);
 
     function tampilkanFotoOffline() {
@@ -323,11 +334,11 @@
         offTampil = true;
         if (viewersText) viewersText.innerHTML = `⚪ <span style="color:#bbb;">STATUS: SIARAN OFFLINE</span>`;
         setStatusChat(false);
-        if (!offSiap) return;                       // tunggu pengaturan dari admin
+        if (!offSiap) return;
 
         const pakaiVideo = offSet.mode === 'video' && offSet.videoUrl;
         const kunci = pakaiVideo ? 'video|' + offSet.videoUrl + '|' + (offSet.muted ? 'm' : 's') : 'foto';
-        if (kunci === offKunci) return;             // tampilan sama, jangan digambar ulang
+        if (kunci === offKunci) return;
         if (!pakaiVideo) { tampilkanFotoOffline(); return; }
 
         offKunci = kunci;
@@ -335,30 +346,24 @@
             <div class="offline-banner-container" style="background:#000;">
                 <video id="offline-video" playsinline loop ${offSet.muted ? 'muted' : 'controls'} poster="${IMG.streamOffline}"
                        style="width:100%; height:100%; object-fit:contain; background:#000;"></video>
-                <button type="button" id="offline-suara" style="display:none; position:absolute; bottom:12px; right:12px; z-index:5; background:rgba(0,0,0,0.65); color:#fff; border:1px solid rgba(255,255,255,0.4); border-radius:999px; padding:8px 14px; font-size:13px; font-weight:bold; cursor:pointer;">🔊 Nyalakan suara</button>
+                <button type="button" id="offline-suara" style="display:none; position:absolute; bottom:12px; right:12px; z-index:5; background:rgba(0,0,0,0.65); color:#fff; border:1px solid rgba(255,255,255,0.4); border-radius:999px; padding:8px 14px; font-size:13px; font-weight:bold; cursor:pointer;">Nyalakan suara</button>
             </div>`;
 
         const v = document.getElementById('offline-video');
         v.muted = !!offSet.muted;
         v.src = encodeURI(offSet.videoUrl);
-        v.onerror = () => {
-            console.error('Video offline gagal dimuat:', offSet.videoUrl);
-            tampilkanFotoOffline();                 // cadangan: kembali ke foto
-        };
+        v.onerror = () => { console.error('Video offline gagal dimuat:', offSet.videoUrl); tampilkanFotoOffline(); };
 
         const p = v.play();
         if (p && p.catch) p.catch(() => {
-            // Browser menolak putar otomatis dengan suara: putar tanpa suara + tombol untuk menyalakan
             v.muted = true;
             v.play().catch(() => {});
             const b = document.getElementById('offline-suara');
-            if (b) {
-                b.style.display = 'block';
-                b.onclick = () => { v.muted = false; v.play(); b.style.display = 'none'; };
-            }
+            if (b) { b.style.display = 'block'; b.onclick = () => { v.muted = false; v.play(); b.style.display = 'none'; }; }
         });
     }
 
+    terapkanIkon();
     cekStatusKick();
     setInterval(cekStatusKick, 60000);
     if (typeof renderGridRecommendations === 'function') renderGridRecommendations('watch-recommendations-grid');
