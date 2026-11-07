@@ -122,6 +122,8 @@ let deviceId = localStorage.getItem('luvia_device_id');
 
         document.addEventListener('DOMContentLoaded', () => {
             const chatBody = document.getElementById('chat-body');
+            modeAdminForm('chat-nama');
+
             
             if (typeof firebase !== 'undefined') {
                 firebase.database().ref('complaints').on('value', snap => {
@@ -189,6 +191,7 @@ let deviceId = localStorage.getItem('luvia_device_id');
                     setTimeout(() => { chatBody.scrollTop = chatBody.scrollHeight; }, 100);
                 });
             }
+            
         });
 
         // FUNGSI MENU TITIK TIGA
@@ -276,10 +279,12 @@ let deviceId = localStorage.getItem('luvia_device_id');
             const editId = document.getElementById('edit-id').value;
             const replyId = document.getElementById('reply-id').value;
             
-            if(!nama) return alert("Mohon isi Nama Anda!");
+            const info = siapkanPengirim(document.getElementById('chat-nama').value);
+            if (!info.ok) return alert(info.pesan);
+            const nama = info.nama;
             if(!isi) return alert("Pesan tidak boleh kosong!");
             
-            localStorage.setItem('luvia_chat_name', nama);
+            if (!info.isAdmin) localStorage.setItem('luvia_chat_name', nama);
 
             if (editId) {
                 firebase.database().ref('complaints/' + editId).update({ isi: isi, is_edited: true });
@@ -300,7 +305,7 @@ let deviceId = localStorage.getItem('luvia_device_id');
 
         window.onload = function() {
             const savedName = localStorage.getItem('luvia_chat_name');
-            if(savedName) document.getElementById('chat-nama').value = savedName;
+            if (savedName && !IS_ADMIN_BROWSER) document.getElementById('chat-nama').value = savedName;
         }
         // SISTEM PENCARIAN LIVE (AUTOCOMPLETE) 
 document.addEventListener('DOMContentLoaded', () => {
