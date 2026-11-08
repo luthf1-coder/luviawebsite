@@ -48,10 +48,10 @@
                 <div class="wp-comment-input">
                     <img data-avatar="default" class="comment-avatar" alt="Avatar">
                     <form id="comment-form" class="comment-form">
-                        <input type="text" id="comment-name" placeholder="Nama Anda..." maxlength="24" required>
+                        <div id="cm-nama"></div>
                         <textarea id="comment-text" placeholder="Tambahkan komentar..." required></textarea>
                         <div class="form-actions">
-                            <button type="button" class="btn-cancel" onclick="document.getElementById('comment-text').value=''">Batal</button>
+                            <button type="button" class="btn-cancel btn-icon" aria-label="Batal" title="Batal" onclick="document.getElementById('comment-text').value=''"><span data-ikon="tutup"></span></button>
                             <button type="submit" class="btn-submit-comment">Komentar</button>
                         </div>
                     </form>
@@ -475,6 +475,7 @@
         const refKomentar = (id, parent, isReply) => isReply
             ? commentsRef.child(parent).child('replies').child(id)
             : commentsRef.child(id);
+        let kolomKomentar = null;
 
         function bangunKomentar(id, c, isReply, parentId) {
             const sudahSuka = localStorage.getItem('liked_' + id);
@@ -493,18 +494,18 @@
                     '<div class="comment-actions">' +
                         '<button type="button" class="action-btn" data-act="like" ' + dataAttr + '>' + icon(sudahSuka ? IKON.jempolIsi : IKON.jempol) + ' <span>' + ((c.likes || 0) > 0 ? c.likes : '') + '</span></button>' +
                         (!isReply ? '<button type="button" class="action-btn" data-act="reply" ' + dataAttr + '>' + icon(IKON.balas) + ' Balas</button>' : '') +
-                        (milikku ? '<button type="button" class="action-btn" data-act="edit" ' + dataAttr + '>' + icon(IKON.edit) + ' Edit</button>' : '') +
-                        (bisaHapus ? '<button type="button" class="action-btn delete-btn" data-act="del" ' + dataAttr + '>' + icon(IKON.hapus) + ' Hapus</button>' : '') +
+                        (milikku ? '<button type="button" class="action-btn" data-act="edit" title="Edit" aria-label="Edit" ' + dataAttr + '>' + icon(IKON.edit) + '</button>' : '') +
+                        (bisaHapus ? '<button type="button" class="action-btn delete-btn" data-act="del" title="Hapus" aria-label="Hapus" ' + dataAttr + '>' + icon(IKON.hapus) + '</button>' : '') +
                     '</div>';
 
             if (!isReply) {
                 h += '<div class="reply-form-container" id="reply-form-' + id + '" style="display:none;">' +
                         buatAvatar('', { kelas: 'comment-avatar avatar-sm' }) +
                         '<div style="flex:1;">' +
-                            (IS_ADMIN_BROWSER ? '' : '<input type="text" id="reply-name-' + id + '" placeholder="Nama..." maxlength="24" class="reply-input-name" value="' + escHtmlGlobal(bacaLokal('luvia_comment_name') || '') + '">') +
+                            ((IS_ADMIN_BROWSER || ambilNama()) ? '' : '<input type="text" id="reply-name-' + id + '" placeholder="Nama..." maxlength="24" class="reply-input-name">') +
                             '<textarea id="reply-text-' + id + '" placeholder="Balas komentar..."></textarea>' +
                             '<div class="form-actions" style="margin-top:5px;">' +
-                                '<button type="button" class="btn-cancel" data-act="reply-cancel" ' + dataAttr + '>Batal</button>' +
+                                '<button type="button" class="btn-cancel btn-icon" data-act="reply-cancel" title="Batal" aria-label="Batal" ' + dataAttr + '>' + icon(IKON.tutup) + '</button>' +
                                 '<button type="button" class="btn-submit-comment" data-act="reply-send" ' + dataAttr + '>Balas</button>' +
                             '</div>' +
                         '</div>' +
@@ -550,24 +551,27 @@
                 kirimBalasan(id);
             } else if (act === 'edit') {
                 const lama = b.closest('.comment-content').querySelector('.comment-text').textContent;
-                const baru = prompt('Edit pesan Anda:', lama);
-                if (baru !== null && baru.trim() !== '' && baru.trim() !== lama) refKomentar(id, parent, isReply).update({ text: baru.trim() });
+                tampilInput('Edit komentar Anda:', lama, { judul: 'Edit komentar' }).then(baru => {
+                    if (baru !== null && baru.trim() !== '' && baru.trim() !== lama) refKomentar(id, parent, isReply).update({ text: baru.trim() });
+                });
             } else if (act === 'del') {
-                if (confirm('Yakin ingin menghapus komentar ini selamanya?')) {
-                    refKomentar(id, parent, isReply).remove();
-                    localStorage.removeItem('my_comment_' + id);
-                }
+                tampilKonfirmasi('Yakin ingin menghapus komentar ini selamanya?', { judul: 'Hapus komentar', ya: 'Hapus', bahaya: true }).then(ok => {
+                    if (ok) {
+                        refKomentar(id, parent, isReply).remove();
+                        localStorage.removeItem('my_comment_' + id);
+                    }
+                });
             }
         });
 
         function kirimBalasan(parentId) {
             const nameEl = document.getElementById('reply-name-' + parentId);
             const textEl = document.getElementById('reply-text-' + parentId);
-            const info = siapkanPengirim(nameEl ? nameEl.value : '');
+            const info = siapkanPengirim(nameEl ? nameEl.value : ambilNama());
             if (!info.ok) { alert(info.pesan); if (nameEl) nameEl.focus(); return; }
             const isi = textEl.value.trim();
             if (!isi) return;
-            if (!info.isAdmin) simpanLokal('luvia_comment_name', info.nama);
+            if (!info.isAdmin) { simpanNama(info.nama); if (kolomKomentar) kolomKomentar.segarkan(); }
             const data = { name: info.nama, text: isi, timestamp: firebase.database.ServerValue.TIMESTAMP, likes: 0 };
             if (info.isAdmin) data.isAdmin = true;
             const baru = commentsRef.child(parentId).child('replies').push(data);
@@ -583,9 +587,7 @@
         }
 
         // Form komentar utama
-        modeAdminForm('comment-name');
-        const namaTersimpan = bacaLokal('luvia_comment_name');
-        if (namaTersimpan && !IS_ADMIN_BROWSER) document.getElementById('comment-name').value = namaTersimpan;
+        kolomKomentar = pasangKolomNama('cm-nama', 'comment-name', 'Komentar sebagai');
 
         document.getElementById('comment-form').addEventListener('submit', (e) => {
             e.preventDefault();
@@ -595,7 +597,7 @@
             if (!info.ok) { alert(info.pesan); nameInput.focus(); return; }
             const isi = textInput.value.trim();
             if (!isi) return;
-            if (!info.isAdmin) simpanLokal('luvia_comment_name', info.nama);
+            if (!info.isAdmin) { simpanNama(info.nama); if (kolomKomentar) kolomKomentar.segarkan(); }
 
             const data = { name: info.nama, text: isi, timestamp: firebase.database.ServerValue.TIMESTAMP, likes: 0 };
             if (info.isAdmin) data.isAdmin = true;
