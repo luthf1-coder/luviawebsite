@@ -3253,3 +3253,98 @@ footer { padding: 22px 20px; }
     .wp-side .video-card { grid-template-columns: 210px minmax(0, 1fr); }
     .wp-side .video-details h3 { font-size: 1rem; }
 }
+
+
+/* =====================================================================
+   BLOK 9  -  TEMPEL DI PALING BAWAH style.css  (setelah BLOK 8 / BLOK 9 watch)
+   ===================================================================== */
+
+/* ---------- [UNGU] index: jarak hero -> "A New Video-Verse" (menimpa tarikan -22px) ---------- */
+.hero-carousel + .section { margin-top: 0; padding-top: 36px; }
+@media (max-width: 768px) { .hero-carousel + .section { margin-top: 0; padding-top: 28px; } }
+
+/* ---------- [BIRU] posts.html: jarak grid -> footer ---------- */
+.page-posts .instagram-grid { margin-bottom: 72px; }
+
+/* ---------- [HIJAU] watch.html: tombol komentar tidak lagi turun baris ---------- */
+.wp-comments .comment-actions { flex-wrap: wrap; gap: 6px 14px; }
+.wp-comments .action-btn { white-space: nowrap; flex-shrink: 0; }
+.btn-icon { display: inline-flex; align-items: center; justify-content: center; font-size: 1.1rem; padding: 8px 10px; }
+
+/* ---------- [PUTIH] post.html: komentar di bawah nama ---------- */
+.pc-top { display: flex; align-items: center; flex-wrap: wrap; gap: 2px; font-size: .86rem; line-height: 1.4; }
+.pc-text { font-size: .86rem; line-height: 1.45; word-break: break-word; margin-top: 2px; color: #f1f1f1; }
+
+/* ---------- [ORANYE] post.html: badge "Postingan Lainnya" disamakan dengan posts.html ---------- */
+.pp-g-item { color: #fff; text-decoration: none; }
+.pp-g-views { position: absolute; bottom: 8px; right: 8px; left: auto; display: inline-flex; align-items: center; gap: 5px;
+    background: rgba(255,255,255,0.15); backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px);
+    border: 1px solid rgba(255,255,255,0.2); color: #fff; padding: 4px 8px; border-radius: 4px; font-size: 11px; font-weight: 700; z-index: 5; }
+.pp-g-views .ic { font-size: 12px; }
+.pp-g-tipe { position: absolute; top: 8px; right: 8px; color: #fff; font-size: 14px; text-shadow: 0 1px 4px rgba(0,0,0,0.8); z-index: 5; }
+
+/* ---------- CENTANG BIRU (terpisah dari tulisan ADMIN) ---------- */
+.centang-biru { display: inline-flex; align-items: center; color: #3ea6ff; margin-left: 4px; vertical-align: middle; }
+.centang-biru .ic { width: 1em; height: 1em; }
+
+/* ---------- KOLOM NAMA BERSAMA ("Komentar sebagai X · ganti") ---------- */
+.kn-who { font-size: .78rem; color: rgba(255,255,255,0.65); padding: 4px 0; }
+.kn-who b { color: #fff; }
+.kn-ganti { background: none; border: none; color: #ff914d; cursor: pointer; font-size: inherit; padding: 0; }
+.kn-edit { display: flex; align-items: center; gap: 8px; }
+.kn-edit input { flex: 1; min-width: 0; }
+.kn-batal { background: none; border: none; color: #ff8a8a; cursor: pointer; font-size: 1.15rem; display: inline-flex; padding: 4px; flex-shrink: 0; }
+.kn-batal:hover { color: #fff; }
+
+/* ---------- DIALOG KUSTOM ---------- */
+.pop-overlay.dlg { z-index: 100005; }
+.dlg-card { max-width: 24rem; }
+.dlg-btns { justify-content: flex-end; }
+.dlg-btns .pop-btn { flex: 0 1 auto; min-width: 5.5rem; }
+.pop-btn.bahaya { background: linear-gradient(45deg, #e5294b, #ff6b6b); box-shadow: 0 6px 20px rgba(229,41,75,0.35); }
+.dlg-input { width: 100%; box-sizing: border-box; margin-top: .75rem; background: rgba(255,255,255,0.07); border: 1px solid rgba(255,255,255,0.2); border-radius: 10px; padding: .6rem .8rem; color: #fff; font-size: .9rem; outline: none; }
+.dlg-input:focus { border-color: #ff914d; box-shadow: 0 0 0 3px rgba(255,145,77,0.18); }
+
+/* ---------- POPUP RATING ---------- */
+.pop-overlay.rt-overlay { z-index: 100001; }
+.rt-card { max-width: 26rem; }
+.rt-stars { display: flex; justify-content: center; gap: .35rem; margin: .9rem 0 .2rem; }
+.rt-star { background: none; border: none; cursor: pointer; color: rgba(255,255,255,0.3); font-size: 2.2rem; padding: .1rem; transition: transform .15s, color .15s; display: inline-flex; }
+.rt-star.on { color: #ffc94d; }
+.rt-star:hover { transform: scale(1.15); }
+.rt-label { text-align: center; font-size: .85rem; color: #ffd9a8; min-height: 1.2em; font-weight: 600; }
+.rt-saran { width: 100%; box-sizing: border-box; margin-top: .8rem; background: rgba(255,255,255,0.07); border: 1px solid rgba(255,255,255,0.2); border-radius: 10px; padding: .6rem .8rem; color: #fff; font: inherit; font-size: .88rem; resize: vertical; min-height: 4.5rem; outline: none; }
+.rt-saran:focus { border-color: #ff914d; box-shadow: 0 0 0 3px rgba(255,145,77,0.18); }
+.rt-info { font-size: .74rem; color: rgba(255,255,255,0.55); margin-top: .35rem; }
+.rt-err { font-size: .78rem; color: #ff8a8a; min-height: 1.1em; margin-top: .25rem; }
+
+/* ---------- ADMIN: panel Rating & Ulasan (gaya Google Play) ---------- */
+.rt-ringkas { display: flex; gap: 28px; align-items: center; flex-wrap: wrap; margin: 6px 0 22px; }
+.rt-skor { text-align: center; min-width: 130px; }
+.rt-skor-angka { font-size: 3.6rem; font-weight: 300; line-height: 1; }
+.rt-skor-bintang { color: #ffc94d; font-size: 1.1rem; display: flex; justify-content: center; gap: 2px; margin: 8px 0 6px; }
+.rt-skor-total { font-size: .8rem; color: #aaa; }
+.rt-dist { flex: 1; min-width: 220px; }
+.rt-dist-row { display: flex; align-items: center; gap: 10px; font-size: .8rem; margin: 5px 0; color: #ccc; }
+.rt-dist-row .n { width: 10px; text-align: right; }
+.rt-dist-bar { flex: 1; height: 10px; background: #2a2a2a; border-radius: 6px; overflow: hidden; }
+.rt-dist-bar div { height: 100%; background: linear-gradient(90deg, #8c52ff, #ff914d); border-radius: 6px; }
+.rt-dist-row .p { width: 96px; text-align: right; color: #aaa; font-size: .75rem; }
+.rt-filter { display: flex; gap: 8px; flex-wrap: wrap; border-bottom: 1px solid #333; padding-bottom: 12px; margin-bottom: 6px; }
+.rt-filter button { background: #222; border: 1px solid #444; color: #ddd; padding: 8px 14px; border-radius: 999px; cursor: pointer; font-size: 12.5px; font-weight: 600; }
+.rt-filter button.aktif { background: linear-gradient(45deg, #8c52ff, #ff914d); border-color: transparent; color: #fff; }
+.rt-item { display: flex; gap: 14px; padding: 16px 0; border-bottom: 1px solid #2a2a2a; }
+.rt-ava { width: 40px; height: 40px; border-radius: 50%; background: #444; display: flex; align-items: center; justify-content: center; font-weight: 700; flex-shrink: 0; color: #fff; }
+.rt-body { flex: 1; min-width: 0; }
+.rt-head { display: flex; flex-wrap: wrap; align-items: center; gap: 10px; margin-bottom: 4px; }
+.rt-nama { font-weight: 600; font-size: .9rem; }
+.rt-stars-kecil { color: #ffc94d; display: inline-flex; font-size: .85rem; gap: 1px; }
+.rt-waktu { font-size: .74rem; color: #999; }
+.rt-teks { font-size: .9rem; line-height: 1.55; color: #eee; white-space: pre-line; word-break: break-word; }
+.rt-item.selesai .rt-teks { opacity: .6; }
+.rt-aksi { display: flex; align-items: center; gap: 16px; margin-top: 10px; flex-wrap: wrap; }
+.rt-cek { display: inline-flex; align-items: center; gap: 8px; cursor: pointer; font-size: .8rem; color: #ccc; }
+.rt-cek input { width: 18px; height: 18px; accent-color: #00a884; cursor: pointer; }
+.rt-cek.selesai { color: #53e8a3; }
+.rt-hapus { background: none; border: none; color: #ff6b6b; cursor: pointer; font-size: .8rem; display: inline-flex; align-items: center; gap: 4px; }
+.rt-kosong { text-align: center; color: #888; padding: 30px 0; font-size: .9rem; }
