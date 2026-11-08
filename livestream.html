@@ -54,8 +54,7 @@
             <span>Mengedit pesanmu</span>
             <button type="button" id="lc-edit-batal">batal</button>
         </div>
-        <div id="lc-name-row"><input type="text" id="chat-name" placeholder="Nama Anda..." maxlength="24"></div>
-        <div id="lc-who-row" class="lc-who" style="display:none;"></div>
+        <div id="lc-nama"></div>
         <div class="lc-input-row">
             <input type="text" id="chat-text" placeholder="Ngobrol di sini..." maxlength="200">
             <button type="submit" class="lc-send" aria-label="Kirim"><span data-ikon="kirim"></span></button>
@@ -118,10 +117,8 @@
     const chatList = document.getElementById('live-chat-list');
     const btnBaru  = document.getElementById('lc-newmsg');
     const formChat = document.getElementById('live-chat-form');
-    const inNama   = document.getElementById('chat-name');
     const inTeks   = document.getElementById('chat-text');
     const editBar  = document.getElementById('lc-editbar');
-    const NAMA_KEY = 'luvia_live_chat_name';
     const FALLBACK_MULAI = Date.now() - 6 * 3600 * 1000;   // jika Kick tidak memberi jam mulai
 
     let uid = null;            // identitas anonim dari Firebase Auth
@@ -208,7 +205,9 @@
         if (!msg || !msg.classList.contains('lc-own')) return;
         const key = msg.dataset.key;
         if (e.target.closest('.lc-del')) {
-            if (confirm('Hapus pesanmu ini?')) chatRef.child(key).remove().catch(err => alert('Tidak bisa menghapus: ' + err.message));
+            tampilKonfirmasi('Hapus pesanmu ini?', { judul: 'Hapus pesan', ya: 'Hapus', bahaya: true }).then(ok => {
+                if (ok) chatRef.child(key).remove().catch(err => alert('Tidak bisa menghapus: ' + err.message));
+            });
         } else if (e.target.closest('.lc-edit')) {
             editKey = key;
             inTeks.value = msg.querySelector('.lc-msgtext').textContent;
@@ -219,28 +218,8 @@
     function batalEdit() { editKey = null; inTeks.value = ''; editBar.style.display = 'none'; }
     document.getElementById('lc-edit-batal').addEventListener('click', batalEdit);
 
-    // ---------- NAMA PENGIRIM (mode admin = otomatis) ----------
-    function segarkanNama() {
-        const rowNama = document.getElementById('lc-name-row');
-        const rowWho = document.getElementById('lc-who-row');
-        if (IS_ADMIN_BROWSER) {
-            rowNama.style.display = 'none'; rowWho.style.display = 'block';
-            rowWho.innerHTML = icon(IKON.perisai) + ' Mode Admin: tampil sebagai <b>' + escHtmlGlobal(ADMIN_PROFIL.nama) + '</b>';
-            return;
-        }
-        const n = bacaLokal(NAMA_KEY);
-        rowNama.style.display = n ? 'none' : 'block';
-        rowWho.style.display = n ? 'block' : 'none';
-        if (n) {
-            rowWho.innerHTML = 'Chat sebagai <b>' + escHtmlGlobal(n) + '</b> · <button type="button" id="lc-ganti">ganti nama</button>';
-            document.getElementById('lc-ganti').onclick = () => {
-                try { localStorage.removeItem(NAMA_KEY); } catch (e) {}
-                inNama.value = ''; segarkanNama(); inNama.focus();
-            };
-        }
-    }
-    modeAdminForm('chat-name');
-    segarkanNama();
+    // ---------- NAMA PENGIRIM (bersama di semua halaman) ----------
+    const kolomNama = pasangKolomNama('lc-nama', 'chat-name', 'Chat sebagai');
 
     // ---------- KIRIM / SIMPAN EDIT ----------
     formChat.addEventListener('submit', e => {
@@ -256,16 +235,16 @@
             return;
         }
 
-        const info = siapkanPengirim(bacaLokal(NAMA_KEY) || inNama.value);
-        if (!info.ok) { alert(info.pesan); try { localStorage.removeItem(NAMA_KEY); } catch (e) {} segarkanNama(); inNama.focus(); return; }
+        const info = siapkanPengirim(kolomNama.ambil());
+        if (!info.ok) { alert(info.pesan); return; }
         if (Date.now() - terakhirKirim < 1500) return;       // anti-spam
         terakhirKirim = Date.now();
-        if (!info.isAdmin) simpanLokal(NAMA_KEY, info.nama);
+        if (!info.isAdmin) { simpanNama(info.nama); kolomNama.segarkan(); }
 
         const data = { name: info.nama, text: teks, uid: uid, timestamp: firebase.database.ServerValue.TIMESTAMP };
         if (info.isAdmin) data.isAdmin = true;
         chatRef.push(data).catch(err => alert('Gagal mengirim: ' + err.message));
-        inTeks.value = ''; segarkanNama(); inTeks.focus();
+        inTeks.value = ''; inTeks.focus();
     });
 
     // ---------- STATUS LIVE KICK (dicek ulang tiap 60 detik) ----------
