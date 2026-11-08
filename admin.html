@@ -51,6 +51,7 @@
             <button class="tab-btn" onclick="switchTab('tab-offline', this); muatOfflineVideo();">📡 Livestream Offline</button>
             <button class="tab-btn" onclick="switchTab('tab-platform-live', this); muatPlatformLive();">📡 Bot Backup Live</button>
             <button class="tab-btn" onclick="switchTab('tab-popup', this); muatDaftarPopup();">📢 Pop-up</button>
+            <button class="tab-btn" onclick="switchTab('tab-rating', this); muatRating();">⭐ Rating & Ulasan</button>
         </div>
 
 <!-- 1. TAMBAH VIDEO -->
@@ -333,6 +334,29 @@
     </div>
     <div id="pop-daftar" style="margin-top:30px;"></div>
 </div>
+
+
+<div id="tab-rating" class="panel">
+    <h3 style="margin-top:0;">⭐ Rating & Ulasan Website</h3>
+
+    <div class="rt-ringkas">
+        <div class="rt-skor">
+            <div class="rt-skor-angka" id="rt-rata">0,0</div>
+            <div class="rt-skor-bintang" id="rt-rata-bintang"></div>
+            <div class="rt-skor-total" id="rt-total">0 penilaian</div>
+        </div>
+        <div class="rt-dist" id="rt-dist"></div>
+    </div>
+
+    <div class="rt-filter" id="rt-filter">
+        <button type="button" class="aktif" data-f="semua">Semua kritik & saran (0)</button>
+        <button type="button" data-f="selesai">Sudah terpenuhi (0)</button>
+        <button type="button" data-f="belum">Belum terpenuhi (0)</button>
+    </div>
+
+    <div id="rt-list"><p class="rt-kosong">Memuat ulasan...</p></div>
+</div>
+        
         
         <!-- 5. TAMBAH / KELOLA POSTINGAN -->
 <div id="tab-postingan" class="panel">
@@ -1650,6 +1674,99 @@ function pilihMode(admin) {
     segarkanTombolMode();
     tampilToast(admin ? 'Mode Admin aktif di perangkat ini' : 'Mode Pengunjung aktif di perangkat ini');
 }
+
+
+// ====== RATING & ULASAN ======
+let ratingData = {};
+let ratingFilter = 'semua';
+let ratingSiap = false;
+
+function ratingBintang(n) {
+    let h = '';
+    for (let i = 1; i <= 5; i++) h += icon(i <= Math.round(n) ? IKON.bintangIsi : IKON.bintang);
+    return h;
+}
+function ratingEsc(s) {
+    return String(s == null ? '' : s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+}
+function ratingWaktu(ts) {
+    if (!ts) return '-';
+    return new Date(ts).toLocaleString('id-ID', { day: 'numeric', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' });
+}
+
+function muatRating() {
+    if (ratingSiap) return;
+    ratingSiap = true;
+    firebase.database().ref('ratings').on('value', snap => { ratingData = snap.val() || {}; renderRating(); });
+    document.getElementById('rt-filter').addEventListener('click', e => {
+        const b = e.target.closest('button[data-f]');
+        if (!b) return;
+        ratingFilter = b.dataset.f;
+        renderRating();
+    });
+}
+
+function renderRating() {
+    const semua = Object.keys(ratingData).map(k => Object.assign({ id: k }, ratingData[k]));
+
+    // --- Ringkasan & persentase (seperti Google Play) ---
+    const total = semua.length;
+    const hitung = { 1: 0, 2: 0, 3: 0, 4: 0, 5: 0 };
+    let jumlah = 0;
+    semua.forEach(r => { const b = Math.min(5, Math.max(1, Number(r.bintang) || 0)); hitung[b]++; jumlah += b; });
+    const rata = total ? jumlah / total : 0;
+
+    document.getElementById('rt-rata').innerText = rata.toFixed(1).replace('.', ',');
+    document.getElementById('rt-rata-bintang').innerHTML = ratingBintang(rata);
+    document.getElementById('rt-total').innerText = total + ' penilaian';
+    document.getElementById('rt-dist').innerHTML = [5, 4, 3, 2, 1].map(n => {
+        const persen = total ? Math.round(hitung[n] / total * 100) : 0;
+        return '<div class="rt-dist-row"><span class="n">' + n + '</span>' +
+               '<div class="rt-dist-bar"><div style="width:' + persen + '%"></div></div>' +
+               '<span class="p">' + persen + '% (' + hitung[n] + ')</span></div>';
+    }).join('');
+
+    // --- Daftar kritik & saran (hanya yang menulis teks) ---
+    const berTeks = semua.filter(r => String(r.saran || '').trim() !== '');
+    const selesai = berTeks.filter(r => r.selesai === true);
+    const belum = berTeks.filter(r => r.selesai !== true);
+
+    const tombol = document.querySelectorAll('#rt-filter button');
+    tombol[0].innerText = 'Semua kritik & saran (' + berTeks.length + ')';
+    tombol[1].innerText = 'Sudah terpenuhi (' + selesai.length + ')';
+    tombol[2].innerText = 'Belum terpenuhi (' + belum.length + ')';
+    tombol.forEach(b => b.classList.toggle('aktif', b.dataset.f === ratingFilter));
+
+    let tampil = ratingFilter === 'selesai' ? selesai : (ratingFilter === 'belum' ? belum : berTeks);
+    tampil = tampil.slice().sort((a, b) => (b.waktu || 0) - (a.waktu || 0));
+
+    document.getElementById('rt-list').innerHTML = tampil.length ? tampil.map(r => {
+        const ok = r.selesai === true;
+        return '<div class="rt-item' + (ok ? ' selesai' : '') + '">' +
+            '<div class="rt-ava">' + icon(IKON.bintangIsi) + '</div>' +
+            '<div class="rt-body">' +
+                '<div class="rt-head"><span class="rt-nama">Pengunjung</span>' +
+                    '<span class="rt-stars-kecil">' + ratingBintang(r.bintang) + '</span>' +
+                    '<span class="rt-waktu">' + ratingWaktu(r.waktu) + '</span></div>' +
+                '<div class="rt-teks">' + ratingEsc(r.saran) + '</div>' +
+                '<div class="rt-aksi">' +
+                    '<label class="rt-cek' + (ok ? ' selesai' : '') + '"><input type="checkbox" ' + (ok ? 'checked' : '') +
+                        ' onchange="tandaiRating(\'' + r.id + '\', this.checked)"> ' + (ok ? 'Sudah terpenuhi' : 'Tandai terpenuhi') + '</label>' +
+                    '<button type="button" class="rt-hapus" onclick="hapusRating(\'' + r.id + '\')">' + icon(IKON.hapus) + ' Hapus</button>' +
+                '</div>' +
+            '</div></div>';
+    }).join('') : '<p class="rt-kosong">Belum ada kritik dan saran di kategori ini.</p>';
+}
+
+function tandaiRating(id, selesai) {
+    firebase.database().ref('ratings/' + id).update({ selesai: !!selesai });
+}
+function hapusRating(id) {
+    tampilKonfirmasi('Hapus ulasan ini secara permanen?', { judul: 'Hapus ulasan', ya: 'Hapus', bahaya: true }).then(ok => {
+        if (ok) firebase.database().ref('ratings/' + id).remove();
+    });
+}
+
     
     </script>
         
