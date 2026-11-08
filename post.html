@@ -37,8 +37,7 @@
 
             <!-- CAPTION -->
             <div class="pp-caption" id="pp-caption">
-                <img data-avatar="admin" class="pp-cap-ava" alt="">
-                <div class="pp-cap-text"><b>LUVIA STUDIO TV</b> <span id="post-caption-display">Memuat deskripsi...</span><button type="button" id="cap-toggle" class="pp-more-link" style="display:none;">selengkapnya</button></div>
+                <div class="pp-cap-text"><span id="post-caption-display">Memuat deskripsi...</span><button type="button" id="cap-toggle" class="pp-more-link" style="display:none;">selengkapnya</button></div>
             </div>
 
             <!-- DAFTAR KOMENTAR + INPUT (di HP menjadi bottom sheet) -->
@@ -57,8 +56,7 @@
                         <span id="pc-reply-text"></span>
                         <button type="button" id="pc-reply-batal" aria-label="Batal"><span data-ikon="tutup"></span></button>
                     </div>
-                    <div id="pc-name-row"><input type="text" id="post-comment-name" placeholder="Nama Anda..." maxlength="24"></div>
-                    <div id="pc-who-row" class="pp-who" style="display:none;"></div>
+                    <div id="pc-nama"></div>
                     <div class="pp-input-row">
                         <input type="text" id="post-comment-text" placeholder="Tambahkan komentar..." maxlength="500">
                         <button type="submit" class="pp-post-btn" id="pc-kirim">Kirim</button>
@@ -321,20 +319,8 @@
         el('pp-sheet-close').onclick = () => bukaSheet(false);
         el('pp-backdrop').onclick = () => bukaSheet(false);
 
-        // Identitas pengirim
-        function segarkanNama() {
-            const row = el('pc-name-row'), who = el('pc-who-row');
-            if (IS_ADMIN_BROWSER) {
-                row.style.display = 'none'; who.style.display = 'block';
-                who.innerHTML = icon(IKON.perisai) + ' Mode Admin: tampil sebagai <b>' + escHtmlGlobal(ADMIN_PROFIL.nama) + '</b>';
-                return;
-            }
-            const n = bacaLokal('luvia_comment_name');
-            row.style.display = n ? 'none' : 'block';
-            who.style.display = n ? 'block' : 'none';
-            if (n) { who.innerHTML = 'Komentar sebagai <b>' + escHtmlGlobal(n) + '</b> · <button type="button" id="pc-ganti">ganti</button>'; el('pc-ganti').onclick = () => { try { localStorage.removeItem('luvia_comment_name'); } catch (e) {} segarkanNama(); el('post-comment-name').focus(); }; }
-        }
-        segarkanNama();
+        // Kolom nama bersama (otomatis terisi dari halaman lain)
+        const kolom = pasangKolomNama('pc-nama', 'post-comment-name', 'Komentar sebagai');
 
         function setBalasan(target) {
             balasKe = target;
@@ -356,7 +342,8 @@
             return '<div class="pc-item' + (isReply ? ' pc-reply' : '') + '" id="pc-' + id + '">' +
                 buatAvatar(c.name, { kelas: 'pc-ava', admin: !!c.isAdmin, ukuran: isReply ? 24 : 32 }) +
                 '<div class="pc-body">' +
-                    '<div class="pc-line"><b class="pc-name">' + escHtmlGlobal(c.name) + '</b>' + (c.isAdmin ? lencanaAdmin() : '') + ' <span class="pc-text">' + escHtmlGlobal(c.text) + '</span></div>' +
+                    '<div class="pc-top"><b class="pc-name">' + escHtmlGlobal(c.name) + '</b>' + (c.isAdmin ? lencanaAdmin() : '') + '</div>' +
+                    '<div class="pc-text">' + escHtmlGlobal(c.text) + '</div>' +
                     '<div class="pc-sub">' +
                         '<span>' + waktuLalu(c.timestamp) + '</span>' +
                         ((c.likes || 0) > 0 ? '<span>' + c.likes + ' suka</span>' : '') +
@@ -412,7 +399,9 @@
                 el('pc-reply-bar').style.display = 'flex'; el('pc-reply-text').innerText = 'Mengedit komentar';
                 el('pc-kirim').innerText = 'Simpan'; el('post-comment-text').focus();
             } else if (act === 'del') {
-                if (confirm('Hapus komentar ini?')) { refKomentar(id, parent, isReply).remove(); localStorage.removeItem('my_post_comment_' + id); }
+                tampilKonfirmasi('Hapus komentar ini?', { judul: 'Hapus komentar', ya: 'Hapus', bahaya: true }).then(ok => {
+                    if (ok) { refKomentar(id, parent, isReply).remove(); localStorage.removeItem('my_post_comment_' + id); }
+                });
             }
         });
 
@@ -426,9 +415,9 @@
                 refKomentar(editTarget.id, editTarget.parent, editTarget.isReply).update({ text: teks });
                 batalAksi(); return;
             }
-            const info = siapkanPengirim(el('post-comment-name').value);
-            if (!info.ok) { alert(info.pesan); el('post-comment-name').focus(); return; }
-            if (!info.isAdmin) { simpanLokal('luvia_comment_name', info.nama); segarkanNama(); }
+            const info = siapkanPengirim(kolom.ambil());
+            if (!info.ok) { alert(info.pesan); return; }
+            if (!info.isAdmin) { simpanNama(info.nama); kolom.segarkan(); }
 
             const data = { name: info.nama, text: teks, timestamp: firebase.database.ServerValue.TIMESTAMP, likes: 0 };
             if (info.isAdmin) data.isAdmin = true;
