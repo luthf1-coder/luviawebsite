@@ -3348,3 +3348,39 @@ footer { padding: 22px 20px; }
 .rt-cek.selesai { color: #53e8a3; }
 .rt-hapus { background: none; border: none; color: #ff6b6b; cursor: pointer; font-size: .8rem; display: inline-flex; align-items: center; gap: 4px; }
 .rt-kosong { text-align: center; color: #888; padding: 30px 0; font-size: .9rem; }
+
+/* livestream.html: tampilkan judul seperti watch.html (menimpa #live-player-title { display:none } di BLOK 6) */
+#live-player-title.wp-title { display: block; margin: 20px 0 14px; }
+
+/* ===== livestream.html: live chat ditempatkan seperti kolom komentar watch.html ===== */
+.wp-main .lc-box {
+    margin: 0;                                   /* rata dengan kolom utama, lebar mengikuti player */
+    background: rgba(255,255,255,0.04);          /* sama dengan .wp-comments */
+    border: 1px solid rgba(255,255,255,0.10);
+    border-radius: 16px;
+    box-shadow: none;
+}
+.wp-main .lc-head {
+    padding: .85rem 1.1rem;
+    background: rgba(255,255,255,0.03);          /* lebih kalem, tanpa gradasi mencolok */
+    border-bottom: 1px solid rgba(255,255,255,0.10);
+}
+.wp-main .lc-title { font-size: 1.05rem; }      /* sama dengan judul "Komentar" */
+.wp-main .lc-list  { height: 26rem; padding: .75rem 1.1rem; }
+.wp-main .lc-form  { padding: .85rem 1.1rem; background: rgba(0,0,0,0.18); }
+
+/* Laptop besar / TV: kotak chat ikut membesar */
+@media (min-width: 1600px) {
+    .wp-main .lc-list { height: 34rem; }
+    .wp-main .lc-msg  { font-size: .95rem; }
+}
+
+/* Tablet & HP: lebih pendek agar tidak menutupi layar, dan pas dengan lebar kolom */
+@media (max-width: 980px) {
+    .wp-main .lc-list { height: 22rem; }
+}
+@media (max-width: 600px) {
+    .wp-main .lc-box  { border-radius: 14px; }
+    .wp-main .lc-head, .wp-main .lc-form { padding: .7rem .85rem; }
+    .wp-main .lc-list { height: 20rem; padding: .6rem .85rem; }
+}
