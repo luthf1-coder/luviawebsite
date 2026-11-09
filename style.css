@@ -3401,37 +3401,6 @@ footer { padding: 22px 20px; }
 .sidebar-textlinks a:hover { color: #ff914d; text-decoration: underline; }
 .sidebar-textlinks .sep { color: rgba(255,255,255,0.4); white-space: pre-wrap; }
 
-/* ---------- BILAH IKON YANG SELALU TERLIHAT ---------- */
-.rail, .bottombar { display: none; }
-
-/* Laptop & TV: bilah ikon di kiri (di bawah navbar) */
-@media (min-width: 900px) {
-    .rail { position: fixed; left: 0; top: var(--nav-h, 70px); bottom: 0; width: 72px; z-index: 900; display: flex; flex-direction: column; align-items: center; gap: 6px; padding: 14px 0; background: rgba(12,10,22,0.90); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px); border-right: 1px solid rgba(255,255,255,0.08); overflow-y: auto; scrollbar-width: none; }
-    .rail::-webkit-scrollbar { display: none; }
-    .rail a { position: relative; width: 48px; height: 48px; display: flex; align-items: center; justify-content: center; border-radius: 14px; color: #cfcfe0; font-size: 1.45rem; text-decoration: none; transition: background .2s, color .2s; flex-shrink: 0; }
-    .rail a:hover { background: rgba(255,255,255,0.10); color: #fff; }
-    .rail a.aktif { color: #ff914d; background: rgba(255,145,77,0.10); }
-    .rail a.aktif::after { content: ""; position: absolute; bottom: 3px; width: 5px; height: 5px; border-radius: 50%; background: #ff914d; }
-    body.has-rail { padding-left: 72px; }
-}
-@media (min-width: 1600px) {
-    .rail { width: 92px; gap: 10px; padding-top: 20px; }
-    .rail a { width: 62px; height: 62px; font-size: 1.8rem; border-radius: 18px; }
-    body.has-rail { padding-left: 92px; }
-}
-
-/* HP & tablet kecil: bar di bagian bawah layar */
-@media (max-width: 899px) {
-    .bottombar { position: fixed; left: 0; right: 0; bottom: 0; z-index: 900; display: flex; justify-content: space-around; background: rgba(12,10,22,0.95); backdrop-filter: blur(14px); -webkit-backdrop-filter: blur(14px); border-top: 1px solid rgba(255,255,255,0.10); padding: 6px 4px calc(6px + env(safe-area-inset-bottom)); }
-    .bottombar a { flex: 1; min-width: 0; display: flex; flex-direction: column; align-items: center; gap: 3px; padding: 4px 2px; font-size: .64rem; color: #b9b9cc; text-decoration: none; }
-    .bottombar a .ic { font-size: 1.4rem; }
-    .bottombar a span { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 100%; }
-    .bottombar a.aktif { color: #ff914d; }
-    body.has-rail { padding-bottom: calc(64px + env(safe-area-inset-bottom)); }
-    .pop-bawah { bottom: calc(1rem + 64px); }
-    .toast-luvia { bottom: calc(24px + 64px); }
-}
-
 /* ---------- CENTANG BIRU: posisi disamakan dengan header post.html ---------- */
 .centang-biru { display: inline-flex; align-items: center; justify-content: center; color: #3ea6ff; margin-left: 5px; font-size: 1em; line-height: 1; vertical-align: -0.16em; flex-shrink: 0; }
 .centang-biru .ic { width: 1em; height: 1em; display: block; }
@@ -3571,3 +3540,52 @@ footer { padding: 22px 20px; }
 /* ---------- ADMIN: tombol reset viewers ---------- */
 .btn-reset { background: #555; color: #fff; border: none; padding: 6px 10px; border-radius: 4px; cursor: pointer; font-size: 12px; font-weight: 700; }
 .btn-reset:hover { background: #ff914d; }
+
+
+/* =====================================================================
+   BILAH IKON SAMPING (konsep UVideo)
+   HP     : TIDAK ada bilah permanen, hanya tombol hamburger
+   Tablet, laptop, TV : bilah ikon tetap terlihat di kiri
+   ===================================================================== */
+
+/* Dasar: sembunyi. Batalkan sifat <nav> yang bocor (top:0, glow, garis gradasi) */
+.rail, .bottombar { display: none; top: auto; height: auto; box-shadow: none; border-bottom: 0; }
+.rail::after, .bottombar::after { content: none; }
+
+/* Bilah bawah dimatikan total di semua perangkat (penyebab layar HP tertutup) */
+.bottombar { display: none !important; }
+
+/* Tablet (>= 768px), laptop, TV */
+@media (min-width: 768px) {
+    .rail {
+        position: fixed; left: 0; top: var(--nav-h, 74px); bottom: 0;
+        width: 72px; z-index: 900;
+        display: flex; flex-direction: column; align-items: center; gap: 6px;
+        padding: 14px 0;
+        background: rgba(12,10,22,0.90);
+        backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px);
+        border-right: 1px solid rgba(255,255,255,0.08);
+        overflow-y: auto; scrollbar-width: none;
+    }
+    .rail::-webkit-scrollbar { display: none; }
+    .rail a {
+        position: relative; flex-shrink: 0; width: 48px; height: 48px;
+        display: flex; align-items: center; justify-content: center;
+        border-radius: 14px; color: #cfcfe0; font-size: 1.45rem; text-decoration: none;
+        transition: background .2s, color .2s;
+    }
+    .rail a:hover { background: rgba(255,255,255,0.10); color: #fff; }
+    .rail a.aktif { color: #ff914d; background: rgba(255,145,77,0.10); }
+    .rail a.aktif::after {
+        content: ""; position: absolute; bottom: 3px;
+        width: 5px; height: 5px; border-radius: 50%; background: #ff914d;
+    }
+    body.has-rail { padding-left: 72px; }
+}
+
+/* Laptop besar / TV: bilah ikut membesar */
+@media (min-width: 1600px) {
+    .rail { width: 92px; gap: 10px; padding-top: 20px; }
+    .rail a { width: 62px; height: 62px; font-size: 1.8rem; border-radius: 18px; }
+    body.has-rail { padding-left: 92px; }
+}
