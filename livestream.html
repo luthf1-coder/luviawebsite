@@ -282,7 +282,7 @@
                 playerWrapper.innerHTML = `<iframe src="https://player.kick.com/${kickUsername}" allowfullscreen="true" scrolling="no" style="position:absolute; top:0; left:0; width:100%; height:100%; border:none;"></iframe>`;
             }
             setStatusChat(true);
-            if (viewersText) viewersText.innerHTML = `🔴 <span style="color:#ff4d4d; font-weight:bold;">SEDANG LIVE</span> • ${icon(IKON.dilihat)} ${viewers} Penonton Saat Ini`;
+            if (viewersText) viewersText.innerHTML = `🔴 <span style="color:#ff4d4d; font-weight:bold;">LIVE</span> • ${icon(IKON.dilihat)} ${viewers} Penonton Saat Ini`;
             nyalakanChat(mulai || FALLBACK_MULAI);
         } else {
             if (statusTerakhir !== false) renderOfflineState();
@@ -311,7 +311,7 @@
 
     function renderOfflineState() {
         offTampil = true;
-        if (viewersText) viewersText.innerHTML = `⚪ <span style="color:#bbb;">STATUS: SIARAN OFFLINE</span>`;
+        if (viewersText) viewersText.innerHTML = `⚪ <span style="color:#bbb;">OFFLINE</span>`;
         setStatusChat(false);
         if (!offSiap) return;
 
