@@ -185,11 +185,15 @@
         let bawaanJalan = false;
         let batas = null;
 
-        const menyerah = (pesan) => {
+        // Cadangan terakhir: biarkan browser memutar link-nya sendiri di dalam iframe
+        // (sama seperti membuka link langsung; tidak terkena aturan CORS)
+        const menyerah = () => {
             if (beres) return;
             beres = true; clearTimeout(batas);
             hancurkanPlayer();
-            tampilkanErrorPemutar(wrapper, pesan);
+            wrapper.innerHTML = '<iframe src="' + escHtmlGlobal(src) + '" allowfullscreen="true" ' +
+                'allow="autoplay; fullscreen; picture-in-picture" referrerpolicy="no-referrer" ' +
+                'style="border:none; width:100%; height:100%; background:#000;"></iframe>';
         };
 
         // Cadangan: biarkan browser memutar sendiri (Chrome/Edge baru, Safari, iOS, Android)
