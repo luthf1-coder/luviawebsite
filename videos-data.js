@@ -455,7 +455,7 @@ const webConfig = {
         { nama: "Home",           pendek: "Home",    link: "index.html",               ikon: "beranda", rail: true },
         { nama: "Videos",         pendek: "Videos",  link: "videos.html",              ikon: "video",   rail: true },
         { nama: "Program TV",     pendek: "Program", link: "index.html#projects",      ikon: "tv",      rail: true },
-        { nama: "Live Streaming", pendek: "Live",    link: "index.html#livestreaming", ikon: "siaran",  rail: true },
+        { nama: "Live TV",        pendek: "Live",    link: "index.html#livestreaming", ikon: "siaran",  rail: true },
         { nama: "Help Center",    pendek: "Bantuan", link: "support.html",             ikon: "bantuan", rail: true },
         { nama: "About Us",       pendek: "Tentang", link: "index.html#about",         ikon: "info",    rail: false }
     ],
@@ -465,7 +465,7 @@ const webConfig = {
     linkTeks: [
         { nama: "Beri Rating",  aksi: "rating" },
         { nama: "Help Center",  link: "support.html" },
-        { nama: "Tentang Kami", link: "index.html#about" },
+        { nama: "About Us", link: "index.html#about" },
         { nama: "YouTube",      link: "https://www.youtube.com/@luthfi-fx", baru: true }
     ],
 
