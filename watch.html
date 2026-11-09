@@ -165,9 +165,21 @@
         aturInteraksiPlayer();
     }
 
+
+    // Banyak server HLS menolak permintaan yang membawa Referer dari situs lain.
+    // Link yang dibuka langsung bisa karena tanpa Referer. Dipasang HANYA di halaman HLS,
+    // jadi iframe YouTube/Drive/Rumble di halaman lain tidak terpengaruh.
+    function tanpaReferrer() {
+        if (document.getElementById('meta-tanpa-referrer')) return;
+        const m = document.createElement('meta');
+        m.id = 'meta-tanpa-referrer'; m.name = 'referrer'; m.content = 'no-referrer';
+        document.head.appendChild(m);
+    }
+        
         // ---------- HLS (.m3u8) ----------
     // Urutan otomatis: hls.js (ada menu kualitas) -> pemutar bawaan browser -> baru pesan gagal
     async function pasangHls(wrapper, src, poster, setelahNativeGagal) {
+        tanpaReferrer();
         const video = buatVideoEl(wrapper, poster);
         let beres = false;          // tahap awal selesai (berhasil atau menyerah)
         let bawaanJalan = false;
@@ -198,6 +210,7 @@
             };
             const gagal = () => {
                 if (tuntas) return;
+                console.warn('[HLS bawaan] kode error:', video.error ? video.error.code : '-', video.error ? video.error.message : '');
                 tuntas = true; clearTimeout(t);
                 menyerah('Video HLS tidak dapat dimuat.');
             };
@@ -230,8 +243,9 @@
                 jadikanPlyr(video, opsiPlyr(tinggi.length > 1 ? tinggi : [], ganti));
             });
 
-            hls.on(Hls.Events.ERROR, (ev, d) => {
+             hls.on(Hls.Events.ERROR, (ev, d) => {
                 if (!d.fatal) return;
+                console.warn('[HLS]', d.type, d.details, d.response ? d.response.code : '');
                 if (!siap) { pakaiBawaan(); return; }                 // gagal di awal (mis. CORS) -> pemutar bawaan
                 if (d.type === Hls.ErrorTypes.NETWORK_ERROR) { hls.startLoad(); return; }
                 if (d.type === Hls.ErrorTypes.MEDIA_ERROR && pulih++ < 3) { hls.recoverMediaError(); return; }
