@@ -338,11 +338,11 @@
             const sukaKu = localStorage.getItem('liked_post_comment_' + id);
             const milikku = localStorage.getItem('my_post_comment_' + id) === 'true';
             const boleh = milikku || IS_ADMIN_BROWSER;
-            const da = 'data-id="' + id + '" data-parent="' + (parentId || '') + '" data-reply="' + (isReply ? 1 : 0) + '" data-nama="' + escHtmlGlobal(c.name) + '"';
+            const da = 'data-id="' + id + '" data-parent="' + (parentId || '') + '" data-reply="' + (isReply ? 1 : 0) + '" data-nama="' + escHtmlGlobal(namaKomentar(c)) + '"';
             return '<div class="pc-item' + (isReply ? ' pc-reply' : '') + '" id="pc-' + id + '">' +
-                buatAvatar(c.name, { kelas: 'pc-ava', admin: !!c.isAdmin, ukuran: isReply ? 24 : 32 }) +
+                buatAvatar(namaKomentar(c), { kelas: 'pc-ava', admin: !!c.isAdmin, ukuran: isReply ? 24 : 32 }) +
                 '<div class="pc-body">' +
-                    '<div class="pc-top"><b class="pc-name">' + escHtmlGlobal(c.name) + '</b>' + (c.isAdmin ? lencanaAdmin() : '') + '</div>' +
+                    '<div class="pc-top"><b class="pc-name">' + escHtmlGlobal(namaKomentar(c)) + '</b>' + (c.isAdmin ? lencanaAdmin() : '') + '</div>' +
                     '<div class="pc-text">' + escHtmlGlobal(c.text) + '</div>' +
                     '<div class="pc-sub">' +
                         '<span>' + waktuLalu(c.timestamp) + '</span>' +
@@ -356,8 +356,9 @@
             '</div>';
         }
 
-        commentsRef.on('value', (snap) => {
-            const data = snap.val();
+        let dataKomentar = null;
+        function gambarKomentar() {
+            const data = dataKomentar;
             if (!data) {
                 list.innerHTML = '<p class="pp-empty">Belum ada komentar.<br><small>Mulai percakapan.</small></p>';
                 el('pp-viewall').innerText = 'Tambahkan komentar...';
@@ -378,7 +379,10 @@
             });
             list.innerHTML = html;
             el('pp-viewall').innerText = 'Lihat semua ' + total + ' komentar';
-        });
+        }
+        commentsRef.on('value', (snap) => { dataKomentar = snap.val(); gambarKomentar(); });
+        mulaiNamaUid();
+        window.addEventListener('luvia-nama-uid', () => { if (dataKomentar) gambarKomentar(); });
 
         list.addEventListener('click', (e) => {
             const b = e.target.closest('[data-act]'); if (!b) return;
@@ -406,7 +410,7 @@
         });
 
         // Kirim / simpan edit
-        el('post-comment-form').addEventListener('submit', (e) => {
+        el('post-comment-form').addEventListener('submit', async (e) => {
             e.preventDefault();
             const teks = el('post-comment-text').value.trim();
             if (!teks) return;
@@ -415,11 +419,11 @@
                 refKomentar(editTarget.id, editTarget.parent, editTarget.isReply).update({ text: teks });
                 batalAksi(); return;
             }
-            const info = siapkanPengirim(kolom.ambil());
+            const info = await siapkanPengirimAsync(kolom.ambil());
             if (!info.ok) { alert(info.pesan); return; }
-            if (!info.isAdmin) { simpanNama(info.nama); kolom.segarkan(); }
+            if (!info.isAdmin) kolom.segarkan();
 
-            const data = { name: info.nama, text: teks, timestamp: firebase.database.ServerValue.TIMESTAMP, likes: 0 };
+            const data = { name: info.nama, uid: idPengguna(), text: teks, timestamp: firebase.database.ServerValue.TIMESTAMP, likes: 0 };
             if (info.isAdmin) data.isAdmin = true;
 
             let baru;
