@@ -120,72 +120,63 @@
 
 <!-- 4. SUPPORT & NOTIF (WA WEB STYLE) -->
         <div id="tab-komplain" class="panel">
-            <div class="wa-admin-container">
-                <!-- PANEL KIRI: DAFTAR KONTAK -->
-                <div class="wa-admin-sidebar">
-                    <div style="padding:15px; background:#202c33; font-weight:bold; color:white; border-bottom:1px solid #333;">💬 Obrolan Masuk</div>
-                    <div id="wa-contact-list" style="overflow-y:auto; flex:1;">
-                        <p style="text-align:center; color:#888; margin-top:20px;">Memuat chat...</p>
+            <div class="wc-wrap" id="wc-wrap">
+    <!-- DAFTAR KONTAK -->
+    <aside class="wc-side">
+        <div class="wc-side-head">💬 Obrolan Masuk</div>
+        <div class="wc-cari"><input type="text" id="wc-cari" placeholder="Cari nama pengguna..." oninput="renderDaftarKontak()"></div>
+        <div class="wc-kontak-list" id="wa-contact-list"><p class="wc-kosong">Memuat chat...</p></div>
+    </aside>
+
+    <!-- RUANG CHAT -->
+    <section class="wc-main">
+        <div class="wc-kosong-state" id="wa-empty-state">
+            <span data-ikon="komentar"></span>
+            <p>Pilih obrolan di sebelah kiri untuk mulai membalas</p>
+        </div>
+
+        <div class="wc-room" id="wa-chat-area" style="display:none;">
+            <header class="wc-room-head">
+                <button type="button" class="wc-back" onclick="tutupRuangChat()" aria-label="Kembali"><span data-ikon="kembali"></span></button>
+                <div class="wc-room-info" onclick="bukaInfoKontak()" title="Lihat info pengguna">
+                    <span id="wa-room-ava"></span>
+                    <div class="wc-room-nama">
+                        <div class="nm" id="wa-room-name">Pengguna</div>
+                        <div class="wc-status" id="wc-room-status">...</div>
                     </div>
                 </div>
-                
-                <!-- PANEL KANAN: RUANG CHAT -->
-                <div class="wa-admin-chat" id="wa-chat-area" style="display:none;">
-                     <div class="wa-room-header" style="justify-content: space-between; display: flex; width: 100%; box-sizing: border-box;">
-                        
-                        <div style="display:flex; align-items:center; gap:15px;">
-                            <img data-img="logoBulat" class="wa-contact-img" id="wa-room-img">
-                            <div style="color:white; font-weight:bold;" id="wa-room-name">Nama Pengguna</div>
-                        </div>
-                        
-                        <!-- Menu Titik Tiga Admin & Lonceng Kelola FAQ -->
-                        <div style="display: flex; align-items: center; gap: 15px; position: relative;">
-                            <!-- Ikon Lonceng Khusus Admin -->
-                            <div onclick="bukaKelolaFAQ()" style="cursor:pointer; font-size:22px; color:white; padding: 0 5px;" title="Kelola Papan Jawaban Publik">🔔</div>
-                            
-                            <!-- Ikon Titik Tiga -->
-                            <div onclick="toggleAdminDropdown()" style="cursor:pointer; font-size:24px; color:white; padding: 0 5px;">⋮</div>
-                            
-                            <!-- Menu Dropdown -->
-                            <div id="admin-dropdown" class="dropdown-menu">
-                                <a href="javascript:void(0)" onclick="aktifkanPilihChatAdmin()">✔️ Pilih Chat / Obrolan</a>
-                                <a href="javascript:void(0)" onclick="resetObrolanAdmin()" style="color:#ff914d;">📥 Arsipkan Obrolan</a>
-                                <a href="javascript:void(0)" onclick="hapusPermanenObrolan()" style="color:#ff4d4d;">🗑️ Hapus Permanen</a>
-                            </div>
-                        </div>
-                        
-                    </div>
-                    
-                    <div class="wa-room-body" id="wa-room-msgs">
-                        <!-- Chat bubbles akan muncul di sini -->
-                    </div>
-                    
-                    <div class="wa-room-footer">
-                        <div class="quote-box" id="quote-preview">
-                            <div style="color:#ff914d; font-weight:bold; margin-bottom:2px;">Membalas:</div>
-                            <div id="quote-text-preview" style="color:#ddd; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">...</div>
-                            <button onclick="batalQuote()" style="background:none; border:none; color:#ff4d4d; float:right; cursor:pointer; margin-top:-15px;">✖ Batal</button>
-                        </div>
-                        
-                        <div style="display:flex; gap:10px; align-items:center;">
-                            <input type="hidden" id="reply-to-id" value="">
-                            <input type="hidden" id="edit-id" value="">
-                            <input type="text" id="admin-chat-input" placeholder="Ketik balasan untuk pengguna ini..." style="flex:1; background:#2a2f32; border:none; color:white; padding:12px; border-radius:8px; outline:none;" onkeypress="if(event.key === 'Enter') kirimBalasanAdmin()">
-                            <button onclick="kirimBalasanAdmin()" style="background:#00a884; color:white; border:none; width:45px; height:45px; border-radius:50%; cursor:pointer; font-size:18px;">➤</button>
-                        </div>
-                        
-                        <label style="color:#bbb; font-size:12px; display:flex; align-items:center; gap:5px; cursor:pointer; margin-top:5px;">
-                            <input type="checkbox" id="check-publish-board"> ☑️ Kirim juga ke Papan Jawaban Admin (Agar dibaca publik)
-                        </label>
+                <div class="wc-room-aksi">
+                    <button type="button" onclick="bukaKelolaFAQ()" title="Kelola Papan Jawaban Publik">🔔</button>
+                    <button type="button" onclick="toggleAdminDropdown()" aria-label="Menu">⋮</button>
+                    <div id="admin-dropdown" class="wc-menu-dd">
+                        <a href="javascript:void(0)" onclick="bukaInfoKontak(); toggleAdminDropdown();">ℹ️ Info Pengguna</a>
+                        <a href="javascript:void(0)" onclick="resetObrolanAdmin()" style="color:#ff914d;">📥 Arsipkan Obrolan</a>
+                        <a href="javascript:void(0)" onclick="hapusPermanenObrolan()" style="color:#ff4d4d;">🗑️ Hapus Permanen</a>
                     </div>
                 </div>
-                
-                <!-- STATE KOSONG (Saat belum klik kontak) -->
-                <div id="wa-empty-state" style="width:65%; display:flex; align-items:center; justify-content:center; flex-direction:column; color:#888; background:#0b141a;">
-                    <h1 style="font-size:60px; margin:0; opacity:0.5;">📱</h1>
-                    <p>Pilih pesan di sebelah kiri untuk mulai membalas</p>
-                </div>
+            </header>
+
+            <div class="wc-bodywrap">
+                <div class="wc-body" id="wa-room-msgs"></div>
+                <button type="button" class="wc-bawah" id="wc-bawah" aria-label="Ke pesan terbaru"><span data-ikon="panah"></span></button>
             </div>
+
+            <footer class="wc-footer">
+                <div id="quote-preview" class="wc-replybar" style="display:none;">
+                    <div class="wc-replybar-isi"><b id="quote-title">Membalas</b><span id="quote-text-preview">...</span></div>
+                    <label class="wc-papan" id="wc-papan"><input type="checkbox" id="check-publish-board"> Tampilkan di Papan Jawaban</label>
+                    <button type="button" onclick="batalQuote()" aria-label="Batal"><span data-ikon="tutup"></span></button>
+                </div>
+                <input type="hidden" id="reply-to-id" value="">
+                <input type="hidden" id="edit-id" value="">
+                <div class="wc-inputrow">
+                    <textarea id="admin-chat-input" rows="1" maxlength="1000" placeholder="Ketik balasan untuk pengguna ini..."></textarea>
+                    <button type="button" class="wc-send" onclick="kirimBalasanAdmin()" aria-label="Kirim"><span data-ikon="kirim"></span></button>
+                </div>
+            </footer>
+        </div>
+    </section>
+</div>
             <!-- ================= LOG NOTIFIKASI SISTEM ================= -->
             <div style="margin-top: 30px; border-top: 1px solid #333; padding-top: 20px;">
                 <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
@@ -761,7 +752,7 @@ function hapusProgram(id) {
         function muatDaftarHapus() {
             // A. DAFTAR SEMUA VIDEO (GABUNGAN BOT & FIREBASE)
             firebase.database().ref('videos_manual').on('value', snap => {
-                let html = '<h4 style="color:#ff4d4d; border-top:1px solid #333; margin-top:20px; padding-top:10px;">Daftar Semua Video</h4>';
+                let html = '<h4 style="color:#ff4d4d; border-top:1px solid #333; margin-top:20px; padding-top:10px; display:flex; justify-content:space-between; align-items:center; gap:10px; flex-wrap:wrap;">Daftar Semua Video <button class="btn-reset" onclick="resetViewsSemuaVideo()">↺ Reset Semua Viewers</button></h4>';
                 
                 const adminData = snap.exists() ? snap.val() : {};
                 let allVideos = [];
@@ -795,6 +786,7 @@ function hapusProgram(id) {
 </div>
                         <div class="admin-list-actions">
                             <button class="btn-stats" onclick="bukaAnalitik('${k}', '${safeTitle}')">📊</button>
+                            <button class="btn-reset" onclick="resetViewsVideo('${k}', '${safeTitle}')" title="Reset viewers">↺ Reset</button>
                             <button class="btn-edit" onclick="editVideoManual('${k}')">✎ Edit</button>
                             <button class="btn-delete" onclick="hapusData('videos_manual/${k}')">🗑️</button>
                         </div>
@@ -881,153 +873,12 @@ function hapusProgram(id) {
 
         let isAdminSelectMode = false;
 
-        function jalankanPantauanNotif() {
-            firebase.database().ref('complaints').on('value', snap => {
-                const data = snap.val();
-                if(!data) { document.getElementById('wa-contact-list').innerHTML = '<div style="padding:20px; color:#888; text-align:center;">Belum ada pesan</div>'; return; }
-                
-                allComplaints = data;
-                let grouped = {};
-                
-                Object.keys(data).forEach(k => {
-                    const c = data[k];
-                    const did = c.deviceId || 'unknown';
-                    if(!grouped[did]) grouped[did] = { name: c.nama, messages: [], lastTime: 0, lastMsg: '', isArchived: true, archiveTime: 0 };
-                    
-                    grouped[did].messages.push({ id: k, ...c });
-                    grouped[did].lastTime = Math.max(grouped[did].lastTime, c.timestamp);
-                    grouped[did].lastMsg = c.is_admin ? "Anda: " + c.isi : c.isi;
-                    
-                    // Cek arsip
-                    if (!c.archived_by_admin) grouped[did].isArchived = false;
-                    if (c.archive_timestamp) grouped[did].archiveTime = Math.max(grouped[did].archiveTime, c.archive_timestamp);
-                });
-                
-                let sortedDevices = Object.keys(grouped).sort((a,b) => grouped[b].lastTime - grouped[a].lastTime);
-                let listHtml = '';
-                
-                sortedDevices.forEach(did => {
-                    if(did === 'unknown') return; 
-                    const g = grouped[did];
-                    const timeStr = new Date(g.lastTime).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
-                    const isActive = activeDeviceId === did ? 'active' : '';
-                    
-                    // Tambahkan Teks Arsip Tanggal Lengkap
-                    let noteHtml = '';
-                    if (g.isArchived && g.archiveTime > 0) {
-                        const opt = { weekday:'long', day:'numeric', month:'long', year:'numeric', hour:'2-digit', minute:'2-digit' };
-                        const tgl = new Intl.DateTimeFormat('id-ID', opt).format(new Date(g.archiveTime));
-                        noteHtml = `<div style="font-size:10px; color:#ff4d4d; font-style:italic; margin-top:4px;">(Pesan ini telah direset pada ${tgl})</div>`;
-                    }
-                    
-                    listHtml += `
-                    <div class="wa-contact-item ${isActive}" onclick="bukaChatRoom('${did}', '${g.name.replace(/'/g, "\\'")}')">
-                        <img src="${IMG.logoBulat}" class="wa-contact-img">
-                        <div class="wa-contact-info">
-                            <div class="wa-contact-name">${g.name} <span class="wa-contact-time">${timeStr}</span></div>
-                            <div class="wa-contact-last">${g.lastMsg}</div>
-                            ${noteHtml}
-                        </div>
-                    </div>`;
-                });
-                document.getElementById('wa-contact-list').innerHTML = listHtml;
-                if(activeDeviceId) renderChatRoom(activeDeviceId);
-            });
-        }
-
-        function bukaChatRoom(did, name) {
-            activeDeviceId = did;
-            activeDeviceName = name;
-            document.getElementById('wa-empty-state').style.display = 'none';
-            document.getElementById('wa-chat-area').style.display = 'flex';
-            document.getElementById('wa-room-name').innerText = name;
-            
-            document.querySelectorAll('.wa-contact-item').forEach(el => el.classList.remove('active'));
-            if(event) event.currentTarget.classList.add('active');
-            
-            renderChatRoom(did);
-        }
-
-        function renderChatRoom(did) {
-            const room = document.getElementById('wa-room-msgs');
-            let html = '';
-            
-            let msgs = Object.keys(allComplaints)
-                .map(k => ({ id: k, ...allComplaints[k] }))
-                .filter(m => m.deviceId === did)
-                .sort((a,b) => a.timestamp - b.timestamp);
-                
-            msgs.forEach(m => {
-                if (m.deleted_by_admin) return; 
-
-                const isDeletedAll = m.deleted_for_everyone;
-                const textPesan = isDeletedAll ? "🚫 <i>Pesan ini telah ditarik/dihapus</i>" : m.isi;
-                const editedTag = (m.is_edited && !isDeletedAll) ? `<span class="msg-edited">(diedit)</span>` : '';
-                const time = new Date(m.timestamp).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
-                
-                const ageMs = Date.now() - m.timestamp;
-                const canEdit = ageMs <= 30 * 60 * 1000;
-                
-                let actionBar = '';
-                if (!isDeletedAll) {
-                    actionBar += `<div class="action-bar" id="action-${m.id}"><button class="action-btn-chat" onclick="pilihQuote('${m.id}', '${m.isi.replace(/'/g, "\\'")}')">Balas</button>`;
-                    if (m.is_admin) { 
-                        if (canEdit) actionBar += `<button class="action-btn-chat" onclick="siapkanEditAdmin('${m.id}')">Edit</button>`;
-                        actionBar += `<button class="action-btn-chat" onclick="opsiHapusAdmin('${m.id}', true)">Hapus</button>`;
-                    } else {
-                        actionBar += `<button class="action-btn-chat" onclick="opsiHapusAdmin('${m.id}', true)">Hapus (Admin)</button>`;
-                    }
-                    actionBar += `</div>`;
-                }
-
-                const clickEvent = `onclick="handleBubbleClickAdmin('${m.id}')"`;
-
-                if (!m.is_admin) {
-                    let quoteHtml = m.quote_text && !isDeletedAll ? `<div style="background:rgba(0,0,0,0.2); border-left:3px solid #ff914d; padding:5px; margin-bottom:5px; font-size:11px; color:#ddd; border-radius:3px;">Membalas:<br>${m.quote_text}</div>` : '';
-                    html += `
-                    <div class="bubble-user" ${clickEvent}>
-                        <div style="font-size:11px; color:#ff914d; font-weight:bold; margin-bottom:3px;">${m.nama}</div>
-                        ${quoteHtml}${textPesan}${editedTag}
-                        ${actionBar}
-                        <div style="font-size:10px; color:#888; text-align:right; margin-top:4px;">${time}</div>
-                    </div>`;
-                }
-                
-                if (m.jawaban_admin && !m.is_admin) {
-                    html += `<div class="bubble-admin">${m.jawaban_admin}</div>`;
-                }
-                
-                if (m.is_admin) {
-                    let quoteHtml = m.quote_text && !isDeletedAll ? `<div style="background:rgba(0,0,0,0.2); border-left:3px solid #00a884; padding:5px; margin-bottom:5px; font-size:11px; color:#ddd; border-radius:3px;">Membalas:<br>${m.quote_text}</div>` : '';
-                    html += `
-                    <div class="bubble-admin" ${clickEvent}>
-                        ${quoteHtml}
-                        ${textPesan}${editedTag}
-                        ${actionBar}
-                        <div style="font-size:10px; color:#93c5b5; text-align:right; margin-top:4px;">${time}</div>
-                    </div>`;
-                }
-            });
-            room.innerHTML = html;
-            setTimeout(() => { room.scrollTop = room.scrollHeight; }, 50);
-        }
 
         function toggleAdminDropdown() {
             const drop = document.getElementById('admin-dropdown');
             drop.style.display = drop.style.display === 'block' ? 'none' : 'block';
         }
 
-        function aktifkanPilihChatAdmin() {
-            isAdminSelectMode = !isAdminSelectMode;
-            toggleAdminDropdown();
-            alert(isAdminSelectMode ? "Mode Pilih Aktif: Klik pada pesan mana saja untuk memunculkan tombol Balas/Edit/Hapus." : "Mode Pilih Dinonaktifkan.");
-        }
-
-        function handleBubbleClickAdmin(id) {
-            if(!isAdminSelectMode) return;
-            const bar = document.getElementById('action-' + id);
-            if(bar) bar.style.display = bar.style.display === 'flex' ? 'none' : 'flex';
-        }
 
         function resetObrolanAdmin() {
     if (!activeDeviceId) return;
@@ -1058,39 +909,6 @@ function hapusProgram(id) {
     });
 }
     
-        function pilihQuote(msgId, text) {
-            document.getElementById('quote-preview').style.display = 'block';
-            document.querySelector('#quote-preview div').innerText = "Membalas:";
-            document.getElementById('quote-preview').style.borderLeftColor = '#ff914d';
-            document.getElementById('quote-text-preview').innerText = text;
-            document.getElementById('reply-to-id').value = msgId;
-            document.getElementById('edit-id').value = '';
-            document.getElementById('admin-chat-input').focus();
-        }
-
-        function siapkanEditAdmin(id) {
-            const msg = allComplaints[id];
-            document.getElementById('quote-preview').style.display = 'block';
-            document.querySelector('#quote-preview div').innerText = "Mengedit Pesan:";
-            document.getElementById('quote-preview').style.borderLeftColor = '#8c52ff'; 
-            document.getElementById('quote-text-preview').innerText = msg.isi;
-            document.getElementById('edit-id').value = id;
-            document.getElementById('reply-to-id').value = '';
-            
-            const inputChat = document.getElementById('admin-chat-input');
-            inputChat.value = msg.isi;
-            inputChat.focus();
-        }
-
-        function batalQuote() {
-            document.getElementById('quote-preview').style.display = 'none';
-            document.getElementById('reply-to-id').value = '';
-            document.getElementById('edit-id').value = '';
-            document.getElementById('admin-chat-input').value = '';
-            document.querySelector('#quote-preview div').innerText = "Membalas:";
-            document.getElementById('quote-preview').style.borderLeftColor = '#ff914d';
-        }
-
         function opsiHapusAdmin(id, canDeleteAll) {
     const pesan = canDeleteAll ? "Pilih cara menghapus pesan ini:" : "Waktu tarik pesan lebih dari 24 jam. Pesan hanya bisa dihapus untuk Anda (admin).";
     const pilihan = [{ teks: 'Batal', nilai: null }, { teks: 'Hapus untuk saya', nilai: '1', utama: !canDeleteAll }];
@@ -1100,51 +918,6 @@ function hapusProgram(id) {
         else if (respon === '2' && canDeleteAll) firebase.database().ref('complaints/' + id).update({ deleted_for_everyone: true });
     });
 }
-
-        function kirimBalasanAdmin() {
-            if(!activeDeviceId) return;
-            const input = document.getElementById('admin-chat-input');
-            const text = input.value.trim();
-            if(!text) return;
-            
-            const quoteId = document.getElementById('reply-to-id').value;
-            const quoteText = document.getElementById('quote-text-preview').innerText;
-            const editId = document.getElementById('edit-id').value;
-            const isPublicFAQ = document.getElementById('check-publish-board').checked;
-            
-            // JIKA SEDANG MODE EDIT
-            if (editId) {
-                firebase.database().ref('complaints/' + editId).update({
-                    isi: text, is_edited: true
-                });
-                batalQuote();
-                return;
-            }
-            
-            // JIKA MODE KIRIM BARU / QUOTE
-            const payload = {
-                nama: "CS LUVIA STUDIO", isi: text, deviceId: activeDeviceId,
-                is_admin: true, timestamp: Date.now()
-            };
-            if (quoteId) { payload.quote_id = quoteId; payload.quote_text = quoteText; }
-            
-            firebase.database().ref('complaints').push(payload).then(() => {
-                // LOGIKA LEMPAR KE PAPAN FAQ: Harus merupakan respons terhadap pertanyaan User
-                if(isPublicFAQ && quoteId) {
-                    firebase.database().ref('complaints/' + quoteId).update({
-                        jawaban_admin: text, answered_at: Date.now()
-                    });
-                }
-            });
-            
-            if(isPublicFAQ && !quoteId) {
-                alert("Info: Untuk mengirim ke Papan FAQ Publik, Anda harus membalas (klik tombol 'Balas') pada spesifik pesan penonton terlebih dahulu.");
-            }
-            
-            input.value = '';
-            batalQuote();
-            document.getElementById('check-publish-board').checked = false;
-        }
     
         function tandaiSemuaDibaca() {
             firebase.database().ref('admin_notifications').once('value', snap => {
@@ -1158,6 +931,300 @@ function hapusProgram(id) {
         }
 
 
+//=== JS-MULAI ===
+let presenceRef = null, presenceData = null, penggunaRef = null, penggunaData = null;
+let kontakCache = {};
+let pantauanAktif = false;
+const $wc = (id) => document.getElementById(id);
+
+function batasBaca(did) {
+    const dasar = parseInt(localStorage.getItem('luvia_admin_baca_init') || '0', 10);
+    return Math.max(dasar, parseInt(localStorage.getItem('luvia_admin_baca_' + did) || '0', 10));
+}
+function tandaiDibaca(did) { localStorage.setItem('luvia_admin_baca_' + did, String(Date.now())); }
+
+// Kelompokkan semua pesan menjadi daftar kontak (satu per perangkat pengguna)
+function kontakDariPesan() {
+    const grup = {};
+    Object.keys(allComplaints).forEach(k => {
+        const c = allComplaints[k];
+        const did = c.deviceId;
+        if (!did || did === 'unknown') return;
+        const g = grup[did] = grup[did] || { did: did, uid: '', nama: '', lastTime: 0, lastMsg: '', lastAdmin: false, arsip: true, arsipWaktu: 0, belumDibaca: 0 };
+        if (c.uid) g.uid = c.uid;
+        if (!c.is_admin && c.nama) g.nama = c.nama;
+        if (!c.archived_by_admin) g.arsip = false;
+        if (c.archive_timestamp) g.arsipWaktu = Math.max(g.arsipWaktu, c.archive_timestamp);
+        if (c.deleted_by_admin) return;
+        const t = c.timestamp || 0;
+        if (t >= g.lastTime) {
+            g.lastTime = t;
+            g.lastAdmin = !!c.is_admin;
+            g.lastMsg = c.deleted_for_everyone ? 'Pesan ini telah dihapus' : (c.isi || '');
+        }
+        if (!c.is_admin && t > batasBaca(did)) g.belumDibaca++;
+    });
+    Object.keys(grup).forEach(did => { grup[did].nama = namaTampil(grup[did].uid, grup[did].nama || 'Pengguna'); });
+    return grup;
+}
+
+function renderDaftarKontak() {
+    const wadah = $wc('wa-contact-list');
+    if (!wadah) return;
+    const q = ($wc('wc-cari').value || '').toLowerCase().trim();
+    let daftar = Object.keys(kontakCache).map(k => kontakCache[k]).sort((a, b) => b.lastTime - a.lastTime);
+    if (q) daftar = daftar.filter(k => k.nama.toLowerCase().includes(q));
+    if (!daftar.length) { wadah.innerHTML = '<p class="wc-kosong">' + (q ? 'Tidak ada hasil.' : 'Belum ada pesan.') + '</p>'; return; }
+    wadah.innerHTML = daftar.map(k => {
+        const arsip = (k.arsip && k.arsipWaktu) ? '<div class="wc-arsip">Diarsipkan ' + waTanggalLengkap(k.arsipWaktu) + '</div>' : '';
+        return '<div class="wc-kontak' + (activeDeviceId === k.did ? ' active' : '') + (k.belumDibaca ? ' ada' : '') + '" data-did="' + escHtmlGlobal(k.did) + '">' +
+            buatAvatar(k.nama, { kelas: 'wc-ava', ukuran: 46 }) +
+            '<div class="wc-kontak-info">' +
+                '<div class="wc-kontak-baris"><span class="wc-kontak-nama">' + escHtmlGlobal(k.nama) + '</span><span class="wc-kontak-waktu">' + waWaktuDaftar(k.lastTime) + '</span></div>' +
+                '<div class="wc-kontak-baris"><span class="wc-kontak-last">' + (k.lastAdmin ? 'Anda: ' : '') + escHtmlGlobal(k.lastMsg) + '</span>' +
+                    (k.belumDibaca ? '<span class="wc-badge">' + k.belumDibaca + '</span>' : '') + '</div>' +
+                arsip +
+            '</div></div>';
+    }).join('');
+}
+
+function segarkanHeaderRoom() {
+    if (!activeDeviceId) return;
+    const k = kontakCache[activeDeviceId];
+    const nama = k ? k.nama : activeDeviceName;
+    $wc('wa-room-name').innerText = nama;
+    $wc('wa-room-ava').innerHTML = buatAvatar(nama, { kelas: 'wc-ava', ukuran: 42 });
+    const st = $wc('wc-room-status');
+    const teks = (k && k.uid) ? waStatusOnline(presenceData) : 'status online tidak tersedia';
+    st.innerText = teks;
+    st.classList.toggle('online', teks === 'online');
+}
+
+function pasangPresence(uid) {
+    if (presenceRef) { presenceRef.off(); presenceRef = null; }
+    if (penggunaRef) { penggunaRef.off(); penggunaRef = null; }
+    presenceData = null; penggunaData = null;
+    segarkanHeaderRoom();
+    if (!uid) return;
+    presenceRef = firebase.database().ref('presence/' + uid);
+    presenceRef.on('value', s => { presenceData = s.val(); segarkanHeaderRoom(); });
+    penggunaRef = firebase.database().ref('pengguna/' + uid);
+    penggunaRef.on('value', s => { penggunaData = s.val(); });
+}
+
+function jalankanPantauanNotif() {
+    if (pantauanAktif) return;
+    pantauanAktif = true;
+    if (!localStorage.getItem('luvia_admin_baca_init')) localStorage.setItem('luvia_admin_baca_init', String(Date.now()));
+    mulaiNamaUid();
+
+    window.addEventListener('luvia-nama-uid', () => {
+        kontakCache = kontakDariPesan();
+        renderDaftarKontak();
+        segarkanHeaderRoom();
+        if (activeDeviceId) renderChatRoom(activeDeviceId, false);
+    });
+    setInterval(segarkanHeaderRoom, 30000);
+
+    $wc('wa-contact-list').addEventListener('click', (e) => {
+        const it = e.target.closest('[data-did]');
+        if (it) bukaChatRoom(it.dataset.did);
+    });
+    const room = $wc('wa-room-msgs');
+    room.addEventListener('click', (e) => {
+        const chev = e.target.closest('[data-act="menu"]');
+        if (chev) { const m = allComplaints[chev.dataset.id]; if (m) waMenu(chev, menuAdmin(Object.assign({ id: chev.dataset.id }, m))); return; }
+        const q = e.target.closest('.wc-quote');
+        if (q && q.dataset.quote) waLompat(room, q.dataset.quote);
+    });
+    room.addEventListener('scroll', () => { if (waDekatBawah(room)) $wc('wc-bawah').classList.remove('tampil'); });
+    $wc('wc-bawah').onclick = () => { waKeBawah(room); $wc('wc-bawah').classList.remove('tampil'); };
+
+    const input = $wc('admin-chat-input');
+    const sentuh = window.matchMedia && window.matchMedia('(pointer: coarse)').matches;
+    input.addEventListener('keydown', (e) => {
+        if (e.key === 'Enter' && !e.shiftKey && !e.isComposing && !sentuh) { e.preventDefault(); kirimBalasanAdmin(); }
+    });
+    input.addEventListener('input', () => autoTinggiAdmin(input));
+
+    firebase.database().ref('complaints').on('value', snap => {
+        allComplaints = snap.val() || {};
+        if (activeDeviceId) tandaiDibaca(activeDeviceId);
+        kontakCache = kontakDariPesan();
+        renderDaftarKontak();
+        if (activeDeviceId) {
+            if (kontakCache[activeDeviceId]) { segarkanHeaderRoom(); renderChatRoom(activeDeviceId, false); }
+            else tutupRuangChat();
+        }
+    });
+}
+
+function autoTinggiAdmin(el) {
+    el.style.height = 'auto';
+    el.style.height = Math.min(el.scrollHeight, 120) + 'px';
+}
+
+function bukaChatRoom(did) {
+    activeDeviceId = did;
+    const k = kontakCache[did];
+    activeDeviceName = k ? k.nama : 'Pengguna';
+    $wc('wa-empty-state').style.display = 'none';
+    $wc('wa-chat-area').style.display = 'flex';
+    $wc('wc-wrap').classList.add('buka-chat');
+    tandaiDibaca(did);
+    batalQuote();
+    kontakCache = kontakDariPesan();
+    renderDaftarKontak();
+    pasangPresence(k ? k.uid : '');
+    renderChatRoom(did, true);
+}
+
+function tutupRuangChat() {
+    activeDeviceId = null;
+    if (presenceRef) { presenceRef.off(); presenceRef = null; }
+    if (penggunaRef) { penggunaRef.off(); penggunaRef = null; }
+    $wc('wa-chat-area').style.display = 'none';
+    $wc('wa-empty-state').style.display = 'flex';
+    $wc('wc-wrap').classList.remove('buka-chat');
+    renderDaftarKontak();
+}
+
+function menuAdmin(m) {
+    const items = [{ teks: 'Balas', ikon: 'balas', aksi: () => pilihQuote(m.id) }];
+    if (m.is_admin && Date.now() - (m.timestamp || 0) <= 30 * 60 * 1000) items.push({ teks: 'Edit', ikon: 'edit', aksi: () => siapkanEditAdmin(m.id) });
+    items.push({ teks: 'Hapus', ikon: 'hapus', bahaya: true, aksi: () => opsiHapusAdmin(m.id, true) });
+    return items;
+}
+
+function renderChatRoom(did, paksaBawah) {
+    const room = $wc('wa-room-msgs');
+    const dekat = waDekatBawah(room);
+    const msgs = Object.keys(allComplaints)
+        .map(k => Object.assign({ id: k }, allComplaints[k]))
+        .filter(m => m.deviceId === did && !m.deleted_by_admin)
+        .sort((a, b) => (a.timestamp || 0) - (b.timestamp || 0));
+    const k = kontakCache[did];
+    waRender(room, msgs, {
+        milikku: m => !!m.is_admin,
+        namaPengirim: m => (m.is_admin ? 'Anda' : (k ? k.nama : 'Pengguna')),
+        tambahan: m => (m.jawaban_admin && !m.is_admin)
+            ? '<div class="wc-row out"><div class="wc-bubble wc-papan-bubble"><div class="wc-nama">Papan Jawaban ' + centangBiru() + '</div>' +
+              '<div class="wc-teks">' + escHtmlGlobal(m.jawaban_admin) + '</div>' +
+              '<div class="wc-meta"><span class="wc-jam">' + (m.answered_at ? waJam(m.answered_at) : '') + '</span></div></div></div>'
+            : '',
+        kosong: '<p class="wc-kosong">Belum ada pesan.</p>'
+    });
+    terapkanIkon(room);
+    if (paksaBawah || dekat) waKeBawah(room);
+    else $wc('wc-bawah').classList.add('tampil');
+}
+
+// ---------- BALAS / EDIT ----------
+function pilihQuote(id) {
+    const m = allComplaints[id];
+    if (!m) return;
+    $wc('edit-id').value = '';
+    $wc('reply-to-id').value = id;
+    $wc('quote-preview').style.display = 'flex';
+    $wc('quote-title').innerText = m.is_admin ? 'Anda' : ((kontakCache[activeDeviceId] || {}).nama || 'Pengguna');
+    $wc('quote-text-preview').innerText = m.isi;
+    $wc('wc-papan').style.display = m.is_admin ? 'none' : 'flex';
+    $wc('admin-chat-input').focus();
+}
+
+function siapkanEditAdmin(id) {
+    const m = allComplaints[id];
+    if (!m) return;
+    $wc('reply-to-id').value = '';
+    $wc('edit-id').value = id;
+    $wc('quote-preview').style.display = 'flex';
+    $wc('quote-title').innerText = 'Mengedit pesan';
+    $wc('quote-text-preview').innerText = m.isi;
+    $wc('wc-papan').style.display = 'none';
+    const input = $wc('admin-chat-input');
+    input.value = m.isi;
+    autoTinggiAdmin(input);
+    input.focus();
+}
+
+function batalQuote() {
+    $wc('quote-preview').style.display = 'none';
+    $wc('reply-to-id').value = '';
+    $wc('edit-id').value = '';
+    $wc('check-publish-board').checked = false;
+    const input = $wc('admin-chat-input');
+    input.value = '';
+    autoTinggiAdmin(input);
+}
+
+function kirimBalasanAdmin() {
+    if (!activeDeviceId) return;
+    const input = $wc('admin-chat-input');
+    const text = input.value.trim();
+    if (!text) return;
+
+    const quoteId = $wc('reply-to-id').value;
+    const editId = $wc('edit-id').value;
+    const publik = $wc('check-publish-board').checked;
+
+    if (editId) {
+        firebase.database().ref('complaints/' + editId).update({ isi: text, is_edited: true });
+        batalQuote();
+        return;
+    }
+
+    const payload = { nama: "CS LUVIA STUDIO", isi: text, deviceId: activeDeviceId, is_admin: true, timestamp: Date.now() };
+    if (quoteId && allComplaints[quoteId]) {
+        payload.quote_id = quoteId;
+        payload.quote_text = String(allComplaints[quoteId].isi || '').slice(0, 140);
+    }
+    firebase.database().ref('complaints').push(payload).then(() => {
+        // Papan Jawaban Publik hanya untuk jawaban atas pertanyaan penonton
+        if (publik && quoteId && allComplaints[quoteId] && !allComplaints[quoteId].is_admin) {
+            firebase.database().ref('complaints/' + quoteId).update({ jawaban_admin: text, answered_at: Date.now() });
+        }
+    });
+    if (publik && !quoteId) alert("Untuk mengirim ke Papan Jawaban Publik, balas (pilih Balas) pada pesan penonton terlebih dahulu.");
+    batalQuote();
+}
+
+// ---------- INFO PENGGUNA (klik nama di bagian atas chat) ----------
+function bukaInfoKontak() {
+    if (!activeDeviceId) return;
+    const k = kontakCache[activeDeviceId] || {};
+    const p = penggunaData || {};
+    const riwayat = Object.keys(p.riwayat || {}).map(x => p.riwayat[x]).sort((a, b) => b.waktu - a.waktu);
+    const batas = Date.now() - NAMA_UBAH_HARI * 86400000;
+    const ubah14 = Object.keys(p.ubah || {}).filter(x => p.ubah[x] > batas).length;
+    const baris = (a, b) => '<div class="wc-info-baris"><span>' + a + '</span><span>' + b + '</span></div>';
+
+    let h = '<div class="wc-info-ava">' + buatAvatar(k.nama || '', { kelas: 'wc-ava', ukuran: 84 }) + '</div>' +
+            '<div class="wc-info-nama">' + escHtmlGlobal(k.nama || 'Pengguna') + '</div>';
+    h += baris('Status', escHtmlGlobal((k.uid) ? waStatusOnline(presenceData) : 'tidak tersedia'));
+    if (riwayat.length) {
+        h += baris('Nama sebelumnya', escHtmlGlobal(riwayat[0].nama));
+        h += baris('Diubah pada', waTanggalLengkap(riwayat[0].waktu));
+    } else {
+        h += baris('Riwayat nama', 'Belum pernah mengubah nama');
+    }
+    h += baris('Perubahan nama (' + NAMA_UBAH_HARI + ' hari)', ubah14 + ' dari ' + NAMA_UBAH_MAKS);
+    if (p.dibuat) h += baris('Nama pengguna dibuat', waTanggalLengkap(p.dibuat));
+    if (riwayat.length > 1) {
+        h += '<div class="wc-info-judul">Semua riwayat nama</div><div class="wc-riwayat">' +
+             riwayat.map(r => baris(escHtmlGlobal(r.nama), waTanggalLengkap(r.waktu))).join('') + '</div>';
+    }
+
+    const wrap = document.createElement('div');
+    wrap.className = 'pop-overlay dlg';
+    wrap.innerHTML = '<div class="pop-card dlg-card"><div class="pop-body">' + h +
+        '<div class="pop-btns dlg-btns"><button type="button" class="pop-btn">Tutup</button></div></div></div>';
+    wrap.addEventListener('click', (e) => { if (e.target === wrap || e.target.closest('.pop-btn')) wrap.remove(); });
+    document.body.appendChild(wrap);
+}
+//=== JS-SELESAI ===
+    
+    
+    
 // ==========================================
         // FITUR LOG NOTIFIKASI & HAPUS
         // ==========================================
@@ -1353,7 +1420,7 @@ function simpanDataPostinganReal(linkVideoAsli) {
 // Panggil fungsi ini di dalam fungsi checkLogin() saat admin berhasil masuk
 function muatDaftarPostingan() {
     firebase.database().ref('posts').on('value', snap => {
-        let html = '<h4 style="color:#ff4d4d; border-top:1px solid #333; margin-top:20px; padding-top:10px;">Daftar Semua Postingan</h4>';
+        let html = '<h4 style="color:#ff4d4d; border-top:1px solid #333; margin-top:20px; padding-top:10px; display:flex; justify-content:space-between; align-items:center; gap:10px; flex-wrap:wrap;">Daftar Semua Postingan <button class="btn-reset" onclick="resetViewsSemuaPost()">↺ Reset Semua Viewers</button></h4>';
         
         if(snap.exists()) {
             const data = snap.val();
@@ -1377,6 +1444,7 @@ function muatDaftarPostingan() {
                     </div>
                     <div class="admin-list-actions">
                         <button class="btn-stats" onclick="bukaAnalitikPost('${k}', '${safeCaption}')">📊</button>
+                        <button class="btn-reset" onclick="resetViewsPost('${k}', '${safeCaption}')" title="Reset viewers">↺ Reset</button>
                         <button class="btn-edit" onclick="siapkanEditPostingan('${k}')">✎ Edit</button>
                         <button class="btn-delete" onclick="hapusPostingan('${k}')">🗑️</button>
                     </div>
@@ -1676,7 +1744,8 @@ function pilihMode(admin) {
 }
 
 
-// ====== RATING & ULASAN ======
+//=== JS-MULAI ===
+// ====== RATING & ULASAN (dikelompokkan per pengguna) ======
 let ratingData = {};
 let ratingFilter = 'semua';
 let ratingSiap = false;
@@ -1686,9 +1755,6 @@ function ratingBintang(n) {
     for (let i = 1; i <= 5; i++) h += icon(i <= Math.round(n) ? IKON.bintangIsi : IKON.bintang);
     return h;
 }
-function ratingEsc(s) {
-    return String(s == null ? '' : s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
-}
 function ratingWaktu(ts) {
     if (!ts) return '-';
     return new Date(ts).toLocaleString('id-ID', { day: 'numeric', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' });
@@ -1697,6 +1763,8 @@ function ratingWaktu(ts) {
 function muatRating() {
     if (ratingSiap) return;
     ratingSiap = true;
+    mulaiNamaUid();                                               // nama pengguna terkini
+    window.addEventListener('luvia-nama-uid', renderRating);      // nama berubah -> daftar ikut berubah
     firebase.database().ref('ratings').on('value', snap => { ratingData = snap.val() || {}; renderRating(); });
     document.getElementById('rt-filter').addEventListener('click', e => {
         const b = e.target.closest('button[data-f]');
@@ -1726,7 +1794,7 @@ function renderRating() {
                '<span class="p">' + persen + '% (' + hitung[n] + ')</span></div>';
     }).join('');
 
-    // --- Daftar kritik & saran (hanya yang menulis teks) ---
+    // --- Kritik & saran (hanya yang menulis teks) ---
     const berTeks = semua.filter(r => String(r.saran || '').trim() !== '');
     const selesai = berTeks.filter(r => r.selesai === true);
     const belum = berTeks.filter(r => r.selesai !== true);
@@ -1737,24 +1805,42 @@ function renderRating() {
     tombol[2].innerText = 'Belum terpenuhi (' + belum.length + ')';
     tombol.forEach(b => b.classList.toggle('aktif', b.dataset.f === ratingFilter));
 
-    let tampil = ratingFilter === 'selesai' ? selesai : (ratingFilter === 'belum' ? belum : berTeks);
-    tampil = tampil.slice().sort((a, b) => (b.waktu || 0) - (a.waktu || 0));
+    const tampil = ratingFilter === 'selesai' ? selesai : (ratingFilter === 'belum' ? belum : berTeks);
 
-    document.getElementById('rt-list').innerHTML = tampil.length ? tampil.map(r => {
-        const ok = r.selesai === true;
-        return '<div class="rt-item' + (ok ? ' selesai' : '') + '">' +
-            '<div class="rt-ava">' + icon(IKON.bintangIsi) + '</div>' +
-            '<div class="rt-body">' +
-                '<div class="rt-head"><span class="rt-nama">Pengunjung</span>' +
-                    '<span class="rt-stars-kecil">' + ratingBintang(r.bintang) + '</span>' +
-                    '<span class="rt-waktu">' + ratingWaktu(r.waktu) + '</span></div>' +
-                '<div class="rt-teks">' + ratingEsc(r.saran) + '</div>' +
-                '<div class="rt-aksi">' +
-                    '<label class="rt-cek' + (ok ? ' selesai' : '') + '"><input type="checkbox" ' + (ok ? 'checked' : '') +
-                        ' onchange="tandaiRating(\'' + r.id + '\', this.checked)"> ' + (ok ? 'Sudah terpenuhi' : 'Tandai terpenuhi') + '</label>' +
-                    '<button type="button" class="rt-hapus" onclick="hapusRating(\'' + r.id + '\')">' + icon(IKON.hapus) + ' Hapus</button>' +
-                '</div>' +
-            '</div></div>';
+    // --- Kelompokkan per pengguna: satu avatar + satu nama, banyak ulasan ---
+    const grup = {};
+    tampil.forEach(r => {
+        const kunci = r.uid || ('anon-' + r.id);
+        const g = grup[kunci] = grup[kunci] || { uid: r.uid || '', cadangan: '', items: [] };
+        if (r.nama) g.cadangan = r.nama;
+        g.items.push(r);
+    });
+    const daftar = Object.keys(grup).map(k => {
+        const g = grup[k];
+        g.items.sort((a, b) => (b.waktu || 0) - (a.waktu || 0));
+        g.terbaru = g.items[0].waktu || 0;
+        g.nama = namaTampil(g.uid, g.cadangan);          // nama terkini; "Pengunjung" jika belum punya nama
+        return g;
+    }).sort((a, b) => b.terbaru - a.terbaru);
+
+    document.getElementById('rt-list').innerHTML = daftar.length ? daftar.map(g => {
+        const adaNama = g.nama !== 'Pengunjung';
+        return '<div class="rt-user">' +
+            '<div class="rt-user-head">' + buatAvatar(adaNama ? g.nama : '', { kelas: 'rt-ava', ukuran: 42 }) +
+                '<div><div class="rt-nama">' + escHtmlGlobal(g.nama) + '</div><div class="rt-sub">' + g.items.length + ' ulasan</div></div></div>' +
+            g.items.map(r => {
+                const ok = r.selesai === true;
+                return '<div class="rt-rev' + (ok ? ' selesai' : '') + '">' +
+                    '<div class="rt-head"><span class="rt-stars-kecil">' + ratingBintang(r.bintang) + '</span>' +
+                        '<span class="rt-waktu">' + ratingWaktu(r.waktu) + '</span></div>' +
+                    '<div class="rt-teks">' + escHtmlGlobal(r.saran) + '</div>' +
+                    '<div class="rt-aksi">' +
+                        '<label class="rt-cek' + (ok ? ' selesai' : '') + '"><input type="checkbox" ' + (ok ? 'checked' : '') +
+                            ' onchange="tandaiRating(\'' + r.id + '\', this.checked)"> ' + (ok ? 'Sudah terpenuhi' : 'Tandai terpenuhi') + '</label>' +
+                        '<button type="button" class="rt-hapus" onclick="hapusRating(\'' + r.id + '\')">' + icon(IKON.hapus) + ' Hapus</button>' +
+                    '</div></div>';
+            }).join('') +
+        '</div>';
     }).join('') : '<p class="rt-kosong">Belum ada kritik dan saran di kategori ini.</p>';
 }
 
@@ -1766,7 +1852,73 @@ function hapusRating(id) {
         if (ok) firebase.database().ref('ratings/' + id).remove();
     });
 }
+//=== JS-SELESAI ===
 
+
+//=== JS-MULAI ===
+// ====== RESET VIEWERS ======
+// Video: jumlah tayangan = defaultViews (data video) + video_views (hitungan Firebase).
+// Reset -> video_views = 0 dan defaultViews = 0.
+async function kerjakanResetVideo(ids) {
+    const db = firebase.database();
+    const snap = await db.ref('videos_manual').once('value');
+    const manual = snap.val() || {};
+    const up = {};
+    ids.forEach(id => {
+        up['video_views/' + anAman(id)] = 0;
+        if (manual[id]) {
+            up['videos_manual/' + id + '/defaultViews'] = 0;
+        } else {
+            // video bot (dari videos-data.js): file aslinya tidak bisa diubah dari web,
+            // jadi disimpan salinannya di Firebase dengan defaultViews = 0
+            const v = videoListSemua.find(x => x.id === id);
+            if (v && (v.defaultViews || 0) > 0) {
+                up['videos_manual/' + id] = JSON.parse(JSON.stringify(Object.assign({}, v, { defaultViews: 0 })));
+            }
+        }
+    });
+    await db.ref().update(up);
+}
+
+function resetViewsVideo(id, judul) {
+    tampilKonfirmasi('Reset jumlah penonton video "' + judul + '" menjadi 0? Tindakan ini tidak bisa dibatalkan.',
+        { judul: 'Reset viewers video', ya: 'Reset', bahaya: true }).then(ok => {
+        if (!ok) return;
+        kerjakanResetVideo([id]).then(() => alert('Viewers video berhasil direset.')).catch(e => alert('Gagal reset: ' + e.message));
+    });
+}
+
+function resetViewsSemuaVideo() {
+    const ids = videoListSemua.map(v => v.id);
+    tampilKonfirmasi('Reset jumlah penonton SEMUA video (' + ids.length + ' video) menjadi 0? Tindakan ini tidak bisa dibatalkan.',
+        { judul: 'Reset viewers SEMUA video', ya: 'Reset Semua', bahaya: true }).then(ok => {
+        if (!ok) return;
+        kerjakanResetVideo(ids).then(() => alert('Viewers semua video berhasil direset.')).catch(e => alert('Gagal reset: ' + e.message));
+    });
+}
+
+function resetViewsPost(id, ket) {
+    tampilKonfirmasi('Reset jumlah dilihat postingan "' + ket + '" menjadi 0? Tindakan ini tidak bisa dibatalkan.',
+        { judul: 'Reset viewers postingan', ya: 'Reset', bahaya: true }).then(ok => {
+        if (!ok) return;
+        firebase.database().ref('post_views/' + id).set(0).then(() => alert('Viewers postingan berhasil direset.'));
+    });
+}
+
+function resetViewsSemuaPost() {
+    firebase.database().ref('posts').once('value').then(snap => {
+        const ids = Object.keys(snap.val() || {});
+        tampilKonfirmasi('Reset jumlah dilihat SEMUA postingan (' + ids.length + ' postingan) menjadi 0? Tindakan ini tidak bisa dibatalkan.',
+            { judul: 'Reset viewers SEMUA postingan', ya: 'Reset Semua', bahaya: true }).then(ok => {
+            if (!ok) return;
+            const up = {};
+            ids.forEach(id => { up['post_views/' + id] = 0; });
+            firebase.database().ref().update(up).then(() => alert('Viewers semua postingan berhasil direset.'));
+        });
+    });
+}
+//=== JS-SELESAI ===
+    
     
     </script>
         
