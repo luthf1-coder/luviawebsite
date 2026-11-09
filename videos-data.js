@@ -330,6 +330,7 @@ const IKON = {
     jempol: 'ig-thumb',    jempolIsi: 'ig-thumb-fill',
     perisai: 'ig-shield',
     bintang: 'ig-star',   bintangIsi: 'ig-star-fill',
+    beranda: 'ig-home', tv: 'ig-tv', siaran: 'ig-live', bantuan: 'ig-help', info: 'ig-info', panah: 'ig-chevron-down',
     dilihat: 'eye', kembali: 'arrow-left', maju: 'arrow-right'
 };
 
@@ -388,8 +389,8 @@ function namaTerlarang(nama) {
 function siapkanPengirim(namaInput) {
     if (IS_ADMIN_BROWSER) return { ok: true, nama: ADMIN_PROFIL.nama, isAdmin: true };
     const nama = String(namaInput || '').trim().slice(0, 24);
-    if (!nama) return { ok: false, pesan: 'Isi nama kamu dulu ya.' };
-    if (namaTerlarang(nama)) return { ok: false, pesan: 'Nama itu tidak boleh dipakai (khusus admin). Silakan pakai nama lain.' };
+    if (!nama) return { ok: false, pesan: 'Isi nama pengguna dulu ya.' };
+    if (namaTerlarang(nama)) return { ok: false, pesan: 'Nama itu tidak boleh dipakai (khusus admin). Silakan pakai nama pengguna lain.' };
     return { ok: true, nama: nama, isAdmin: false };
 }
 function centangBiru() {
@@ -446,15 +447,26 @@ const webConfig = {
     teksFooter: "© 2026 Luvia Insight Verse (Product by Luvia Studio TV). All Right Reserved",
     logoNavbar: IMG.logoNavbar, // <--- TAMBAHAN LOGO NAVBAR DI SINI
     
-    // DAFTAR MENU SIDEBAR (Edit namanya atau linknya di sini!)
+    // DAFTAR MENU SIDEBAR
+    //   ikon  = nama kunci di objek IKON (atau id langsung dari icons.svg)
+    //   rail  = true  -> ikut tampil di bilah ikon kiri (laptop/TV) dan bar bawah (HP)
+    //   pendek= nama singkat untuk bar bawah HP
     menuSidebar: [
-        
-        { nama: "Home", link: "index.html" },
-        { nama: "Videos", link: "videos.html" },
-        { nama: "Program TV", link: "index.html#projects" },
-        { nama: "Live Streaming", link: "index.html#livestreaming" },
-        { nama: "Help Center", link: "support.html" },
-        { nama: "About Us", link: "index.html#about" }
+        { nama: "Home",           pendek: "Home",    link: "index.html",               ikon: "beranda", rail: true },
+        { nama: "Videos",         pendek: "Videos",  link: "videos.html",              ikon: "video",   rail: true },
+        { nama: "Program TV",     pendek: "Program", link: "index.html#projects",      ikon: "tv",      rail: true },
+        { nama: "Live Streaming", pendek: "Live",    link: "index.html#livestreaming", ikon: "siaran",  rail: true },
+        { nama: "Help Center",    pendek: "Bantuan", link: "support.html",             ikon: "bantuan", rail: true },
+        { nama: "About Us",       pendek: "Tentang", link: "index.html#about",         ikon: "info",    rail: false }
+    ],
+
+    // TEKS TAUTAN DI BAWAH MENU (otomatis dipisah dengan  " · ").
+    //   link  = tujuan,   baru: true = buka di tab baru,   aksi: "rating" = membuka pop-up rating
+    linkTeks: [
+        { nama: "Beri Rating",  aksi: "rating" },
+        { nama: "Help Center",  link: "support.html" },
+        { nama: "Tentang Kami", link: "index.html#about" },
+        { nama: "YouTube",      link: "https://www.youtube.com/@luthfi-fx", baru: true }
     ],
 
     // DAFTAR SOSIAL MEDIA
@@ -511,10 +523,21 @@ document.addEventListener('DOMContentLoaded', () => {
     // 1. CETAK SIDEBAR OTOMATIS
     const sidebarContainer = document.getElementById('sidebar-container');
     if (sidebarContainer) {
+        const hal = halamanSaatIni();
+        const aktifKah = (link) => String(link).indexOf('#') === -1 && tautanHalaman(link) === hal;
+
         let linksHTML = '';
         webConfig.menuSidebar.forEach(menu => {
-            linksHTML += `<a href="${menu.link}" onclick="toggleSidebar()">${menu.nama}</a>`;
+            const ik = menu.ikon ? '<span class="menu-ikon">' + icon(IKON[menu.ikon] || menu.ikon) + '</span>' : '';
+            linksHTML += '<a href="' + menu.link + '" class="' + (aktifKah(menu.link) ? 'aktif' : '') + '" onclick="toggleSidebar()">' + ik + '<span>' + menu.nama + '</span></a>';
         });
+
+        const teksHTML = (webConfig.linkTeks || []).map(t => {
+            const atribut = t.aksi
+                ? 'href="#" data-aksi="' + t.aksi + '"'
+                : 'href="' + t.link + '"' + (t.baru ? ' target="_blank" rel="noopener"' : '');
+            return '<a ' + atribut + ' onclick="return klikLinkTeks(this)">' + t.nama + '</a>';
+        }).join('<span class="sep"> · </span>');
 
         sidebarContainer.innerHTML = `
             <div class="sidebar-overlay" id="sidebarOverlay" onclick="toggleSidebar()"></div>
@@ -529,13 +552,34 @@ document.addEventListener('DOMContentLoaded', () => {
                 <div class="sidebar-links">
                     ${linksHTML}
                 </div>
+                ${teksHTML ? '<div class="sidebar-textlinks">' + teksHTML + '</div>' : ''}
                 <div class="sidebar-footer">
                     <p style="font-size: 0.8rem; color: #bbb; text-align: center;">${webConfig.teksFooter}</p>
                 </div>
             </div>
         `;
-    }
 
+        // Bilah ikon yang SELALU terlihat: rail di laptop/TV, bar bawah di HP
+        const itemRail = webConfig.menuSidebar.filter(m => m.ikon && m.rail);
+        if (itemRail.length && !document.querySelector('.rail')) {
+            document.body.classList.add('has-rail');
+            const rail = document.createElement('nav');
+            rail.className = 'rail';
+            rail.setAttribute('aria-label', 'Navigasi cepat');
+            rail.innerHTML = itemRail.map(m =>
+                '<a href="' + m.link + '" class="' + (aktifKah(m.link) ? 'aktif' : '') + '" title="' + m.nama + '" aria-label="' + m.nama + '">' + icon(IKON[m.ikon] || m.ikon) + '</a>'
+            ).join('');
+            document.body.appendChild(rail);
+
+            const bar = document.createElement('nav');
+            bar.className = 'bottombar';
+            bar.setAttribute('aria-label', 'Navigasi bawah');
+            bar.innerHTML = itemRail.slice(0, 5).map(m =>
+                '<a href="' + m.link + '" class="' + (aktifKah(m.link) ? 'aktif' : '') + '">' + icon(IKON[m.ikon] || m.ikon) + '<span>' + (m.pendek || m.nama) + '</span></a>'
+            ).join('');
+            document.body.appendChild(bar);
+        }
+    }
     // 2. Tembak Teks Judul (Bila ada elemen lain di luar sidebar)
     document.querySelectorAll('.nama-web-otomatis').forEach(el => {
         el.innerText = webConfig.namaWebsite;
@@ -1271,14 +1315,14 @@ document.addEventListener('DOMContentLoaded', () => {
     if (HALAMAN_ADMIN) return;
     const storageOk = cekStorage();
     if (storageOk && bacaLokal(KEY_CONSENT) !== 'ya') {
-        tampilkanCookie(() => { jalankanPopup(); mulaiRating(); });
+        tampilkanCookie(() => { jalankanPopup(); mulaiRating(); mulaiPresence(); });
     } else {
         jalankanPopup();
         mulaiRating();
+        mulaiPresence();
     }
     cekBrowserBermasalah();
 });
-
 
 // =====================================================================
 //  A. DIALOG KUSTOM  (pengganti alert / confirm / prompt bawaan browser)
@@ -1399,7 +1443,7 @@ function pasangKolomNama(wadahId, inputId, label) {
     wadah.innerHTML =
         '<div class="kn-who" style="display:none;"></div>' +
         '<div class="kn-edit">' +
-            '<input type="text" id="' + inputId + '" placeholder="Nama Anda..." maxlength="24" autocomplete="off">' +
+            '<input type="text" id="' + inputId + '" placeholder="Nama pengguna..." maxlength="24" autocomplete="off">' +
             '<button type="button" class="kn-batal" aria-label="Batal" title="Batal">' + icon(IKON.tutup) + '</button>' +
         '</div>';
 
@@ -1441,13 +1485,31 @@ function pasangKolomNama(wadahId, inputId, label) {
 // =====================================================================
 //  C. RATING WEBSITE  (pop-up bintang 1-5 + kritik & saran)
 // =====================================================================
-// Muncul jika pengunjung sudah total >= 3 jam di website ATAU sering berkunjung.
-const RATING_CONFIG = {
-    detik: 3 * 3600,      // total waktu aktif di website (3 jam)
-    kunjungan: 7,         // atau jumlah kunjungan (tiap kali website dibuka kembali)
-    cekMs: 30000          // seberapa sering syarat dicek (ms)
-};
-const RT_WAKTU = 'luvia_rt_waktu';
+
+// =====================================================================
+//  HELPER MENU
+// =====================================================================
+function halamanSaatIni() {
+    return location.pathname.split('/').pop().replace(/\.html$/i, '') || 'index';
+}
+function tautanHalaman(link) {
+    return String(link).split('#')[0].split('?')[0].replace(/\.html$/i, '').replace(/^\//, '') || 'index';
+}
+const AKSI_MENU = { rating: function () { bukaRating(); } };
+function klikLinkTeks(a) {
+    if (typeof toggleSidebar === 'function') toggleSidebar();
+    const aksi = a.getAttribute('data-aksi');
+    if (aksi && AKSI_MENU[aksi]) { AKSI_MENU[aksi](); return false; }
+    return true;
+}
+
+
+// =====================================================================
+//  C. RATING WEBSITE (BARU)
+//  - Otomatis muncul tiap kunjungan, KECUALI kunjungan pertama
+//    dan KECUALI yang sudah pernah memberi rating.
+//  - Bisa dibuka manual kapan saja lewat tautan "Beri Rating" di sidebar.
+// =====================================================================
 const RT_KUNJUNGAN = 'luvia_rt_kunjungan';
 const RT_SELESAI = 'luvia_rt_selesai';
 const RT_TEKS = ['', 'Sangat buruk', 'Buruk', 'Cukup', 'Bagus', 'Luar biasa'];
@@ -1456,48 +1518,40 @@ function angkaLokal(k) { return parseInt(bacaLokal(k) || '0', 10) || 0; }
 
 function mulaiRating() {
     if (HALAMAN_ADMIN || IS_ADMIN_BROWSER || !cekStorage()) return;
-    if (bacaLokal(RT_SELESAI) === '1') return;
 
-    // Hitung kunjungan: sekali tiap sesi (tab baru / browser dibuka lagi)
+    // hitung kunjungan: sekali per sesi (tab/browser dibuka kembali)
     if (!bacaSesi('luvia_rt_sesi')) {
         simpanSesi('luvia_rt_sesi', '1');
         simpanLokal(RT_KUNJUNGAN, String(angkaLokal(RT_KUNJUNGAN) + 1));
     }
+    if (bacaLokal(RT_SELESAI) === '1') return;          // sudah pernah memberi rating
+    if (angkaLokal(RT_KUNJUNGAN) < 2) return;           // kunjungan pertama: jangan dulu
+    if (bacaSesi('luvia_rt_tampil')) return;            // cukup sekali per kunjungan
 
-    // Hitung waktu aktif (hanya saat tab terlihat)
-    let belumDisimpan = 0;
-    const simpanWaktu = () => {
-        if (!belumDisimpan) return;
-        simpanLokal(RT_WAKTU, String(angkaLokal(RT_WAKTU) + belumDisimpan));
-        belumDisimpan = 0;
-    };
-    setInterval(() => { if (document.visibilityState === 'visible') belumDisimpan++; }, 1000);
-    setInterval(simpanWaktu, 10000);
-    document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'hidden') simpanWaktu(); });
-    window.addEventListener('pagehide', simpanWaktu);
-
-    let sudahTampil = false;
-    function layak() {
-        return (angkaLokal(RT_WAKTU) + belumDisimpan) >= RATING_CONFIG.detik || angkaLokal(RT_KUNJUNGAN) >= RATING_CONFIG.kunjungan;
-    }
     function coba() {
-        if (sudahTampil || bacaLokal(RT_SELESAI) === '1' || !layak()) return;
-        if (document.querySelector('.pop-overlay')) return;               // jangan menumpuk dengan pop-up lain
-        if (window.player && window.player.playing) return;               // tunggu video berhenti dulu
-        sudahTampil = true;
-        tampilkanRating();
+        if (bacaSesi('luvia_rt_tampil')) return;
+        if (document.querySelector('.pop-overlay')) return;     // jangan menumpuk dengan pop-up lain
+        if (window.player && window.player.playing) return;     // tunggu video berhenti
+        simpanSesi('luvia_rt_tampil', '1');
+        bukaRating();
     }
-    setTimeout(coba, 8000);
-    setInterval(coba, RATING_CONFIG.cekMs);
+    setTimeout(coba, 6000);
+    setInterval(coba, 20000);
+}
+
+function bukaRating() {
+    if (document.querySelector('.rt-overlay')) return;
+    tampilkanRating();
 }
 
 function tampilkanRating() {
+    const sudahPernah = bacaLokal(RT_SELESAI) === '1';
     const wrap = document.createElement('div');
     wrap.className = 'pop-overlay rt-overlay';
     wrap.innerHTML =
         '<div class="pop-card rt-card"><div class="pop-body">' +
             '<h3 class="pop-judul">Bagaimana tampilan website kami?</h3>' +
-            '<p class="pop-isi">Penilaianmu membantu kami membuat website ini lebih baik.</p>' +
+            '<p class="pop-isi">' + (sudahPernah ? 'Kamu sudah pernah memberi rating. Kamu boleh menambahkan penilaian baru kapan saja.' : 'Penilaianmu membantu kami membuat website ini lebih baik.') + '</p>' +
             '<div class="rt-stars" role="radiogroup" aria-label="Pilih bintang">' +
                 [1, 2, 3, 4, 5].map(n => '<button type="button" class="rt-star" data-n="' + n + '" aria-label="' + n + ' bintang">' + icon(IKON.bintang) + '</button>').join('') +
             '</div>' +
@@ -1537,12 +1591,8 @@ function tampilkanRating() {
         });
     });
 
-    wrap.querySelector('#rt-tidak').onclick = () => {
-        // reset: muncul lagi setelah 3 jam / kunjungan terkumpul kembali
-        simpanLokal(RT_WAKTU, '0');
-        simpanLokal(RT_KUNJUNGAN, '0');
-        wrap.remove();
-    };
+    wrap.querySelector('#rt-tidak').onclick = () => wrap.remove();
+    wrap.addEventListener('click', e => { if (e.target === wrap) wrap.remove(); });
 
     wrap.querySelector('#rt-kirim').onclick = () => {
         const teks = saran.value.trim();
@@ -1552,7 +1602,10 @@ function tampilkanRating() {
 
         const tombol = wrap.querySelector('#rt-kirim');
         tombol.disabled = true;
-        firebase.database().ref('ratings').push({ bintang: nilai, saran: teks, waktu: Date.now(), selesai: false })
+        const data = { bintang: nilai, saran: teks, waktu: Date.now(), selesai: false, uid: idPengguna() };
+        const nama = ambilNama();
+        if (nama) data.nama = nama;
+        firebase.database().ref('ratings').push(data)
             .then(() => {
                 simpanLokal(RT_SELESAI, '1');
                 wrap.remove();
@@ -1561,3 +1614,244 @@ function tampilkanRating() {
             .catch(() => { tombol.disabled = false; err.textContent = 'Gagal mengirim. Coba lagi nanti.'; });
     };
 }
+
+
+// ----------------------------------------------------------------------
+//  LANGKAH 5  ->  NAMA PENGGUNA (unik, maksimal 3x ubah per 14 hari)
+//  Tempel di PALING BAWAH videos-data.js (setelah kode LANGKAH 4).
+// ----------------------------------------------------------------------
+
+const NAMA_UBAH_MAKS = 3;      // boleh diubah maksimal 3 kali ...
+const NAMA_UBAH_HARI = 14;     // ... dalam 14 hari terakhir
+
+function idPengguna() {
+    let id = bacaLokal('luvia_uid_pengguna');
+    if (!id) {
+        id = 'u' + Date.now().toString(36) + Math.random().toString(36).slice(2, 8);
+        simpanLokal('luvia_uid_pengguna', id);
+    }
+    return id;
+}
+// "Adi os" dan "adios" dianggap sama (mencegah nama yang mirip)
+function kunciNama(n) {
+    return String(n || '').toLowerCase().normalize('NFKD').replace(/[\u0300-\u036f]/g, '').replace(/[^a-z0-9]/g, '');
+}
+function formatTanggalNama(ts) {
+    return new Date(ts).toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' });
+}
+
+// Mendaftarkan / mengganti nama pengguna.  Mengembalikan Promise<{ok, nama, pesan}>
+async function tetapkanNama(namaInput) {
+    const nama = String(namaInput || '').trim().replace(/\s+/g, ' ').slice(0, 24);
+    const kunci = kunciNama(nama);
+    if (kunci.length < 3) return { ok: false, pesan: 'Nama pengguna minimal 3 huruf atau angka.' };
+    if (typeof firebase === 'undefined' || !firebase.apps.length) return { ok: false, pesan: 'Tidak dapat memeriksa nama pengguna sekarang. Coba lagi.' };
+
+    const uid = idPengguna();
+    const db = firebase.database();
+    try {
+        const sn = await db.ref('pengguna/' + uid).once('value');
+        const data = sn.val() || {};
+        const namaLama = data.nama || '';
+
+        if (namaLama === nama && data.kunci === kunci) {
+            simpanNama(nama); simpanLokal('luvia_nama_terdaftar', kunci);
+            return { ok: true, nama: nama };
+        }
+
+        const sekarang = Date.now();
+        const batas = sekarang - NAMA_UBAH_HARI * 86400000;
+        const ubah = Object.values(data.ubah || {}).filter(t => t > batas).sort((a, b) => a - b);
+        const gantiNama = !!namaLama && data.kunci !== kunci;
+
+        if (gantiNama && ubah.length >= NAMA_UBAH_MAKS) {
+            return { ok: false, pesan: 'Nama pengguna hanya bisa diubah ' + NAMA_UBAH_MAKS + ' kali dalam ' + NAMA_UBAH_HARI + ' hari. Kamu bisa mengubahnya lagi pada ' + formatTanggalNama(ubah[0] + NAMA_UBAH_HARI * 86400000) + '.' };
+        }
+
+        // klaim nama (harus unik)
+        if (data.kunci !== kunci) {
+            const refKlaim = db.ref('nama_pengguna/' + kunci);
+            const klaim = await refKlaim.once('value');
+            const dipakai = { ok: false, pesan: 'Nama pengguna sudah dipakai orang lain. Silakan pilih nama pengguna lain.' };
+            if (klaim.exists() && klaim.val() !== uid) return dipakai;
+            if (!klaim.exists()) {
+                const hasil = await refKlaim.transaction(cur => (cur === null ? uid : undefined));
+                if (!hasil.committed) return dipakai;
+            }
+        }
+
+        const up = {};
+        up['pengguna/' + uid + '/nama'] = nama;
+        up['pengguna/' + uid + '/kunci'] = kunci;
+        up['pengguna/' + uid + '/diperbarui'] = sekarang;
+        if (!data.dibuat) up['pengguna/' + uid + '/dibuat'] = sekarang;
+        up['nama_uid/' + uid] = nama;
+        if (gantiNama) {
+            up['pengguna/' + uid + '/ubah/' + db.ref().push().key] = sekarang;
+            up['pengguna/' + uid + '/riwayat/' + db.ref().push().key] = { nama: namaLama, waktu: sekarang };
+            if (data.kunci) up['nama_pengguna/' + data.kunci] = null;      // lepas nama lama
+        }
+        await db.ref().update(up);
+
+        simpanNama(nama);
+        simpanLokal('luvia_nama_terdaftar', kunci);
+        return { ok: true, nama: nama };
+    } catch (e) {
+        return { ok: false, pesan: 'Tidak dapat memeriksa nama pengguna sekarang. Coba lagi.' };
+    }
+}
+
+// Pengganti siapkanPengirim() di form yang mengirim pesan (menunggu hasil pemeriksaan)
+async function siapkanPengirimAsync(namaInput) {
+    const info = siapkanPengirim(namaInput);
+    if (!info.ok || info.isAdmin) return info;
+    if (info.nama === ambilNama() && bacaLokal('luvia_nama_terdaftar') === kunciNama(info.nama)) return info;   // sudah terdaftar
+    const hasil = await tetapkanNama(info.nama);
+    if (!hasil.ok) return { ok: false, pesan: hasil.pesan };
+    return { ok: true, nama: hasil.nama, isAdmin: false };
+}
+
+// Peta uid -> nama pengguna terkini (supaya nama di komentar ikut berubah)
+const NAMA_UID = {};
+let namaUidMulai = false;
+function mulaiNamaUid() {
+    if (namaUidMulai || typeof firebase === 'undefined' || !firebase.apps.length) return;
+    namaUidMulai = true;
+    firebase.database().ref('nama_uid').on('value', s => {
+        Object.keys(NAMA_UID).forEach(k => delete NAMA_UID[k]);
+        Object.assign(NAMA_UID, s.val() || {});
+        window.dispatchEvent(new Event('luvia-nama-uid'));
+    });
+}
+function namaTampil(uid, cadangan) { return (uid && NAMA_UID[uid]) || cadangan || 'Pengunjung'; }
+function namaKomentar(c) { return c.isAdmin ? (c.name || ADMIN_PROFIL.nama) : namaTampil(c.uid, c.name); }
+
+
+// ----------------------------------------------------------------------
+//  LANGKAH 6  ->  STATUS ONLINE (untuk "terakhir online" di admin)
+//  Tempel di PALING BAWAH videos-data.js.
+// ----------------------------------------------------------------------
+function mulaiPresence() {
+    if (HALAMAN_ADMIN || IS_ADMIN_BROWSER || !cekStorage() || typeof firebase === 'undefined' || !firebase.apps.length) return;
+    const ref = firebase.database().ref('presence/' + idPengguna());
+    const ST = firebase.database.ServerValue.TIMESTAMP;
+    const tulis = () => ref.set({ online: document.visibilityState === 'visible', last: ST });
+    firebase.database().ref('.info/connected').on('value', s => {
+        if (s.val() === true) { ref.onDisconnect().set({ online: false, last: ST }); tulis(); }
+    });
+    setInterval(tulis, 60000);
+    document.addEventListener('visibilitychange', tulis);
+}
+
+
+// ----------------------------------------------------------------------
+//  LANGKAH 7  ->  HELPER CHAT GAYA WHATSAPP (dipakai support.html & admin)
+//  Tempel di PALING BAWAH videos-data.js.
+// ----------------------------------------------------------------------
+const WA_HARI = ['Minggu', 'Senin', 'Selasa', 'Rabu', 'Kamis', 'Jumat', 'Sabtu'];
+const WA_BULAN = ['Januari', 'Februari', 'Maret', 'April', 'Mei', 'Juni', 'Juli', 'Agustus', 'September', 'Oktober', 'November', 'Desember'];
+
+function waJam(ts) {
+    const d = new Date(ts);
+    return String(d.getHours()).padStart(2, '0') + '.' + String(d.getMinutes()).padStart(2, '0');
+}
+function waSamaHari(a, b) { return a.getFullYear() === b.getFullYear() && a.getMonth() === b.getMonth() && a.getDate() === b.getDate(); }
+function waKunciHari(ts) { const d = new Date(ts); return d.getFullYear() + '-' + d.getMonth() + '-' + d.getDate(); }
+// Pemisah tanggal di dalam percakapan: Hari ini / Kemarin / Senin, 3 November 2026
+function waLabelTanggal(ts) {
+    const d = new Date(ts), n = new Date(), k = new Date();
+    k.setDate(n.getDate() - 1);
+    if (waSamaHari(d, n)) return 'Hari ini';
+    if (waSamaHari(d, k)) return 'Kemarin';
+    return WA_HARI[d.getDay()] + ', ' + d.getDate() + ' ' + WA_BULAN[d.getMonth()] + ' ' + d.getFullYear();
+}
+// Waktu di daftar kontak: jam (hari ini) / Kemarin / 03/11/2026
+function waWaktuDaftar(ts) {
+    if (!ts) return '';
+    const d = new Date(ts), n = new Date(), k = new Date();
+    k.setDate(n.getDate() - 1);
+    if (waSamaHari(d, n)) return waJam(ts);
+    if (waSamaHari(d, k)) return 'Kemarin';
+    return String(d.getDate()).padStart(2, '0') + '/' + String(d.getMonth() + 1).padStart(2, '0') + '/' + d.getFullYear();
+}
+function waTanggalLengkap(ts) {
+    const d = new Date(ts);
+    return WA_HARI[d.getDay()] + ', ' + d.getDate() + ' ' + WA_BULAN[d.getMonth()] + ' ' + d.getFullYear() + ' pukul ' + waJam(ts);
+}
+// Teks status di header admin: online / terakhir online ...
+function waStatusOnline(p) {
+    if (!p || !p.last) return 'Belum pernah terlihat online';
+    if (p.online === true && (Date.now() - p.last) < 150000) return 'online';
+    return 'terakhir online ' + waLabelTanggal(p.last).toLowerCase() + ' pukul ' + waJam(p.last);
+}
+
+// cfg: { milikku(m), namaPengirim(m), labelMasuk(m), tambahan(m), awalan, kosong }
+function waBubble(m, cfg, peta) {
+    const keluar = cfg.milikku(m);
+    const hapus = !!m.deleted_for_everyone;
+    let kutip = '';
+    if (m.quote_text && !hapus) {
+        const asal = m.quote_id ? peta[m.quote_id] : null;
+        const nama = asal ? cfg.namaPengirim(asal) : 'Pesan';
+        kutip = '<div class="wc-quote" data-quote="' + escHtmlGlobal(m.quote_id || '') + '"><b>' + escHtmlGlobal(nama) + '</b><span>' + escHtmlGlobal(m.quote_text) + '</span></div>';
+    }
+    const label = (!keluar && cfg.labelMasuk) ? cfg.labelMasuk(m) : '';
+    let h = '<div class="wc-row ' + (keluar ? 'out' : 'in') + '" id="wcm-' + m.id + '" data-id="' + m.id + '"><div class="wc-bubble">' +
+        (hapus ? '' : '<button type="button" class="wc-chev" data-act="menu" data-id="' + m.id + '" aria-label="Menu pesan">' + icon(IKON.panah) + '</button>') +
+        label + kutip +
+        '<div class="wc-teks">' + (hapus ? '<i class="wc-hapus">Pesan ini telah dihapus</i>' : escHtmlGlobal(m.isi)) + '</div>' +
+        '<div class="wc-meta">' + ((m.is_edited && !hapus) ? '<span class="wc-edited">diedit</span>' : '') + '<span class="wc-jam">' + waJam(m.timestamp) + '</span></div>' +
+        '</div></div>';
+    if (cfg.tambahan && !hapus) h += cfg.tambahan(m) || '';
+    return h;
+}
+function waRender(wadah, daftar, cfg) {
+    const peta = {};
+    daftar.forEach(m => { peta[m.id] = m; });
+    let html = cfg.awalan || '', hari = '';
+    daftar.forEach(m => {
+        const k = waKunciHari(m.timestamp || Date.now());
+        if (k !== hari) { hari = k; html += '<div class="wc-sep"><span>' + waLabelTanggal(m.timestamp || Date.now()) + '</span></div>'; }
+        html += waBubble(m, cfg, peta);
+    });
+    wadah.innerHTML = html || (cfg.kosong || '');
+}
+function waKeBawah(wadah) { wadah.scrollTop = wadah.scrollHeight; }
+function waDekatBawah(wadah) { return wadah.scrollHeight - wadah.scrollTop - wadah.clientHeight < 90; }
+function waLompat(wadah, id) {
+    const el = wadah.querySelector('#wcm-' + id);
+    if (!el) return;
+    el.scrollIntoView({ block: 'center', behavior: 'smooth' });
+    el.classList.add('wc-flash');
+    setTimeout(() => el.classList.remove('wc-flash'), 1400);
+}
+
+// Menu kecil (Balas / Edit / Hapus) di dekat tombol panah pada gelembung pesan
+let waPenutup = null;
+function waTutupMenu() {
+    document.querySelectorAll('.wc-menu').forEach(m => m.remove());
+    if (waPenutup) { document.removeEventListener('click', waPenutup); waPenutup = null; }
+}
+function waMenu(jangkar, daftar) {
+    waTutupMenu();
+    const menu = document.createElement('div');
+    menu.className = 'wc-menu';
+    daftar.forEach(it => {
+        const b = document.createElement('button');
+        b.type = 'button';
+        b.className = 'wc-menu-item' + (it.bahaya ? ' bahaya' : '');
+        b.innerHTML = icon(IKON[it.ikon] || it.ikon) + '<span>' + it.teks + '</span>';
+        b.onclick = () => { waTutupMenu(); it.aksi(); };
+        menu.appendChild(b);
+    });
+    document.body.appendChild(menu);
+    const r = jangkar.getBoundingClientRect();
+    const lebar = menu.offsetWidth, tinggi = menu.offsetHeight;
+    const kiri = Math.min(Math.max(8, r.right - lebar), window.innerWidth - lebar - 8);
+    let atas = r.bottom + 6;
+    if (atas + tinggi > window.innerHeight - 8) atas = Math.max(8, r.top - tinggi - 6);
+    menu.style.left = kiri + 'px';
+    menu.style.top = atas + 'px';
+    setTimeout(() => { waPenutup = waTutupMenu; document.addEventListener('click', waPenutup); }, 0);
+}
+document.addEventListener('keydown', (e) => { if (e.key === 'Escape') waTutupMenu(); });
