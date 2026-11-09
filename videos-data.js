@@ -335,7 +335,7 @@ const IKON = {
 };
 
 // ===== IDENTITAS ADMIN & NAMA YANG DILARANG UNTUK PENGUNJUNG =====
-const ADMIN_PROFIL = { nama: "LUVIA TV" };
+const ADMIN_PROFIL = { nama: "luviatv" };
 const NAMA_TERLARANG = ["admin", "administrator", "moderator", "cs luvia", "luvia studio", "admin luvia", "admin luvia tv", "luvia tv"];
 
 // ===== PUSAT AVATAR / FOTO PROFIL =====
