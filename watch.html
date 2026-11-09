@@ -480,21 +480,22 @@
         function bangunKomentar(id, c, isReply, parentId) {
             const sudahSuka = localStorage.getItem('liked_' + id);
             const milikku = localStorage.getItem('my_comment_' + id) === 'true';
+            const bisaEdit = milikku && (!!c.isAdmin === IS_ADMIN_BROWSER);   // mode admin: komentar orang lain tidak bisa diedit
             const bisaHapus = milikku || IS_ADMIN_BROWSER;            // admin boleh memoderasi
             const dataAttr = 'data-id="' + id + '" data-parent="' + (parentId || '') + '" data-reply="' + (isReply ? 1 : 0) + '"';
             const kelasAva = 'comment-avatar' + (isReply ? ' avatar-sm' : '');
             const lencana = c.isAdmin ? lencanaAdmin() : '';
 
             let h = '<div class="yt-comment-wrapper" id="comment-' + id + '">' +
-                buatAvatar(c.name, { kelas: kelasAva, admin: !!c.isAdmin }) +
+                buatAvatar(namaKomentar(c), { kelas: kelasAva, admin: !!c.isAdmin }) +
                 '<div class="comment-content">' +
-                    '<div class="comment-header"><span class="comment-name">@' + escHtmlGlobal(c.name) + '</span>' + lencana +
+                    '<div class="comment-header"><span class="comment-name">@' + escHtmlGlobal(namaKomentar(c)) + '</span>' + lencana +
                     '<span class="comment-time">' + waktuLalu(c.timestamp) + '</span></div>' +
                     '<div class="comment-text">' + escHtmlGlobal(c.text) + '</div>' +
                     '<div class="comment-actions">' +
                         '<button type="button" class="action-btn" data-act="like" ' + dataAttr + '>' + icon(sudahSuka ? IKON.jempolIsi : IKON.jempol) + ' <span>' + ((c.likes || 0) > 0 ? c.likes : '') + '</span></button>' +
                         (!isReply ? '<button type="button" class="action-btn" data-act="reply" ' + dataAttr + '>' + icon(IKON.balas) + ' Balas</button>' : '') +
-                        (milikku ? '<button type="button" class="action-btn" data-act="edit" title="Edit" aria-label="Edit" ' + dataAttr + '>' + icon(IKON.edit) + '</button>' : '') +
+                        (bisaEdit ? '<button type="button" class="action-btn" data-act="edit" title="Edit" aria-label="Edit" ' + dataAttr + '>' + icon(IKON.edit) + '</button>' : '') +
                         (bisaHapus ? '<button type="button" class="action-btn delete-btn" data-act="del" title="Hapus" aria-label="Hapus" ' + dataAttr + '>' + icon(IKON.hapus) + '</button>' : '') +
                     '</div>';
 
@@ -502,7 +503,7 @@
                 h += '<div class="reply-form-container" id="reply-form-' + id + '" style="display:none;">' +
                         buatAvatar('', { kelas: 'comment-avatar avatar-sm' }) +
                         '<div style="flex:1;">' +
-                            ((IS_ADMIN_BROWSER || ambilNama()) ? '' : '<input type="text" id="reply-name-' + id + '" placeholder="Nama..." maxlength="24" class="reply-input-name">') +
+                            ((IS_ADMIN_BROWSER || ambilNama()) ? '' : '<input type="text" id="reply-name-' + id + '" placeholder="Nama pengguna..." maxlength="24" class="reply-input-name">') +
                             '<textarea id="reply-text-' + id + '" placeholder="Balas komentar..."></textarea>' +
                             '<div class="form-actions" style="margin-top:5px;">' +
                                 '<button type="button" class="btn-cancel btn-icon" data-act="reply-cancel" title="Batal" aria-label="Batal" ' + dataAttr + '>' + icon(IKON.tutup) + '</button>' +
@@ -515,8 +516,9 @@
             return h + '</div></div>';
         }
 
-        commentsRef.on('value', (snapshot) => {
-            const data = snapshot.val();
+        let dataKomentar = null;
+        function gambarKomentar() {
+            const data = dataKomentar;
             if (!data) {
                 commentsList.innerHTML = '<p class="wp-empty">Belum ada komentar. Jadilah yang pertama!</p>';
                 document.getElementById('comment-count').innerText = 0;
@@ -531,7 +533,10 @@
                 const el = document.getElementById('replies-list-' + k);
                 if (el) el.innerHTML = Object.keys(c.replies).map(rk => bangunKomentar(rk, c.replies[rk], true, k)).join('');
             });
-        });
+        }
+        commentsRef.on('value', (snapshot) => { dataKomentar = snapshot.val(); gambarKomentar(); });
+        mulaiNamaUid();
+        window.addEventListener('luvia-nama-uid', () => { if (dataKomentar) gambarKomentar(); });
 
         // Satu pendengar klik untuk semua tombol komentar
         commentsList.addEventListener('click', (e) => {
@@ -564,15 +569,15 @@
             }
         });
 
-        function kirimBalasan(parentId) {
+        async function kirimBalasan(parentId) {
             const nameEl = document.getElementById('reply-name-' + parentId);
             const textEl = document.getElementById('reply-text-' + parentId);
-            const info = siapkanPengirim(nameEl ? nameEl.value : ambilNama());
+            const info = await siapkanPengirimAsync(nameEl ? nameEl.value : ambilNama());
             if (!info.ok) { alert(info.pesan); if (nameEl) nameEl.focus(); return; }
             const isi = textEl.value.trim();
             if (!isi) return;
-            if (!info.isAdmin) { simpanNama(info.nama); if (kolomKomentar) kolomKomentar.segarkan(); }
-            const data = { name: info.nama, text: isi, timestamp: firebase.database.ServerValue.TIMESTAMP, likes: 0 };
+            if (!info.isAdmin && kolomKomentar) kolomKomentar.segarkan();
+            const data = { name: info.nama, uid: idPengguna(), text: isi, timestamp: firebase.database.ServerValue.TIMESTAMP, likes: 0 };
             if (info.isAdmin) data.isAdmin = true;
             const baru = commentsRef.child(parentId).child('replies').push(data);
             localStorage.setItem('my_comment_' + baru.key, 'true');
@@ -589,17 +594,17 @@
         // Form komentar utama
         kolomKomentar = pasangKolomNama('cm-nama', 'comment-name', 'Komentar sebagai');
 
-        document.getElementById('comment-form').addEventListener('submit', (e) => {
+        document.getElementById('comment-form').addEventListener('submit', async (e) => {
             e.preventDefault();
             const nameInput = document.getElementById('comment-name');
             const textInput = document.getElementById('comment-text');
-            const info = siapkanPengirim(nameInput.value);
+            const info = await siapkanPengirimAsync(nameInput.value);
             if (!info.ok) { alert(info.pesan); nameInput.focus(); return; }
             const isi = textInput.value.trim();
             if (!isi) return;
-            if (!info.isAdmin) { simpanNama(info.nama); if (kolomKomentar) kolomKomentar.segarkan(); }
+            if (!info.isAdmin && kolomKomentar) kolomKomentar.segarkan();
 
-            const data = { name: info.nama, text: isi, timestamp: firebase.database.ServerValue.TIMESTAMP, likes: 0 };
+            const data = { name: info.nama, uid: idPengguna(), text: isi, timestamp: firebase.database.ServerValue.TIMESTAMP, likes: 0 };
             if (info.isAdmin) data.isAdmin = true;
             const baru = commentsRef.push(data);
             localStorage.setItem('my_comment_' + baru.key, 'true');
