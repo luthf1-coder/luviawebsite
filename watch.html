@@ -165,17 +165,56 @@
         aturInteraksiPlayer();
     }
 
-    // ---------- HLS (.m3u8) ----------
+        // ---------- HLS (.m3u8) ----------
+    // Urutan otomatis: hls.js (ada menu kualitas) -> pemutar bawaan browser -> baru pesan gagal
     async function pasangHls(wrapper, src, poster, setelahNativeGagal) {
-        try { await muatScript(CDN.hls); }
-        catch (e) { return tampilkanErrorPemutar(wrapper, 'Pustaka pemutar HLS gagal dimuat. Periksa koneksi internet.'); }
-
         const video = buatVideoEl(wrapper, poster);
+        let beres = false;          // tahap awal selesai (berhasil atau menyerah)
+        let bawaanJalan = false;
+        let batas = null;
+
+        const menyerah = (pesan) => {
+            if (beres) return;
+            beres = true; clearTimeout(batas);
+            hancurkanPlayer();
+            tampilkanErrorPemutar(wrapper, pesan);
+        };
+
+        // Cadangan: biarkan browser memutar sendiri (Chrome/Edge baru, Safari, iOS, Android)
+        const pakaiBawaan = () => {
+            if (beres || bawaanJalan) return;
+            bawaanJalan = true; clearTimeout(batas);
+            if (setelahNativeGagal) return menyerah('Video tidak dapat diputar.');
+
+            if (window.hlsInst) { try { window.hlsInst.destroy(); } catch (e) {} window.hlsInst = null; }
+            video.removeAttribute('src');
+            video.load();
+
+            let tuntas = false, t = null;
+            const ok = () => {
+                if (tuntas || beres) return;
+                tuntas = true; clearTimeout(t); beres = true;
+                jadikanPlyr(video, opsiPlyr([]));
+            };
+            const gagal = () => {
+                if (tuntas) return;
+                tuntas = true; clearTimeout(t);
+                menyerah('Video HLS tidak dapat dimuat.');
+            };
+            t = setTimeout(gagal, 15000);
+            video.addEventListener('loadedmetadata', ok, { once: true });
+            video.addEventListener('error', gagal, { once: true });
+            video.src = src;
+            video.load();
+        };
+
+        try { await muatScript(CDN.hls); }
+        catch (e) { return pakaiBawaan(); }
 
         if (window.Hls && Hls.isSupported()) {
-            const hls = new Hls({ enableWorker: true });
+            const hls = new Hls({ enableWorker: true, manifestLoadingMaxRetry: 1 });
             window.hlsInst = hls;
-            let siap = false;
+            let siap = false, pulih = 0;
 
             const ganti = (h) => {
                 if (!h) { hls.currentLevel = -1; return; }          // Auto
@@ -183,30 +222,28 @@
                 hls.levels.forEach((l, i) => { if (l.height === h && (l.bitrate || 0) >= best) { best = l.bitrate || 0; idx = i; } });
                 if (idx >= 0) hls.currentLevel = idx;
             };
-            const buka = (tinggi) => {
-                if (siap) return; siap = true;
-                jadikanPlyr(video, opsiPlyr(tinggi, ganti));
-            };
 
             hls.on(Hls.Events.MANIFEST_PARSED, () => {
+                if (siap || beres) return;
+                siap = true; beres = true; clearTimeout(batas);
                 const tinggi = Array.from(new Set(hls.levels.map(l => l.height).filter(Boolean))).sort((a, b) => b - a);
-                buka(tinggi.length > 1 ? tinggi : []);
+                jadikanPlyr(video, opsiPlyr(tinggi.length > 1 ? tinggi : [], ganti));
             });
+
             hls.on(Hls.Events.ERROR, (ev, d) => {
                 if (!d.fatal) return;
-                if (d.type === Hls.ErrorTypes.NETWORK_ERROR && siap) { hls.startLoad(); return; }
-                if (d.type === Hls.ErrorTypes.MEDIA_ERROR) { hls.recoverMediaError(); return; }
+                if (!siap) { pakaiBawaan(); return; }                 // gagal di awal (mis. CORS) -> pemutar bawaan
+                if (d.type === Hls.ErrorTypes.NETWORK_ERROR) { hls.startLoad(); return; }
+                if (d.type === Hls.ErrorTypes.MEDIA_ERROR && pulih++ < 3) { hls.recoverMediaError(); return; }
                 hancurkanPlayer();
-                tampilkanErrorPemutar(wrapper, setelahNativeGagal ? 'Video tidak dapat diputar.' : 'Video HLS tidak dapat dimuat.');
+                tampilkanErrorPemutar(wrapper, 'Video terhenti dan tidak dapat dilanjutkan.');
             });
-            setTimeout(() => buka([]), 7000);     // jaga-jaga jika manifest lambat
+
+            batas = setTimeout(() => { if (!siap) pakaiBawaan(); }, 15000);   // manifest terlalu lama
             hls.loadSource(src);
             hls.attachMedia(video);
-        } else if (video.canPlayType('application/vnd.apple.mpegurl')) {
-            video.src = src;                       // Safari/iOS: HLS bawaan (tanpa menu kualitas manual)
-            jadikanPlyr(video, opsiPlyr([]));
         } else {
-            tampilkanErrorPemutar(wrapper, 'Browser ini tidak mendukung video HLS.');
+            pakaiBawaan();      // Safari/iOS dan browser tanpa MSE
         }
     }
 
