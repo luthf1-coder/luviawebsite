@@ -22,53 +22,53 @@
 <!-- KODE SIDEBAR -->
     <div id="sidebar-container"></div>
     
-        <main class="wp-page">
-        <!-- ================= KOLOM UTAMA ================= -->
-        <div class="wp-main">
-            <section class="wp-player-card">
-                <div class="plyr-wrapper" id="video-player-wrapper">
-                    <!-- Isi dirender otomatis oleh JavaScript -->
-                </div>
-            </section>
-
-            <h1 id="live-player-title" class="wp-title">LIVE STREAMING LUVIA STUDIO TV</h1>
-
-            <div class="wp-meta">
-                <span class="wp-chip wp-chip-views" id="live-viewers-count-text">👁️ Memuat status siaran...</span>
+    <main class="container page-stream-container">
+        <section class="main-video-section">
+            <h1 id="live-player-title" class="stream-title">LIVE STREAMING LUVIA STUDIO TV</h1>
+            
+            <!-- Kontainer Utama Player / Thumbnail Offline -->
+            <div class="plyr-wrapper" id="video-player-wrapper">
+                <!-- Isi dirender otomatis oleh JavaScript -->
             </div>
 
-            <div class="wp-desc">
-                <p>Selamat menyaksikan siaran langsung resmi LUVIA STUDIO TV. Nikmati tayangan kualitatif dengan pilihan resolusi terbaik.</p>
-            </div>
-
-            <!-- MULAI: AREA LIVE CHAT (tidak diubah) -->
-            <div id="live-chat-section" class="lc-box" style="display:none;">
-                <div class="lc-head">
-                    <span class="lc-title">Live chat</span>
-                    <span id="lc-status" class="lc-status on">LIVE</span>
-                </div>
-                <div class="lc-body">
-                    <div id="live-chat-list" class="lc-list"></div>
-                    <button type="button" id="lc-newmsg" class="lc-newmsg">Pesan baru ↓</button>
-                </div>
-                <form id="live-chat-form" class="lc-form" autocomplete="off">
-                    <div id="lc-editbar" class="lc-editbar" style="display:none;">
-                        <span>Mengedit pesanmu</span>
-                        <button type="button" id="lc-edit-batal">batal</button>
+            <div class="video-info">
+                <h2 id="info-title">SIARAN LANGSUNG LUVIA STUDIO TV</h2>
+                <div id="info-desc">
+                    <div id="live-viewers-count-text" style="font-weight: bold; color: #ff914d; margin-bottom: 8px;">
+                        👁️ Memuat status siaran...
                     </div>
-                    <div id="lc-nama"></div>
-                    <div class="lc-input-row">
-                        <input type="text" id="chat-text" placeholder="Ngobrol di sini..." maxlength="200">
-                        <button type="submit" class="lc-send" aria-label="Kirim"><span data-ikon="kirim"></span></button>
-                    </div>
-                </form>
-            </div>
-            <!-- SELESAI: AREA LIVE CHAT -->
+                    <p>Selamat menyaksikan siaran langsung resmi LUVIA STUDIO TV. Nikmati tayangan kualitatif dengan pilihan resolusi terbaik.</p>
+                    
+                    <!-- MULAI: AREA LIVE CHAT ALA YOUTUBE (Hanya Tampil Saat Live & Terhapus Saat Offline) -->
+                    <div id="live-chat-section" class="lc-box" style="display:none;">
+    <div class="lc-head">
+        <span class="lc-title">Live chat</span>
+        <span id="lc-status" class="lc-status on">LIVE</span>
+    </div>
+    <div class="lc-body">
+        <div id="live-chat-list" class="lc-list"></div>
+        <button type="button" id="lc-newmsg" class="lc-newmsg">Pesan baru ↓</button>
+    </div>
+    <form id="live-chat-form" class="lc-form" autocomplete="off">
+        <div id="lc-editbar" class="lc-editbar" style="display:none;">
+            <span>Mengedit pesanmu</span>
+            <button type="button" id="lc-edit-batal">batal</button>
         </div>
+        <div id="lc-nama"></div>
+        <div class="lc-input-row">
+            <input type="text" id="chat-text" placeholder="Ngobrol di sini..." maxlength="200">
+            <button type="submit" class="lc-send" aria-label="Kirim"><span data-ikon="kirim"></span></button>
+        </div>
+    </form>
+</div>
+<!-- SELESAI: AREA LIVE CHAT -->
 
-        <!-- ================= KOLOM SAMPING ================= -->
-        <aside class="wp-side">
-            <h2 class="wp-side-title">Video Rekomendasi</h2>
+                </div>
+            </div>
+        </section>
+
+        <section class="other-videos-section">
+            <h2>Video Rekomendasi</h2>
             <div class="video-grid" id="watch-recommendations-grid">
                 <!-- Kartu Utama Live Streaming Kick -->
                 <a href="livestream.html" class="video-card featured-live-card">
@@ -83,9 +83,9 @@
                 </a>
                 <!-- Rekomendasi otomatis dirender via JS -->
             </div>
-        </aside>
+        </section>
     </main>
-    
+
     <footer>
         <div class="container footer-container">
             <!-- Tempat Ikon Sosial Media (Dikosongkan karena akan diisi otomatis oleh Javascript) -->
@@ -222,7 +222,7 @@
     const kolomNama = pasangKolomNama('lc-nama', 'chat-name', 'Chat sebagai');
 
     // ---------- KIRIM / SIMPAN EDIT ----------
-    formChat.addEventListener('submit', e => {
+    formChat.addEventListener('submit', async e => {
         e.preventDefault();
         const teks = inTeks.value.trim().slice(0, 200);
         if (!teks) return;
@@ -235,11 +235,11 @@
             return;
         }
 
-        const info = siapkanPengirim(kolomNama.ambil());
+        const info = await siapkanPengirimAsync(kolomNama.ambil());
         if (!info.ok) { alert(info.pesan); return; }
         if (Date.now() - terakhirKirim < 1500) return;       // anti-spam
         terakhirKirim = Date.now();
-        if (!info.isAdmin) { simpanNama(info.nama); kolomNama.segarkan(); }
+        if (!info.isAdmin) kolomNama.segarkan();
 
         const data = { name: info.nama, text: teks, uid: uid, timestamp: firebase.database.ServerValue.TIMESTAMP };
         if (info.isAdmin) data.isAdmin = true;
