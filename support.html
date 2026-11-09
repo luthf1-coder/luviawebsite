@@ -24,61 +24,47 @@
     
     <!-- KONTEN UTAMA: KOTAK CHAT SUPPORT -->
     <div class="support-wrapper">
-        <div class="chat-container">
-<!-- Header Chat dengan Lonceng -->
-  <!-- Header Chat dengan Lonceng & Titik Tiga -->
-            <div class="chat-header" style="display: flex; justify-content: space-between; align-items: center; width: 100%; box-sizing: border-box;">
-                
-                <!-- Sisi Kiri (Profil) -->
-                <div class="chat-header-left" style="display: flex; align-items: center; gap: 15px;">
-                    <img data-avatar="admin" alt="Admin Luvia">
-                    <div>
-                        <h3 class="chat-title">CS LUVIA STUDIO <span class="centang-biru" data-ikon="centang"></span></h3>
-                        <p class="chat-status">Online - Chat Dibalas dalam 24 Jam</p>
-                    </div>
-                </div>
-                
-                <!-- Sisi Kanan (Lonceng & Titik Tiga sejajar) -->
-                <div class="chat-header-right" style="display: flex; align-items: center; gap: 15px; position: relative;">
-                    <div onclick="bukaNotifKomplain()" title="Papan Jawaban Umum" style="position:relative; font-size:24px; cursor:pointer;">
-                        🔔 <span id="bell-dot" class="bell-dot"></span>
-                    </div>
-                    <div onclick="toggleDropdown()" style="padding: 0 5px; font-size:24px; cursor:pointer;">⋮</div>
-                    
-                    <!-- Dropdown Menu -->
-                    <div id="header-dropdown" class="dropdown-menu">
-                        <a href="javascript:void(0)" onclick="aktifkanPilihChat()">✔️ Pilih Chat / Obrolan</a>
-                        <a href="javascript:void(0)" onclick="resetObrolanUser()" style="color:#ff4d4d;">🧹 Reset Obrolan</a>
-                    </div>
-                </div>
-                
-            </div>
-
-            <!-- Area Pesan -->
-            <div class="chat-body" id="chat-body">
-                <p style="text-align:center; color:#888; font-size:12px; margin-top:30px;">
-                    Memuat percakapan...
-                </p>
-            </div>
-
-            <!-- Area Input Form -->
-   <!-- Area Input Form dengan Fitur Quote & Edit -->
-            <div class="chat-footer">
-                <div id="quote-preview" class="quote-preview">
-                    <div style="color:#ff914d; font-weight:bold; margin-bottom:4px;" id="quote-title">Membalas:</div>
-                    <div id="quote-text" style="color:#ddd; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">...</div>
-                    <button onclick="batalAksi()" style="background:none; border:none; color:#ff4d4d; position:absolute; right:5px; top:5px; cursor:pointer; font-size:16px;">✖</button>
-                    <input type="hidden" id="reply-id" value="">
-                    <input type="hidden" id="edit-id" value="">
-                </div>
-                
-                <div id="chat-nama-wadah"></div>
-                <div class="chat-input-row">
-                    <input type="text" id="chat-isi" placeholder="Tulis pesan atau balasan..." onkeypress="if(event.key === 'Enter') kirimPesan()">
-                    <button class="btn-send" onclick="kirimPesan()" id="btn-kirim">➤</button>
-                </div>
+        <div class="chat-container wc-user">
+    <div class="chat-header" style="display: flex; justify-content: space-between; align-items: center; width: 100%; box-sizing: border-box;">
+        <div class="chat-header-left" style="display: flex; align-items: center; gap: 15px;">
+            <img data-avatar="admin" alt="Admin Luvia">
+            <div>
+                <h3 class="chat-title">CS LUVIA STUDIO <span class="centang-biru" data-ikon="centang"></span></h3>
+                <p class="chat-status">Online - Chat Dibalas dalam 24 Jam</p>
             </div>
         </div>
+        <div class="chat-header-right" style="position: relative;">
+            <div onclick="bukaNotifKomplain()" title="Papan Jawaban Umum" style="position:relative; font-size:24px; cursor:pointer;">
+                🔔 <span id="bell-dot" class="bell-dot"></span>
+            </div>
+            <div onclick="toggleDropdown()" style="padding: 0 5px; font-size:24px; cursor:pointer;">⋮</div>
+            <div id="header-dropdown" class="dropdown-menu">
+                <a href="javascript:void(0)" onclick="resetObrolanUser()" style="color:#ff4d4d;">🧹 Reset Obrolan</a>
+            </div>
+        </div>
+    </div>
+
+    <div class="wc-bodywrap">
+        <div class="wc-body" id="chat-body">
+            <p class="wc-kosong">Memuat percakapan...</p>
+        </div>
+        <button type="button" class="wc-bawah" id="wc-bawah" aria-label="Ke pesan terbaru"><span data-ikon="panah"></span></button>
+    </div>
+
+    <div class="chat-footer wc-footer">
+        <div id="quote-preview" class="wc-replybar" style="display:none;">
+            <div class="wc-replybar-isi"><b id="quote-title">Membalas</b><span id="quote-text">...</span></div>
+            <button type="button" onclick="batalAksi()" aria-label="Batal"><span data-ikon="tutup"></span></button>
+            <input type="hidden" id="reply-id" value="">
+            <input type="hidden" id="edit-id" value="">
+        </div>
+        <div id="chat-nama-wadah"></div>
+        <div class="wc-inputrow">
+            <textarea id="chat-isi" rows="1" maxlength="1000" placeholder="Tulis pesan..."></textarea>
+            <button type="button" class="wc-send" id="btn-kirim" onclick="kirimPesan()" aria-label="Kirim"><span data-ikon="kirim"></span></button>
+        </div>
+    </div>
+</div>
     </div>
 
 <!-- Modal Papan Jawaban Umum -->
@@ -111,195 +97,217 @@
     <!-- LOGIKA CHAT FIREBASE -->
     <script>
         
+//=== JS-MULAI ===
 let deviceId = localStorage.getItem('luvia_device_id');
-        if (!deviceId) {
-            deviceId = 'dev_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);
-            localStorage.setItem('luvia_device_id', deviceId);
+if (!deviceId) {
+    deviceId = 'dev_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);
+    localStorage.setItem('luvia_device_id', deviceId);
+}
+
+let allMessages = {};
+let kolomNamaSupport = null;
+let pertamaRender = true;
+
+function pesanDariId(id) { return allMessages[id] ? Object.assign({ id: id }, allMessages[id]) : null; }
+
+function daftarPesanSaya() {
+    return Object.keys(allMessages)
+        .map(k => Object.assign({ id: k }, allMessages[k]))
+        .filter(m => m.deviceId === deviceId && !m.deleted_by_user && !m.hidden_by_user)
+        .sort((a, b) => (a.timestamp || 0) - (b.timestamp || 0));
+}
+
+function sapaanHTML() {
+    return '<div class="wc-row in"><div class="wc-bubble"><div class="wc-nama">CS LUVIA STUDIO ' + centangBiru() + '</div>' +
+           '<div class="wc-teks">Halo! Ada pertanyaan atau komplain? Kirim di sini, Admin akan segera merespons! 👇</div></div></div>';
+}
+
+const cfgSupport = {
+    milikku: m => !m.is_admin,
+    namaPengirim: m => (m.is_admin ? 'CS LUVIA STUDIO' : 'Anda'),
+    labelMasuk: m => '<div class="wc-nama">CS LUVIA STUDIO ' + centangBiru() + '</div>'
+};
+
+function gambarObrolan() {
+    const body = document.getElementById('chat-body');
+    const dekat = waDekatBawah(body);
+    const daftar = daftarPesanSaya();
+    const terakhirSaya = daftar.length && !daftar[daftar.length - 1].is_admin;
+    waRender(body, daftar, Object.assign({ awalan: sapaanHTML() }, cfgSupport));
+    terapkanIkon(body);
+    if (pertamaRender || dekat || terakhirSaya) { waKeBawah(body); pertamaRender = false; }
+    else document.getElementById('wc-bawah').classList.add('tampil');
+}
+
+function gambarPapan() {
+    const lastRead = parseInt(localStorage.getItem('last_read_complaints') || '0', 10);
+    let html = '', adaBaru = false;
+    Object.keys(allMessages).reverse().forEach(k => {
+        const c = allMessages[k];
+        if (c.jawaban_admin && !c.deleted_for_everyone) {
+            html += '<div class="jawab-item">' +
+                '<div class="jawab-nama">Menjawab pertanyaan dari @' + escHtmlGlobal(namaTampil(c.uid, c.nama)) + ' :</div>' +
+                '<div class="jawab-tanya">"' + escHtmlGlobal(c.isi) + '"</div>' +
+                '<div class="jawab-admin"><strong>Admin LUVIA</strong> ' + centangBiru() + ': ' + escHtmlGlobal(c.jawaban_admin) + '</div></div>';
+            if ((c.answered_at || 0) > lastRead) adaBaru = true;
         }
+    });
+    document.getElementById('list-jawaban-umum').innerHTML = html || '<p style="text-align:center; color:#bbb;">Belum ada jawaban publik.</p>';
+    document.getElementById('bell-dot').style.display = adaBaru ? 'block' : 'none';
+}
 
-        let kolomNamaSupport = null;
-        let allMessages = {};
-        let isSelectMode = false;
+function menuUntuk(m) {
+    const items = [{ teks: 'Balas', ikon: 'balas', aksi: () => siapkanBalas(m.id) }];
+    if (!m.is_admin) {
+        const umur = Date.now() - (m.timestamp || 0);
+        if (umur <= 30 * 60 * 1000) items.push({ teks: 'Edit', ikon: 'edit', aksi: () => siapkanEdit(m.id) });
+        items.push({ teks: 'Hapus', ikon: 'hapus', bahaya: true, aksi: () => opsiHapus(m.id, umur <= 24 * 60 * 60 * 1000) });
+    }
+    return items;
+}
 
-        document.addEventListener('DOMContentLoaded', () => {
-            const chatBody = document.getElementById('chat-body');
-            kolomNamaSupport = pasangKolomNama('chat-nama-wadah', 'chat-nama', 'Chat sebagai');
+function autoTinggi(el) {
+    el.style.height = 'auto';
+    el.style.height = Math.min(el.scrollHeight, 120) + 'px';
+}
 
-            
-            if (typeof firebase !== 'undefined') {
-                firebase.database().ref('complaints').on('value', snap => {
-                    allMessages = snap.val() || {};
-                    let chatHtml = `<div class="chat-bubble bubble-admin"><span class="chat-name">CS LUVIA STUDIO ${centangBiru()}</span>Halo! Ada pertanyaan atau komplain? Kirim di sini, Admin akan segera merespons! 👇</div>`;
-                    let papanHtml = '';
-                    let adaPesanBaru = false;
+document.addEventListener('DOMContentLoaded', () => {
+    const body = document.getElementById('chat-body');
+    const isi = document.getElementById('chat-isi');
+    kolomNamaSupport = pasangKolomNama('chat-nama-wadah', 'chat-nama', 'Chat sebagai');
+    mulaiNamaUid();
+    terapkanIkon();
 
-                    const keys = Object.keys(allMessages);
-                    
-                    keys.forEach(k => {
-                        const c = allMessages[k];
-                        if (c.deviceId === deviceId) {
-                            // Cek jika pesan sudah di-reset oleh penonton
-                            if (c.deleted_by_user || c.hidden_by_user) return; 
+    // menu pesan (panah kecil) & lompat ke pesan yang dikutip
+    body.addEventListener('click', (e) => {
+        const chev = e.target.closest('[data-act="menu"]');
+        if (chev) { const m = pesanDariId(chev.dataset.id); if (m) waMenu(chev, menuUntuk(m)); return; }
+        const q = e.target.closest('.wc-quote');
+        if (q && q.dataset.quote) waLompat(body, q.dataset.quote);
+    });
+    body.addEventListener('scroll', () => { if (waDekatBawah(body)) document.getElementById('wc-bawah').classList.remove('tampil'); });
+    document.getElementById('wc-bawah').onclick = () => { waKeBawah(body); document.getElementById('wc-bawah').classList.remove('tampil'); };
 
-                            const isDeletedAll = c.deleted_for_everyone;
-                            const textPesan = isDeletedAll ? "🚫 <i>Pesan ini telah ditarik/dihapus</i>" : c.isi;
-                            const editedTag = (c.is_edited && !isDeletedAll) ? `<span class="msg-edited">(diedit)</span>` : '';
-                            
-                            const ageMs = Date.now() - c.timestamp;
-                            const canEdit = ageMs <= 30 * 60 * 1000;
-                            const canDeleteAll = ageMs <= 24 * 60 * 60 * 1000;
-                            
-                            let quoteHtml = (c.quote_text && !isDeletedAll) ? `<div class="quote-bubble">Membalas:<br>${c.quote_text}</div>` : '';
-                            
-                            let actionBar = '';
-                            if (!isDeletedAll) {
-                                actionBar += `<div class="action-bar" id="action-${k}"><button class="action-btn-chat" onclick="siapkanBalas('${k}')">Balas</button>`;
-                                if (!c.is_admin) {
-                                    if (canEdit) actionBar += `<button class="action-btn-chat" onclick="siapkanEdit('${k}')">Edit</button>`;
-                                    actionBar += `<button class="action-btn-chat" onclick="opsiHapus('${k}', ${canDeleteAll})">Hapus</button>`;
-                                }
-                                actionBar += `</div>`;
-                            }
+    // kolom pesan: Enter = kirim (laptop), Shift+Enter / HP = baris baru
+    const sentuh = window.matchMedia && window.matchMedia('(pointer: coarse)').matches;
+    isi.addEventListener('keydown', (e) => {
+        if (e.key === 'Enter' && !e.shiftKey && !e.isComposing && !sentuh) { e.preventDefault(); kirimPesan(); }
+    });
+    isi.addEventListener('input', () => autoTinggi(isi));
 
-                            // Tambahkan fungsi klik pada bubble untuk memunculkan Action Bar
-                            const clickEvent = `onclick="handleBubbleClick('${k}')"`;
-
-                            if (c.is_admin) {
-                                chatHtml += `<div class="chat-bubble bubble-admin" ${clickEvent}><span class="chat-name" style="color: #ffe5d9;">CS LUVIA STUDIO (Admin) ${centangBiru()}</span>${quoteHtml}${textPesan}${editedTag}${actionBar}</div>`;
-                            } else {
-                                chatHtml += `<div class="chat-bubble bubble-user" ${clickEvent}><span class="chat-name" style="color: #ff914d; text-align:right;">${c.nama}</span>${quoteHtml}${textPesan}${editedTag}${actionBar}</div>`;
-                            }
-                        }
-                    });
-
-                    keys.reverse().forEach(k => {
-                        const c = allMessages[k];
-                        if(c.jawaban_admin && !c.deleted_for_everyone) {
-                            papanHtml += `
-                            <div class="jawab-item">
-                                <div class="jawab-nama">Menjawab pertanyaan dari @${c.nama} :</div>
-                                <div class="jawab-tanya">"${c.isi}"</div>
-                                <div class="jawab-admin"><strong>Admin LUVIA</strong> ${centangBiru()}: ${c.jawaban_admin}</div>
-                            </div>`;
-                            const lastRead = localStorage.getItem('last_read_complaints') || 0;
-                            if(c.answered_at > lastRead) adaPesanBaru = true;
-                        }
-                    });
-                    
-                    chatBody.innerHTML = chatHtml;
-                    document.getElementById('list-jawaban-umum').innerHTML = papanHtml || '<p style="text-align:center; color:#bbb;">Belum ada jawaban publik.</p>';
-                    document.getElementById('bell-dot').style.display = adaPesanBaru ? 'block' : 'none';
-                    setTimeout(() => { chatBody.scrollTop = chatBody.scrollHeight; }, 100);
-                });
-            }
-            
+    if (typeof firebase !== 'undefined') {
+        firebase.database().ref('complaints').on('value', snap => {
+            allMessages = snap.val() || {};
+            gambarObrolan();
+            gambarPapan();
         });
+    }
+});
 
-        // FUNGSI MENU TITIK TIGA
-        function toggleDropdown() {
-            const drop = document.getElementById('header-dropdown');
-            drop.style.display = drop.style.display === 'block' ? 'none' : 'block';
-        }
+// ---------- MENU TITIK TIGA ----------
+function toggleDropdown() {
+    const drop = document.getElementById('header-dropdown');
+    drop.style.display = drop.style.display === 'block' ? 'none' : 'block';
+}
 
-        function aktifkanPilihChat() {
-            isSelectMode = !isSelectMode;
-            toggleDropdown();
-            alert(isSelectMode ? "Mode Pilih Aktif! \nSilakan ketuk (klik) pesan mana saja untuk memunculkan tombol Balas/Edit/Hapus." : "Mode Pilih Dinonaktifkan.");
-        }
-
-        function handleBubbleClick(id) {
-            if(!isSelectMode) return;
-            const bar = document.getElementById('action-' + id);
-            if(bar) bar.style.display = bar.style.display === 'flex' ? 'none' : 'flex';
-        }
-
-        function resetObrolanUser() {
-            tampilKonfirmasi("Yakin ingin mereset/menghapus layar obrolan Anda?", { judul: 'Reset obrolan', ya: 'Reset', bahaya: true }).then(ok => {
-                if (!ok) return;
-                Object.keys(allMessages).forEach(k => {
-                    if (allMessages[k].deviceId === deviceId) {
-                        firebase.database().ref('complaints/' + k).update({ hidden_by_user: true });
-                    }
-                });
-                toggleDropdown();
-            });
-        }
-
-        // FUNGSI STANDAR (Balas, Edit, Kirim)
-        function bukaNotifKomplain() {
-            document.getElementById('modal-notif').style.display = 'flex';
-            document.getElementById('bell-dot').style.display = 'none';
-            localStorage.setItem('last_read_complaints', Date.now());
-        }
-
-        function siapkanBalas(id) {
-            const msg = allMessages[id];
-            document.getElementById('quote-preview').style.display = 'block';
-            document.getElementById('quote-title').innerText = "Membalas:";
-            document.getElementById('quote-text').innerText = msg.isi;
-            document.getElementById('reply-id').value = id;
-            document.getElementById('edit-id').value = '';
-            document.getElementById('chat-isi').focus();
-        }
-
-        function siapkanEdit(id) {
-            const msg = allMessages[id];
-            document.getElementById('quote-preview').style.display = 'block';
-            document.getElementById('quote-title').innerText = "Mengedit Pesan:";
-            document.getElementById('quote-text').innerText = msg.isi;
-            document.getElementById('edit-id').value = id;
-            document.getElementById('reply-id').value = '';
-            
-            const inputChat = document.getElementById('chat-isi');
-            inputChat.value = msg.isi;
-            inputChat.focus();
-        }
-
-        function batalAksi() {
-            document.getElementById('quote-preview').style.display = 'none';
-            document.getElementById('reply-id').value = '';
-            document.getElementById('edit-id').value = '';
-            document.getElementById('chat-isi').value = '';
-        }
-
-        function opsiHapus(id, canDeleteAll) {
-            const pesan = canDeleteAll ? "Pilih cara menghapus pesan ini:" : "Waktu tarik pesan sudah habis (lebih dari 24 jam). Pesan hanya bisa dihapus untuk Anda sendiri.";
-            const pilihan = [{ teks: 'Batal', nilai: null }, { teks: 'Hapus untuk saya', nilai: '1', utama: !canDeleteAll }];
-            if (canDeleteAll) pilihan.push({ teks: 'Hapus untuk semua', nilai: '2', utama: true, bahaya: true });
-            tampilPilihan('Hapus pesan', pesan, pilihan).then(respon => {
-                if (respon === '1') firebase.database().ref('complaints/' + id).update({ deleted_by_user: true });
-                else if (respon === '2' && canDeleteAll) firebase.database().ref('complaints/' + id).update({ deleted_for_everyone: true });
-            });
-        }
-
-        function kirimPesan() {
-            const info = siapkanPengirim(document.getElementById('chat-nama').value);
-            const isi = document.getElementById('chat-isi').value.trim();
-            const editId = document.getElementById('edit-id').value;
-            const replyId = document.getElementById('reply-id').value;
-
-            if (!info.ok) return alert(info.pesan);
-            if (!isi) return alert("Pesan tidak boleh kosong!");
-            const nama = info.nama;
-            if (!info.isAdmin) { simpanNama(nama); if (kolomNamaSupport) kolomNamaSupport.segarkan(); }
-
-            if (editId) {
-                firebase.database().ref('complaints/' + editId).update({ isi: isi, is_edited: true });
-                batalAksi();
-                return;
+function resetObrolanUser() {
+    tampilKonfirmasi("Yakin ingin mereset/menghapus layar obrolan Anda?", { judul: 'Reset obrolan', ya: 'Reset', bahaya: true }).then(ok => {
+        if (!ok) return;
+        Object.keys(allMessages).forEach(k => {
+            if (allMessages[k].deviceId === deviceId) {
+                firebase.database().ref('complaints/' + k).update({ hidden_by_user: true });
             }
+        });
+        toggleDropdown();
+    });
+}
 
-            let payload = { nama: nama, isi: isi, deviceId: deviceId, timestamp: firebase.database.ServerValue.TIMESTAMP };
-            if (replyId) { payload.quote_id = replyId; payload.quote_text = document.getElementById('quote-text').innerText; }
+function bukaNotifKomplain() {
+    document.getElementById('modal-notif').style.display = 'flex';
+    document.getElementById('bell-dot').style.display = 'none';
+    localStorage.setItem('last_read_complaints', Date.now());
+}
 
-            firebase.database().ref('complaints').push(payload).then(() => {
-                firebase.database().ref('admin_notifications').push({
-                    tipe: "Komplain Masuk 🔔", pesan: `${nama}: "${isi}"`, timestamp: Date.now(), read: false
-                });
-                batalAksi(); 
-            });
-        }
+// ---------- BALAS / EDIT / HAPUS ----------
+function tampilBar(judul, teks) {
+    document.getElementById('quote-preview').style.display = 'flex';
+    document.getElementById('quote-title').innerText = judul;
+    document.getElementById('quote-text').innerText = teks;
+}
 
+function siapkanBalas(id) {
+    const msg = allMessages[id];
+    if (!msg) return;
+    tampilBar(msg.is_admin ? 'CS LUVIA STUDIO' : 'Anda', msg.isi);
+    document.getElementById('reply-id').value = id;
+    document.getElementById('edit-id').value = '';
+    document.getElementById('chat-isi').focus();
+}
+
+function siapkanEdit(id) {
+    const msg = allMessages[id];
+    if (!msg) return;
+    tampilBar('Mengedit pesan', msg.isi);
+    document.getElementById('edit-id').value = id;
+    document.getElementById('reply-id').value = '';
+    const isi = document.getElementById('chat-isi');
+    isi.value = msg.isi;
+    autoTinggi(isi);
+    isi.focus();
+}
+
+function batalAksi() {
+    document.getElementById('quote-preview').style.display = 'none';
+    document.getElementById('reply-id').value = '';
+    document.getElementById('edit-id').value = '';
+    const isi = document.getElementById('chat-isi');
+    isi.value = '';
+    autoTinggi(isi);
+}
+
+function opsiHapus(id, canDeleteAll) {
+    const pesan = canDeleteAll ? "Pilih cara menghapus pesan ini:" : "Waktu tarik pesan sudah habis (lebih dari 24 jam). Pesan hanya bisa dihapus untuk Anda sendiri.";
+    const pilihan = [{ teks: 'Batal', nilai: null }, { teks: 'Hapus untuk saya', nilai: '1', utama: !canDeleteAll }];
+    if (canDeleteAll) pilihan.push({ teks: 'Hapus untuk semua', nilai: '2', utama: true, bahaya: true });
+    tampilPilihan('Hapus pesan', pesan, pilihan).then(respon => {
+        if (respon === '1') firebase.database().ref('complaints/' + id).update({ deleted_by_user: true });
+        else if (respon === '2' && canDeleteAll) firebase.database().ref('complaints/' + id).update({ deleted_for_everyone: true });
+    });
+}
+
+// ---------- KIRIM ----------
+async function kirimPesan() {
+    const isiEl = document.getElementById('chat-isi');
+    const isi = isiEl.value.trim();
+    const editId = document.getElementById('edit-id').value;
+    const replyId = document.getElementById('reply-id').value;
+    if (!isi) return;
+
+    if (editId) {
+        firebase.database().ref('complaints/' + editId).update({ isi: isi, is_edited: true });
+        batalAksi();
+        return;
+    }
+
+    const info = await siapkanPengirimAsync(document.getElementById('chat-nama').value);
+    if (!info.ok) return alert(info.pesan);
+    if (kolomNamaSupport) kolomNamaSupport.segarkan();
+
+    const payload = { nama: info.nama, isi: isi, deviceId: deviceId, uid: idPengguna(), timestamp: firebase.database.ServerValue.TIMESTAMP };
+    if (replyId && allMessages[replyId]) {
+        payload.quote_id = replyId;
+        payload.quote_text = String(allMessages[replyId].isi || '').slice(0, 140);
+    }
+
+    firebase.database().ref('complaints').push(payload).then(() => {
+        firebase.database().ref('admin_notifications').push({
+            tipe: "Komplain Masuk 🔔", pesan: info.nama + ': "' + isi + '"', timestamp: Date.now(), read: false
+        });
+        batalAksi();
+        pertamaRender = true;      // setelah kirim, selalu turun ke pesan terbaru
+    });
+}
+//=== JS-SELESAI ===
         
         // SISTEM PENCARIAN LIVE (AUTOCOMPLETE) 
 document.addEventListener('DOMContentLoaded', () => {
