@@ -3384,3 +3384,190 @@ footer { padding: 22px 20px; }
     .wp-main .lc-head, .wp-main .lc-form { padding: .7rem .85rem; }
     .wp-main .lc-list { height: 20rem; padding: .6rem .85rem; }
 }
+
+
+/* =====================================================================
+   BLOK 10  -  TEMPEL DI PALING BAWAH style.css
+   Isi: sidebar (ikon + tautan teks), bilah ikon/bar bawah, perbaikan centang biru,
+        chat gaya WhatsApp (support & admin), rating admin per pengguna, tombol reset
+   ===================================================================== */
+
+/* ---------- SIDEBAR: ikon di samping teks + tautan teks "A · B · C" ---------- */
+.sidebar-links a { display: flex; align-items: center; gap: 14px; }
+.sidebar-links a .menu-ikon { display: inline-flex; font-size: 1.3rem; color: #ffb27d; flex-shrink: 0; }
+.sidebar-links a.aktif { color: #ffd9a8; }
+.sidebar-textlinks { padding: 16px 20px 18px; border-top: 1px solid rgba(255,255,255,0.20); font-size: .82rem; line-height: 1.9; color: rgba(255,255,255,0.5); }
+.sidebar-textlinks a { color: rgba(255,255,255,0.88); text-decoration: none; }
+.sidebar-textlinks a:hover { color: #ff914d; text-decoration: underline; }
+.sidebar-textlinks .sep { color: rgba(255,255,255,0.4); white-space: pre-wrap; }
+
+/* ---------- BILAH IKON YANG SELALU TERLIHAT ---------- */
+.rail, .bottombar { display: none; }
+
+/* Laptop & TV: bilah ikon di kiri (di bawah navbar) */
+@media (min-width: 900px) {
+    .rail { position: fixed; left: 0; top: var(--nav-h, 70px); bottom: 0; width: 72px; z-index: 900; display: flex; flex-direction: column; align-items: center; gap: 6px; padding: 14px 0; background: rgba(12,10,22,0.90); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px); border-right: 1px solid rgba(255,255,255,0.08); overflow-y: auto; scrollbar-width: none; }
+    .rail::-webkit-scrollbar { display: none; }
+    .rail a { position: relative; width: 48px; height: 48px; display: flex; align-items: center; justify-content: center; border-radius: 14px; color: #cfcfe0; font-size: 1.45rem; text-decoration: none; transition: background .2s, color .2s; flex-shrink: 0; }
+    .rail a:hover { background: rgba(255,255,255,0.10); color: #fff; }
+    .rail a.aktif { color: #ff914d; background: rgba(255,145,77,0.10); }
+    .rail a.aktif::after { content: ""; position: absolute; bottom: 3px; width: 5px; height: 5px; border-radius: 50%; background: #ff914d; }
+    body.has-rail { padding-left: 72px; }
+}
+@media (min-width: 1600px) {
+    .rail { width: 92px; gap: 10px; padding-top: 20px; }
+    .rail a { width: 62px; height: 62px; font-size: 1.8rem; border-radius: 18px; }
+    body.has-rail { padding-left: 92px; }
+}
+
+/* HP & tablet kecil: bar di bagian bawah layar */
+@media (max-width: 899px) {
+    .bottombar { position: fixed; left: 0; right: 0; bottom: 0; z-index: 900; display: flex; justify-content: space-around; background: rgba(12,10,22,0.95); backdrop-filter: blur(14px); -webkit-backdrop-filter: blur(14px); border-top: 1px solid rgba(255,255,255,0.10); padding: 6px 4px calc(6px + env(safe-area-inset-bottom)); }
+    .bottombar a { flex: 1; min-width: 0; display: flex; flex-direction: column; align-items: center; gap: 3px; padding: 4px 2px; font-size: .64rem; color: #b9b9cc; text-decoration: none; }
+    .bottombar a .ic { font-size: 1.4rem; }
+    .bottombar a span { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 100%; }
+    .bottombar a.aktif { color: #ff914d; }
+    body.has-rail { padding-bottom: calc(64px + env(safe-area-inset-bottom)); }
+    .pop-bawah { bottom: calc(1rem + 64px); }
+    .toast-luvia { bottom: calc(24px + 64px); }
+}
+
+/* ---------- CENTANG BIRU: posisi disamakan dengan header post.html ---------- */
+.centang-biru { display: inline-flex; align-items: center; justify-content: center; color: #3ea6ff; margin-left: 5px; font-size: 1em; line-height: 1; vertical-align: -0.16em; flex-shrink: 0; }
+.centang-biru .ic { width: 1em; height: 1em; display: block; }
+.comment-header .centang-biru { margin-left: -5px; align-self: center; }
+.comment-header .lencana-admin { margin-left: -3px; align-self: center; }
+.pc-top { gap: 0; }
+.pc-top .pc-name { margin-right: 0; }
+.chat-name .centang-biru { margin-left: 5px; vertical-align: -0.2em; }
+.chat-title .centang-biru { vertical-align: -0.12em; }
+.lc-txt .centang-biru { vertical-align: -0.18em; }
+
+/* ---------- CHAT GAYA WHATSAPP (support.html & admin.html) ---------- */
+.wc-bodywrap { position: relative; flex: 1; min-height: 0; display: flex; flex-direction: column; }
+.wc-body { flex: 1; min-height: 0; overflow-y: auto; padding: 14px 12px 18px; display: flex; flex-direction: column; gap: 3px; background-color: #0d0b18; background-image: radial-gradient(circle at 20% 15%, rgba(140,82,255,0.10), transparent 40%), radial-gradient(circle at 85% 80%, rgba(255,145,77,0.08), transparent 40%); scrollbar-width: thin; scrollbar-color: rgba(255,145,77,0.5) transparent; }
+.wc-kosong { text-align: center; color: #8a86a0; font-size: .85rem; margin: auto; padding: 24px; }
+.wc-sep { align-self: center; margin: 12px 0 8px; }
+.wc-sep span { display: inline-block; font-size: .72rem; color: rgba(255,255,255,0.78); background: rgba(255,255,255,0.10); border: 1px solid rgba(255,255,255,0.08); padding: 4px 12px; border-radius: 999px; }
+.wc-row { display: flex; margin: 2px 0; }
+.wc-row.out { justify-content: flex-end; }
+.wc-row.in { justify-content: flex-start; }
+.wc-bubble { position: relative; max-width: min(78%, 34rem); padding: 7px 10px 6px; border-radius: 12px; font-size: .92rem; line-height: 1.45; overflow-wrap: anywhere; box-shadow: 0 1px 3px rgba(0,0,0,0.35); }
+.wc-row.out .wc-bubble { background: linear-gradient(135deg, #8c52ff, #ff914d); color: #fff; border-top-right-radius: 4px; }
+.wc-row.in .wc-bubble { background: #252136; color: #f1f1f6; border: 1px solid rgba(255,255,255,0.08); border-top-left-radius: 4px; }
+.wc-teks { white-space: pre-wrap; }
+.wc-hapus { opacity: .7; }
+.wc-meta { display: flex; justify-content: flex-end; align-items: center; gap: 6px; font-size: .68rem; margin-top: 2px; opacity: .78; }
+.wc-edited { font-style: italic; }
+.wc-nama { font-size: .74rem; font-weight: 700; color: #ffb27d; margin-bottom: 2px; }
+.wc-quote { display: flex; flex-direction: column; gap: 2px; background: rgba(0,0,0,0.22); border-left: 4px solid #ff914d; border-radius: 8px; padding: 6px 10px; margin-bottom: 6px; font-size: .78rem; cursor: pointer; }
+.wc-quote b { color: #ffd9a8; font-size: .74rem; }
+.wc-quote span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; opacity: .85; }
+.wc-chev { position: absolute; top: 3px; right: 4px; width: 22px; height: 22px; border-radius: 50%; background: rgba(0,0,0,0.38); color: #fff; border: none; display: inline-flex; align-items: center; justify-content: center; font-size: 14px; cursor: pointer; opacity: 0; transition: opacity .15s; z-index: 2; }
+.wc-bubble:hover .wc-chev, .wc-chev:focus-visible { opacity: 1; }
+@media (hover: none) { .wc-chev { opacity: .85; } }
+.wc-row.wc-flash .wc-bubble { animation: wcFlash 1.4s ease; }
+@keyframes wcFlash { 0%, 60% { box-shadow: 0 0 0 3px rgba(255,201,77,0.85); } 100% { box-shadow: 0 1px 3px rgba(0,0,0,0.35); } }
+.wc-papan-bubble { border: 1px dashed rgba(255,255,255,0.45) !important; }
+.wc-bawah { position: absolute; right: 14px; bottom: 12px; width: 40px; height: 40px; border-radius: 50%; border: 1px solid rgba(255,255,255,0.2); background: #1d1930; color: #fff; display: none; align-items: center; justify-content: center; font-size: 1.2rem; cursor: pointer; box-shadow: 0 6px 18px rgba(0,0,0,0.5); z-index: 5; }
+.wc-bawah.tampil { display: inline-flex; }
+.wc-bawah .wc-baru { position: absolute; top: -6px; right: -4px; min-width: 18px; height: 18px; padding: 0 5px; border-radius: 999px; background: #ff914d; font-size: .65rem; font-weight: 800; display: none; align-items: center; justify-content: center; }
+
+.wc-menu { position: fixed; z-index: 100020; min-width: 170px; background: #1d1930; border: 1px solid rgba(255,255,255,0.14); border-radius: 12px; padding: 6px; box-shadow: 0 14px 40px rgba(0,0,0,0.6); }
+.wc-menu-item { display: flex; align-items: center; gap: 12px; width: 100%; background: none; border: none; color: #f1f1f6; padding: 10px 12px; border-radius: 8px; cursor: pointer; font-size: .88rem; text-align: left; }
+.wc-menu-item:hover { background: rgba(255,255,255,0.08); }
+.wc-menu-item.bahaya { color: #ff8a8a; }
+.wc-menu-item .ic { font-size: 1.1rem; flex-shrink: 0; }
+
+.wc-footer { padding: 10px 12px calc(10px + env(safe-area-inset-bottom)); background: #16122a; border-top: 1px solid rgba(255,255,255,0.10); display: flex; flex-direction: column; gap: 8px; }
+.wc-replybar { display: flex; align-items: center; gap: 10px; background: rgba(255,255,255,0.06); border-left: 4px solid #ff914d; border-radius: 8px; padding: 8px 10px; }
+.wc-replybar-isi { flex: 1; min-width: 0; display: flex; flex-direction: column; font-size: .78rem; }
+.wc-replybar-isi b { color: #ffd9a8; }
+.wc-replybar-isi span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; opacity: .85; }
+.wc-replybar > button { background: none; border: none; color: #ff8a8a; cursor: pointer; font-size: 1.2rem; display: inline-flex; padding: 2px; }
+.wc-papan { font-size: .72rem; color: #ccc; display: flex; align-items: center; gap: 6px; cursor: pointer; white-space: nowrap; }
+.wc-inputrow { display: flex; gap: 8px; align-items: flex-end; }
+.wc-inputrow textarea { flex: 1; min-width: 0; max-height: 120px; resize: none; background: #232032; border: 1px solid rgba(255,255,255,0.14); border-radius: 22px; padding: 11px 16px; color: #fff; font: inherit; font-size: .92rem; line-height: 1.35; outline: none; box-sizing: border-box; }
+.wc-inputrow textarea:focus { border-color: #ff914d; box-shadow: 0 0 0 3px rgba(255,145,77,0.15); }
+.wc-send { flex-shrink: 0; width: 46px; height: 46px; border: none; border-radius: 50%; color: #fff; font-size: 1.2rem; display: inline-flex; align-items: center; justify-content: center; cursor: pointer; background: linear-gradient(45deg, #8c52ff, #ff914d); box-shadow: 0 4px 14px var(--glow-o, rgba(255,145,77,0.35)); }
+
+/* support.html: ukuran kotak chat */
+.chat-container.wc-user { position: relative; height: min(78vh, 780px); }
+.chat-container.wc-user .chat-header-right { display: flex; align-items: center; gap: 14px; }
+@media (max-width: 768px) {
+    .chat-container.wc-user { height: calc(100vh - var(--nav-h, 70px) - 200px); height: calc(100dvh - var(--nav-h, 70px) - 200px); min-height: 420px; }
+    .wc-bubble { max-width: 86%; }
+}
+@media (min-width: 1600px) {
+    .chat-container.wc-user { max-width: 840px; height: min(78vh, 920px); }
+    .wc-bubble { font-size: 1.02rem; }
+}
+
+/* admin.html: WhatsApp Web */
+.wc-wrap { display: grid; grid-template-columns: minmax(280px, 34%) minmax(0, 1fr); height: min(78vh, 780px); min-height: 480px; background: #0d0b18; border: 1px solid #333; border-radius: 14px; overflow: hidden; }
+.wc-side { display: flex; flex-direction: column; min-height: 0; background: #14111f; border-right: 1px solid #2a2a2a; }
+.wc-side-head { padding: 14px 16px; font-weight: 700; background: #1b1730; border-bottom: 1px solid #2a2a2a; }
+.wc-cari { padding: 10px 12px; border-bottom: 1px solid #222; }
+.wc-cari input { width: 100%; box-sizing: border-box; background: #232032; border: 1px solid #3a3550; border-radius: 999px; padding: 9px 14px; color: #fff; font-size: .85rem; outline: none; margin: 0; }
+.wc-kontak-list { flex: 1; overflow-y: auto; min-height: 0; }
+.wc-kontak { display: flex; gap: 12px; padding: 11px 14px; cursor: pointer; border-bottom: 1px solid #1f1c30; align-items: center; transition: background .15s; }
+.wc-kontak:hover { background: #1d1a2e; }
+.wc-kontak.active { background: #262140; box-shadow: inset 3px 0 0 #ff914d; }
+.wc-kontak-info { flex: 1; min-width: 0; }
+.wc-kontak-baris { display: flex; justify-content: space-between; align-items: center; gap: 8px; }
+.wc-kontak-nama { font-weight: 700; font-size: .92rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.wc-kontak-waktu { font-size: .7rem; color: #8a86a0; flex-shrink: 0; }
+.wc-kontak.ada .wc-kontak-waktu { color: #ff914d; }
+.wc-kontak-last { font-size: .8rem; color: #a7a3bd; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.wc-badge { min-width: 20px; height: 20px; padding: 0 6px; border-radius: 999px; background: linear-gradient(45deg, #8c52ff, #ff914d); color: #fff; font-size: .7rem; font-weight: 800; display: inline-flex; align-items: center; justify-content: center; flex-shrink: 0; }
+.wc-arsip { font-size: .66rem; color: #ff8a8a; font-style: italic; margin-top: 3px; }
+.wc-main { display: flex; flex-direction: column; min-width: 0; min-height: 0; position: relative; }
+.wc-kosong-state { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; color: #8a86a0; text-align: center; padding: 20px; gap: 8px; }
+.wc-kosong-state .ic { font-size: 3.2rem; opacity: .5; }
+.wc-room { flex: 1; display: flex; flex-direction: column; min-height: 0; position: relative; }
+.wc-room-head { display: flex; align-items: center; gap: 10px; padding: 10px 14px; background: #1b1730; border-bottom: 1px solid #2a2a2a; }
+.wc-back { display: none; background: none; border: none; color: #fff; font-size: 1.4rem; cursor: pointer; padding: 4px; }
+.wc-room-info { flex: 1; min-width: 0; display: flex; align-items: center; gap: 12px; cursor: pointer; }
+.wc-room-nama { min-width: 0; }
+.wc-room-nama .nm { font-weight: 700; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.wc-status { font-size: .75rem; color: #a7a3bd; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.wc-status.online { color: #53e8a3; }
+.wc-room-aksi { display: flex; align-items: center; gap: 4px; position: relative; }
+.wc-room-aksi button { background: none; border: none; color: #fff; font-size: 1.3rem; cursor: pointer; padding: 6px 8px; }
+.wc-menu-dd { display: none; position: absolute; right: 0; top: 42px; background: #1d1930; border: 1px solid #3a3550; border-radius: 10px; z-index: 1000; min-width: 200px; overflow: hidden; box-shadow: 0 10px 30px rgba(0,0,0,0.6); }
+.wc-menu-dd a { display: block; padding: 12px 16px; font-size: .85rem; color: #fff; text-decoration: none; border-bottom: 1px solid #2a2a3a; white-space: nowrap; }
+.wc-menu-dd a:hover { background: #2a2540; }
+@media (max-width: 768px) {
+    .wc-wrap { grid-template-columns: 1fr; height: calc(100vh - 190px); min-height: 460px; }
+    .wc-main { display: none; }
+    .wc-wrap.buka-chat .wc-side { display: none; }
+    .wc-wrap.buka-chat .wc-main { display: flex; }
+    .wc-back { display: inline-flex; }
+}
+@media (min-width: 1600px) {
+    .wc-wrap { height: min(78vh, 900px); }
+    .wc-kontak-nama { font-size: 1.02rem; }
+    .wc-bubble { font-size: 1.02rem; }
+}
+
+/* kotak info pengguna (admin) */
+.wc-info-ava { display: flex; justify-content: center; margin-bottom: 10px; }
+.wc-info-nama { text-align: center; font-size: 1.1rem; font-weight: 700; margin-bottom: 12px; }
+.wc-info-baris { display: flex; justify-content: space-between; gap: 14px; padding: 8px 0; border-bottom: 1px solid rgba(255,255,255,0.10); font-size: .85rem; }
+.wc-info-baris span:first-child { color: rgba(255,255,255,0.55); flex-shrink: 0; }
+.wc-info-baris span:last-child { text-align: right; }
+.wc-info-judul { margin: 14px 0 6px; font-size: .8rem; font-weight: 700; color: #ffb27d; text-transform: uppercase; letter-spacing: .5px; }
+.wc-riwayat { max-height: 180px; overflow-y: auto; }
+
+/* ---------- ADMIN: rating per pengguna ---------- */
+.rt-user { border-bottom: 1px solid #2a2a2a; padding: 14px 0; }
+.rt-user-head { display: flex; align-items: center; gap: 12px; margin-bottom: 6px; }
+.rt-sub { font-size: .74rem; color: #999; }
+.rt-rev { margin-left: 54px; padding: 10px 0; border-top: 1px dashed #2f2f2f; }
+.rt-rev:first-of-type { border-top: none; }
+.rt-rev.selesai .rt-teks { opacity: .6; }
+@media (max-width: 600px) { .rt-rev { margin-left: 0; } }
+
+/* ---------- ADMIN: tombol reset viewers ---------- */
+.btn-reset { background: #555; color: #fff; border: none; padding: 6px 10px; border-radius: 4px; cursor: pointer; font-size: 12px; font-weight: 700; }
+.btn-reset:hover { background: #ff914d; }
