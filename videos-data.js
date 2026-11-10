@@ -1578,9 +1578,14 @@ function tampilkanRating() {
             b.innerHTML = icon(aktif ? IKON.bintangIsi : IKON.bintang);
         });
     }
+    // Efek hover hanya dipasang di perangkat bermouse (laptop/PC).
+    // Di layar sentuh (HP, iPhone, tablet, TV) hover dimatikan supaya klik tidak "ditelan" browser.
+    const bisaHover = !!(window.matchMedia && window.matchMedia('(hover: hover) and (pointer: fine)').matches);
     bintang.forEach(b => {
-        b.addEventListener('mouseenter', () => gambar(Number(b.dataset.n)));
-        b.addEventListener('mouseleave', () => gambar(nilai));
+        if (bisaHover) {
+            b.addEventListener('mouseenter', () => gambar(Number(b.dataset.n)));
+            b.addEventListener('mouseleave', () => gambar(nilai));
+        }
         b.addEventListener('click', () => {
             nilai = Number(b.dataset.n);
             gambar(nilai);
