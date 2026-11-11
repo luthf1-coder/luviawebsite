@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TENTANG KAMI - LUVIA STUDIO</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Poppins:wght@500;600;700&family=Montserrat:wght@500;700&family=Playfair+Display:wght@600;700&family=Merriweather:wght@400;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="style.css" />
+    <link rel="icon" type="image/png" data-img="logoBulat">
+
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-database-compat.js"></script>
+</head>
+<body class="page-about">
+
+    <nav id="navbar-container"></nav>
+    <div id="sidebar-container"></div>
+
+    <main class="ab-page">
+        <article class="ab-card">
+            <div class="ab-content" id="ab-isi"><p style="color:#bbb; text-align:center;">Memuat...</p></div>
+        </article>
+
+        <section class="ab-card ab-sosial-card">
+            <h3 class="ab-sosial-judul">Ikuti Kami</h3>
+            <div class="ab-sosial" id="ab-sosial"></div>
+        </section>
+    </main>
+
+    <footer>
+        <div class="container footer-container">
+            <div class="footer-socials" id="footer-social-container"></div>
+            <p id="teks-footer-copyright">Loading...</p>
+        </div>
+    </footer>
+
+    <script src="videos-data.js"></script>
+    <script src="analytics-tracker.js"></script>
+    <script>
+        function tentangBawaan() {
+            return '<div style="text-align:center;"><img class="ab-logo" src="' + escHtmlGlobal(IMG.logoBulat) + '" alt="Logo LUVIA TV">' +
+                   '<h2>LUVIA TV</h2><p>Segera Hadir!, nantikan info berikutnya</p></div>';
+        }
+
+        let tentangTampil = false;
+        function gambarTentang(html) {
+            tentangTampil = true;
+            const el = document.getElementById('ab-isi');
+            el.innerHTML = bersihkanHtml(html || tentangBawaan());
+            el.querySelectorAll('a[href^="http"]').forEach(a => { a.target = '_blank'; a.rel = 'noopener noreferrer'; });
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            // Media sosial otomatis dari webConfig (videos-data.js)
+            document.getElementById('ab-sosial').innerHTML = webConfig.sosialMedia.map(m =>
+                '<a href="' + escHtmlGlobal(m.link) + '" target="_blank" rel="noopener">' +
+                '<span class="ab-sos-ic"><img src="' + escHtmlGlobal(m.gambar) + '" alt=""></span>' + escHtmlGlobal(m.nama) + '</a>'
+            ).join('');
+
+            // Isi halaman dari Firebase (berubah langsung jika admin menyimpan)
+            if (typeof firebase !== 'undefined' && firebase.apps.length) {
+                firebase.database().ref('site_pages/about').on('value', snap => {
+                    const d = snap.val();
+                    gambarTentang(d && d.html ? d.html : '');
+                }, () => gambarTentang(''));
+                setTimeout(() => { if (!tentangTampil) gambarTentang(''); }, 6000);
+            } else { gambarTentang(''); }
+        });
+    </script>
+</body>
+</html>
