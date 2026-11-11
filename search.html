@@ -15,38 +15,53 @@
     <nav id="navbar-container"></nav>
     <div id="sidebar-container"></div>
 
-    <main class="sr-page">
-        <form class="sr-form" id="sr-form" autocomplete="off">
-            <span data-ikon="search"></span>
-            <input type="search" id="sr-input" placeholder="Cari video atau postingan..." maxlength="80" enterkeyhint="search">
-            <button type="submit" class="sr-btn">Cari</button>
-        </form>
+    <!-- BANNER (sama seperti videos.html / posts.html) -->
+    <div class="hero-banner-full">
+        <div class="hero-banner-bg" data-img="banner"></div>
+    </div>
 
-        <h1 class="sr-judul" id="sr-judul">Pencarian</h1>
-        <p class="sr-ringkas" id="sr-ringkas"></p>
+    <section class="section page-stream-container" style="position: relative; z-index: 1; margin-top: -60px; padding-top: 0;">
+        <div class="container">
+            <h2 class="stream-title" id="sr-judul">Pencarian</h2>
+            <p class="sr-ringkas" id="sr-ringkas"></p>
 
-        <!-- Belum ada kata kunci -->
-        <div id="sr-awal" class="sr-more-wrap" hidden>
-            <a href="videos.html" class="sr-more">Jelajahi semua video ❯</a>
-            <a href="posts.html" class="sr-more">Jelajahi semua postingan ❯</a>
+            <!-- Belum ada kata kunci -->
+            <div id="sr-awal" class="sr-more-wrap" hidden>
+                <a href="videos.html" class="sr-more">Jelajahi semua video ❯</a>
+                <a href="posts.html" class="sr-more">Jelajahi semua postingan ❯</a>
+            </div>
+
+            <div id="sr-hasil" hidden>
+                <!-- ===== VIDEO ===== -->
+                <section class="sr-section">
+                    <h3 class="sr-title">Video <small id="sr-video-n"></small></h3>
+
+                    <div class="filter-wrapper" id="sr-filter" style="display: none; gap: 10px; margin-bottom: 20px; flex-wrap: wrap;">
+                        <div class="dropdown-container">
+                            <button type="button" class="btn-dropdown" id="sr-genre-btn">Category: All▼</button>
+                            <div class="dropdown-list" id="sr-genre-list"></div>
+                        </div>
+                        <div class="dropdown-container">
+                            <button type="button" class="btn-dropdown" id="sr-sort-btn">Sort: Most Relevant ▼</button>
+                            <div class="dropdown-list" id="sr-sort-list"></div>
+                        </div>
+                    </div>
+
+                    <div class="videos-page-grid" id="sr-video-grid"></div>
+                    <p class="sr-kosong" id="sr-video-kosong" hidden></p>
+                    <div class="sr-more-wrap"><a href="videos.html" class="sr-more">Selengkapnya ❯</a></div>
+                </section>
+
+                <!-- ===== POSTINGAN ===== -->
+                <section class="sr-section">
+                    <h3 class="sr-title">Postingan <small id="sr-post-n"></small></h3>
+                    <div class="sr-post-grid" id="sr-post-grid"></div>
+                    <p class="sr-kosong" id="sr-post-kosong" hidden></p>
+                    <div class="sr-more-wrap"><a href="posts.html" class="sr-more">Selengkapnya ❯</a></div>
+                </section>
+            </div>
         </div>
-
-        <div id="sr-hasil" hidden>
-            <section class="sr-section">
-                <h2 class="sr-title">Video <small id="sr-video-n"></small></h2>
-                <div class="videos-page-grid" id="sr-video-grid"></div>
-                <p class="sr-kosong" id="sr-video-kosong" hidden></p>
-                <div class="sr-more-wrap"><a href="videos.html" class="sr-more">Selengkapnya ❯</a></div>
-            </section>
-
-            <section class="sr-section">
-                <h2 class="sr-title">Postingan <small id="sr-post-n"></small></h2>
-                <div class="sr-post-grid" id="sr-post-grid"></div>
-                <p class="sr-kosong" id="sr-post-kosong" hidden></p>
-                <div class="sr-more-wrap"><a href="posts.html" class="sr-more">Selengkapnya ❯</a></div>
-            </section>
-        </div>
-    </main>
+    </section>
 
     <footer>
         <div class="container footer-container">
@@ -63,9 +78,11 @@
         const $ = id => document.getElementById(id);
         const norm = s => String(s == null ? '' : s).toLowerCase().normalize('NFKD').replace(/[\u0300-\u036f]/g, '');
         const params = new URLSearchParams(location.search);
-        let q = (params.get('q') || params.get('search') || '').trim();
+        const q = (params.get('q') || params.get('search') || '').trim();
         let videoSiap = !!window.videoDataSiap;
         let posts = null, views = {};
+        let genreAktif = 'Semua', urutAktif = 'relevan';
+        const URUT = { relevan: 'Most Relevant', newest: 'New Released', oldest: 'Old Released', az: 'A-Z', za: 'Z-A', popular: 'Trending Now' };
 
         const ringkas = n => {
             n = Number(n) || 0;
@@ -74,7 +91,7 @@
             return String(n);
         };
 
-        // Semua kata kunci harus ada. Kecocokan di judul/keterangan bernilai lebih tinggi.
+        // Semua kata kunci harus ada. Kecocokan di judul/caption bernilai lebih tinggi.
         function nilai(judul, gudang, kata) {
             const j = norm(judul), g = norm(gudang);
             let n = 0;
@@ -89,9 +106,19 @@
             return videoList.map(v => ({
                 v: v,
                 n: nilai(v.title, [v.title, v.genre, v.description, v.uploadDate, v.uploadDate ? formatDateIndonesian(v.uploadDate) : ''].join(' '), kata)
-            })).filter(x => x.n >= 0)
-              .sort((a, b) => b.n - a.n || new Date(b.v.uploadDate || 0) - new Date(a.v.uploadDate || 0))
-              .map(x => x.v);
+            })).filter(x => x.n >= 0);
+        }
+        function urutkan(arr) {
+            const tgl = x => x.v.uploadDate ? (new Date(x.v.uploadDate).getTime() || 0) : 0;
+            const jdl = x => String(x.v.title || '').toLowerCase();
+            return arr.sort((a, b) => {
+                if (urutAktif === 'newest') return tgl(b) - tgl(a);
+                if (urutAktif === 'oldest') return tgl(a) - tgl(b);
+                if (urutAktif === 'az') return jdl(a).localeCompare(jdl(b));
+                if (urutAktif === 'za') return jdl(b).localeCompare(jdl(a));
+                if (urutAktif === 'popular') return (b.v.defaultViews || 0) - (a.v.defaultViews || 0);
+                return b.n - a.n || tgl(b) - tgl(a);
+            });
         }
         function cariPost(kata) {
             return Object.keys(posts || {}).map(k => {
@@ -111,28 +138,43 @@
                    '<p class="sr-post-cap">' + esc(p.caption || 'Tanpa keterangan') + '</p></a>';
         }
 
+        function tutupDropdown() { document.querySelectorAll('#sr-filter .dropdown-list').forEach(l => l.classList.remove('show')); }
+
         function gambar() {
             const kata = norm(q).split(/\s+/).filter(Boolean);
-            $('sr-input').value = q;
             document.title = (q ? 'Cari: ' + q + ' - ' : 'PENCARIAN - ') + 'LUVIA STUDIO';
+            $('sr-judul').textContent = q ? 'Hasil Pencarian: “' + q + '”' : 'Pencarian';
 
             if (!kata.length) {
-                $('sr-ringkas').textContent = 'Ketik kata kunci untuk mencari video dan postingan.';
+                $('sr-ringkas').textContent = 'Ketik kata kunci di kolom pencarian atas untuk mencari video dan postingan.';
                 $('sr-hasil').hidden = true; $('sr-awal').hidden = false;
                 return;
             }
             $('sr-awal').hidden = true; $('sr-hasil').hidden = false;
 
             // ----- VIDEO -----
-            const gv = $('sr-video-grid'), kv = $('sr-video-kosong');
+            const gv = $('sr-video-grid'), kv = $('sr-video-kosong'), fl = $('sr-filter');
             let jmlV = null;
             if (!videoSiap) {
-                gv.innerHTML = ''; kv.hidden = false; kv.textContent = 'Memuat video...'; $('sr-video-n').textContent = '';
+                gv.innerHTML = ''; fl.style.display = 'none';
+                kv.hidden = false; kv.textContent = 'Memuat video...'; $('sr-video-n').textContent = '';
             } else {
-                const hv = cariVideo(kata);
-                jmlV = hv.length;
+                const semua = cariVideo(kata);
+                jmlV = semua.length;
+                const genres = Array.from(new Set(semua.map(x => x.v.genre).filter(Boolean)));
+                if (genreAktif !== 'Semua' && genres.indexOf(genreAktif) === -1) genreAktif = 'Semua';
+                const tampil = urutkan(semua.filter(x => genreAktif === 'Semua' || x.v.genre === genreAktif));
+
                 $('sr-video-n').textContent = jmlV;
-                if (jmlV) { kv.hidden = true; gv.style.display = ''; renderAllVideosPage('sr-video-grid', hv); }
+                fl.style.display = jmlV ? 'flex' : 'none';
+                $('sr-genre-btn').innerHTML = 'Category: ' + esc(genreAktif === 'Semua' ? 'All' : genreAktif) + '▼';
+                $('sr-sort-btn').innerHTML = 'Sort: ' + URUT[urutAktif] + ' ▼';
+                $('sr-genre-list').innerHTML = ['Semua'].concat(genres).map(g =>
+                    '<div class="dropdown-item' + (g === genreAktif ? ' active' : '') + '" data-genre="' + esc(g) + '">' + (g === 'Semua' ? 'All' : esc(g)) + '</div>').join('');
+                $('sr-sort-list').innerHTML = Object.keys(URUT).map(k =>
+                    '<div class="dropdown-item' + (k === urutAktif ? ' active' : '') + '" data-urut="' + k + '">' + URUT[k] + '</div>').join('');
+
+                if (jmlV) { kv.hidden = true; gv.style.display = ''; renderAllVideosPage('sr-video-grid', tampil.map(x => x.v)); }
                 else { gv.innerHTML = ''; gv.style.display = 'none'; kv.hidden = false; kv.textContent = 'Tidak ada video yang cocok dengan “' + q + '”.'; }
             }
 
@@ -155,13 +197,25 @@
                 : 'Mencari “' + q + '”...';
         }
 
-        $('sr-form').addEventListener('submit', e => {
-            e.preventDefault();
-            q = $('sr-input').value.trim();
-            history.replaceState(null, '', q ? '?q=' + encodeURIComponent(q) : location.pathname);
-            const nav = $('navSearchInput'); if (nav) nav.value = q;
+        // Dropdown Category & Sort (video)
+        $('sr-filter').addEventListener('click', e => {
+            const tombol = e.target.closest('.btn-dropdown');
+            if (tombol) {
+                e.stopPropagation();
+                const list = tombol.nextElementSibling;
+                const buka = !list.classList.contains('show');
+                tutupDropdown();
+                if (buka) list.classList.add('show');
+                return;
+            }
+            const item = e.target.closest('.dropdown-item');
+            if (!item) return;
+            if (item.dataset.genre !== undefined) genreAktif = item.dataset.genre;
+            if (item.dataset.urut) urutAktif = item.dataset.urut;
+            tutupDropdown();
             gambar();
         });
+        document.addEventListener('click', e => { if (!e.target.closest('#sr-filter')) tutupDropdown(); });
 
         window.addEventListener('videoDataReady', () => { videoSiap = true; gambar(); });
         document.addEventListener('DOMContentLoaded', () => { const nav = $('navSearchInput'); if (nav) nav.value = q; });
