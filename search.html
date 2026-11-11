@@ -1,0 +1,181 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PENCARIAN - LUVIA STUDIO</title>
+    <link rel="stylesheet" href="style.css" />
+    <link rel="icon" type="image/png" data-img="logoBulat">
+
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-database-compat.js"></script>
+</head>
+<body class="page-search">
+
+    <nav id="navbar-container"></nav>
+    <div id="sidebar-container"></div>
+
+    <main class="sr-page">
+        <form class="sr-form" id="sr-form" autocomplete="off">
+            <span data-ikon="search"></span>
+            <input type="search" id="sr-input" placeholder="Cari video atau postingan..." maxlength="80" enterkeyhint="search">
+            <button type="submit" class="sr-btn">Cari</button>
+        </form>
+
+        <h1 class="sr-judul" id="sr-judul">Pencarian</h1>
+        <p class="sr-ringkas" id="sr-ringkas"></p>
+
+        <!-- Belum ada kata kunci -->
+        <div id="sr-awal" class="sr-more-wrap" hidden>
+            <a href="videos.html" class="sr-more">Jelajahi semua video ❯</a>
+            <a href="posts.html" class="sr-more">Jelajahi semua postingan ❯</a>
+        </div>
+
+        <div id="sr-hasil" hidden>
+            <section class="sr-section">
+                <h2 class="sr-title">Video <small id="sr-video-n"></small></h2>
+                <div class="videos-page-grid" id="sr-video-grid"></div>
+                <p class="sr-kosong" id="sr-video-kosong" hidden></p>
+                <div class="sr-more-wrap"><a href="videos.html" class="sr-more">Selengkapnya ❯</a></div>
+            </section>
+
+            <section class="sr-section">
+                <h2 class="sr-title">Postingan <small id="sr-post-n"></small></h2>
+                <div class="sr-post-grid" id="sr-post-grid"></div>
+                <p class="sr-kosong" id="sr-post-kosong" hidden></p>
+                <div class="sr-more-wrap"><a href="posts.html" class="sr-more">Selengkapnya ❯</a></div>
+            </section>
+        </div>
+    </main>
+
+    <footer>
+        <div class="container footer-container">
+            <div class="footer-socials" id="footer-social-container"></div>
+            <p id="teks-footer-copyright">Loading...</p>
+        </div>
+    </footer>
+
+    <script src="videos-data.js"></script>
+    <script src="analytics-tracker.js"></script>
+    <script>
+    (function () {
+        const esc = escHtmlGlobal;
+        const $ = id => document.getElementById(id);
+        const norm = s => String(s == null ? '' : s).toLowerCase().normalize('NFKD').replace(/[\u0300-\u036f]/g, '');
+        const params = new URLSearchParams(location.search);
+        let q = (params.get('q') || params.get('search') || '').trim();
+        let videoSiap = !!window.videoDataSiap;
+        let posts = null, views = {};
+
+        const ringkas = n => {
+            n = Number(n) || 0;
+            if (n >= 1000000) return (n / 1000000).toFixed(1).replace('.0', '') + 'M';
+            if (n >= 1000) return (n / 1000).toFixed(1).replace('.0', '') + 'K';
+            return String(n);
+        };
+
+        // Semua kata kunci harus ada. Kecocokan di judul/keterangan bernilai lebih tinggi.
+        function nilai(judul, gudang, kata) {
+            const j = norm(judul), g = norm(gudang);
+            let n = 0;
+            for (const k of kata) {
+                if (j.includes(k)) n += 2;
+                else if (g.includes(k)) n += 1;
+                else return -1;
+            }
+            return n;
+        }
+        function cariVideo(kata) {
+            return videoList.map(v => ({
+                v: v,
+                n: nilai(v.title, [v.title, v.genre, v.description, v.uploadDate, v.uploadDate ? formatDateIndonesian(v.uploadDate) : ''].join(' '), kata)
+            })).filter(x => x.n >= 0)
+              .sort((a, b) => b.n - a.n || new Date(b.v.uploadDate || 0) - new Date(a.v.uploadDate || 0))
+              .map(x => x.v);
+        }
+        function cariPost(kata) {
+            return Object.keys(posts || {}).map(k => {
+                const p = posts[k];
+                return { k: k, p: p, n: nilai(p.caption, [p.caption, p.uploadDate, p.uploadDate ? formatDateIndonesian(p.uploadDate) : ''].join(' '), kata) };
+            }).filter(x => x.n >= 0)
+              .sort((a, b) => b.n - a.n || (b.p.timestamp || 0) - (a.p.timestamp || 0));
+        }
+        function kartuPost(x) {
+            const p = x.p, url = p.videoUrl || p.imageUrl || '';
+            const vid = /\.(mp4|webm|mov)(\?|$)/i.test(url);
+            const media = vid
+                ? '<video src="' + esc(url) + '" poster="' + esc(p.thumbnailUrl || '') + '" preload="none" playsinline muted loop></video><span class="sr-post-tipe">' + icon('play') + '</span>'
+                : '<img src="' + esc(url) + '" alt="Postingan" loading="lazy">';
+            return '<a href="post.html?id=' + encodeURIComponent(x.k) + '" class="sr-post">' +
+                   '<div class="sr-post-media">' + media + '<span class="sr-post-views">' + icon('eye') + ' ' + ringkas(views[x.k]) + '</span></div>' +
+                   '<p class="sr-post-cap">' + esc(p.caption || 'Tanpa keterangan') + '</p></a>';
+        }
+
+        function gambar() {
+            const kata = norm(q).split(/\s+/).filter(Boolean);
+            $('sr-input').value = q;
+            document.title = (q ? 'Cari: ' + q + ' - ' : 'PENCARIAN - ') + 'LUVIA STUDIO';
+
+            if (!kata.length) {
+                $('sr-ringkas').textContent = 'Ketik kata kunci untuk mencari video dan postingan.';
+                $('sr-hasil').hidden = true; $('sr-awal').hidden = false;
+                return;
+            }
+            $('sr-awal').hidden = true; $('sr-hasil').hidden = false;
+
+            // ----- VIDEO -----
+            const gv = $('sr-video-grid'), kv = $('sr-video-kosong');
+            let jmlV = null;
+            if (!videoSiap) {
+                gv.innerHTML = ''; kv.hidden = false; kv.textContent = 'Memuat video...'; $('sr-video-n').textContent = '';
+            } else {
+                const hv = cariVideo(kata);
+                jmlV = hv.length;
+                $('sr-video-n').textContent = jmlV;
+                if (jmlV) { kv.hidden = true; gv.style.display = ''; renderAllVideosPage('sr-video-grid', hv); }
+                else { gv.innerHTML = ''; gv.style.display = 'none'; kv.hidden = false; kv.textContent = 'Tidak ada video yang cocok dengan “' + q + '”.'; }
+            }
+
+            // ----- POSTINGAN -----
+            const gp = $('sr-post-grid'), kp = $('sr-post-kosong');
+            let jmlP = null;
+            if (posts === null) {
+                gp.innerHTML = ''; kp.hidden = false; kp.textContent = 'Memuat postingan...'; $('sr-post-n').textContent = '';
+            } else {
+                const hp = cariPost(kata);
+                jmlP = hp.length;
+                $('sr-post-n').textContent = jmlP;
+                gp.innerHTML = hp.map(kartuPost).join('');
+                kp.hidden = !!jmlP;
+                kp.textContent = 'Tidak ada postingan yang cocok dengan “' + q + '”.';
+            }
+
+            $('sr-ringkas').textContent = (jmlV !== null && jmlP !== null)
+                ? jmlV + ' video • ' + jmlP + ' postingan untuk “' + q + '”'
+                : 'Mencari “' + q + '”...';
+        }
+
+        $('sr-form').addEventListener('submit', e => {
+            e.preventDefault();
+            q = $('sr-input').value.trim();
+            history.replaceState(null, '', q ? '?q=' + encodeURIComponent(q) : location.pathname);
+            const nav = $('navSearchInput'); if (nav) nav.value = q;
+            gambar();
+        });
+
+        window.addEventListener('videoDataReady', () => { videoSiap = true; gambar(); });
+        document.addEventListener('DOMContentLoaded', () => { const nav = $('navSearchInput'); if (nav) nav.value = q; });
+
+        if (typeof firebase !== 'undefined' && firebase.apps.length) {
+            Promise.all([
+                firebase.database().ref('posts').once('value'),
+                firebase.database().ref('post_views').once('value')
+            ]).then(r => { posts = r[0].val() || {}; views = r[1].val() || {}; gambar(); })
+              .catch(() => { posts = {}; gambar(); });
+        } else { posts = {}; }
+
+        gambar();
+    })();
+    </script>
+</body>
+</html>
