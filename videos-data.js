@@ -457,7 +457,7 @@ const webConfig = {
         { nama: "Program TV",     pendek: "Program", link: "index.html#projects",      ikon: "tv",      rail: true },
         { nama: "Live TV",        pendek: "Live",    link: "index.html#livestreaming", ikon: "siaran",  rail: true },
         { nama: "Help Center",    pendek: "Bantuan", link: "support.html",             ikon: "bantuan", rail: true },
-        { nama: "About Us",       pendek: "Tentang", link: "index.html#about",         ikon: "info",    rail: false }
+        { nama: "About Us",       pendek: "Tentang", link: "about.html",               ikon: "info",    rail: false }
     ],
 
     // TEKS TAUTAN DI BAWAH MENU (otomatis dipisah dengan  " · ").
@@ -465,7 +465,7 @@ const webConfig = {
     linkTeks: [
         { nama: "Beri Rating",  aksi: "rating" },
         { nama: "Help Center",  link: "support.html" },
-        { nama: "About Us", link: "index.html#about" },
+        { nama: "About Us", link: "about.html" },
         { nama: "YouTube",      link: "https://www.youtube.com/@luthfi-fx", baru: true }
     ],
 
@@ -512,7 +512,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 
                 <!-- 4. Kolom Pencarian & Fitur Live Search -->
                 <form class="nav-search" id="navSearchForm" onsubmit="return false;">
-                    <input type="text" id="navSearchInput" placeholder="Search Videos..." aria-label="Cari" autocomplete="off">
+                    <input type="text" id="navSearchInput" placeholder="Search..." aria-label="Cari" autocomplete="off">
                     <button type="submit">${icon('search')}</button>
                     <div class="search-dropdown-list" id="searchDropdownList"></div>
                 </form>
@@ -1032,8 +1032,8 @@ document.addEventListener('DOMContentLoaded', () => {
                 e.preventDefault();
                 const q = searchInput.value.trim();
                 if (q) {
-                    // Paksa pindah ke halaman videos.html dari halaman manapun (termasuk Index)
-                    window.location.href = `videos.html?search=${encodeURIComponent(q)}`;
+                    // Pindah ke halaman pencarian (video + postingan)
+                    window.location.href = `search.html?q=${encodeURIComponent(q)}`;
                 }
             });
         }
@@ -1189,17 +1189,28 @@ function bangunPopup(p, onTutup) {
     const area = card.querySelector('.pop-btns');
     let tombol = Array.isArray(p.tombol) ? p.tombol : Object.values(p.tombol || {});
     if (!tombol.length) tombol = [{ teks: 'Tutup', link: '' }];
-    tombol.forEach(t => {
+        tombol.forEach(t => {
         const link = (t.link || '').trim();
         if (/^\s*javascript:/i.test(link)) return;            // keamanan
-        const el = document.createElement(link ? 'a' : 'button');
-        el.className = 'pop-btn' + (link ? '' : ' sekunder');
-        el.textContent = t.teks || (link ? 'Buka' : 'Tutup');
-        if (link) {
+        // Tujuan khusus: "aksi:rating" = membuka pop-up Beri Rating
+        const aksi = /^aksi:/i.test(link) ? link.slice(5).trim().toLowerCase() : '';
+        const adaLink = !!link && !aksi;
+        const el = document.createElement(adaLink ? 'a' : 'button');
+        el.className = 'pop-btn' + ((adaLink || aksi) ? '' : ' sekunder');
+        el.textContent = t.teks || (adaLink ? 'Buka' : (aksi ? 'Beri Rating' : 'Tutup'));
+        if (adaLink) {
             el.href = link;
             if (/^https?:\/\//i.test(link) && link.indexOf(location.origin) !== 0) { el.target = '_blank'; el.rel = 'noopener'; }
         } else { el.type = 'button'; }
-        el.addEventListener('click', tutup);
+        el.addEventListener('click', () => {
+            tutup();
+            if (aksi === 'rating') {
+                setTimeout(() => {
+                    if (HALAMAN_ADMIN) tampilToast('Pratinjau: tombol ini akan membuka pop-up Beri Rating');
+                    else bukaRating();
+                }, 150);
+            }
+        });
         area.appendChild(el);
     });
 
@@ -1860,3 +1871,27 @@ function waMenu(jangkar, daftar) {
     setTimeout(() => { waPenutup = waTutupMenu; document.addEventListener('click', waPenutup); }, 0);
 }
 document.addEventListener('keydown', (e) => { if (e.key === 'Escape') waTutupMenu(); });
+
+
+// ----------------------------------------------------------------------
+//  PEMBERSIH HTML (untuk halaman Tentang Kami): buang script, onclick, dll
+// ----------------------------------------------------------------------
+function bersihkanHtml(html) {
+    const doc = new DOMParser().parseFromString('<div>' + String(html || '') + '</div>', 'text/html');
+    const root = doc.body.firstChild;
+    const BOLEH = ['P','BR','DIV','SPAN','B','STRONG','I','EM','U','S','STRIKE','H1','H2','H3','H4','H5','H6','UL','OL','LI','A','IMG','BLOCKQUOTE','HR','FONT','SUB','SUP','MARK','FIGURE','FIGCAPTION'];
+    const ATRIBUT = ['class','style','href','src','alt','target','rel','width','height','color','face','size','align','title'];
+    (function telusuri(el) {
+        Array.from(el.children).forEach(ch => {
+            if (BOLEH.indexOf(ch.tagName) === -1) { ch.remove(); return; }
+            Array.from(ch.attributes).forEach(a => {
+                const n = a.name.toLowerCase(), v = a.value;
+                if (ATRIBUT.indexOf(n) === -1) { ch.removeAttribute(a.name); return; }
+                if ((n === 'href' || n === 'src') && /^\s*(javascript|vbscript|data(?!:image\/)):/i.test(v)) ch.removeAttribute(a.name);
+                if (n === 'style' && /(expression|javascript|@import|position\s*:)/i.test(v)) ch.removeAttribute(a.name);
+            });
+            telusuri(ch);
+        });
+    })(root);
+    return root.innerHTML;
+}
