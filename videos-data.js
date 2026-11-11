@@ -976,51 +976,99 @@ document.addEventListener('DOMContentLoaded', () => {
 
         if (searchInput && searchDropdown && searchForm) {
             
-            // A. FITUR LIVE SEARCH (AUTOCOMPLETE DROPDOWN)
-            searchInput.addEventListener('input', function() {
-                const query = this.value.toLowerCase().trim();
-                if (query.length === 0) { searchDropdown.classList.remove('show'); return; }
-
-                if (typeof videoList !== 'undefined') {
-                    // Cari berdasarkan Judul, Genre, Tanggal, atau Deskripsi
-                    const results = videoList.filter(vid => 
-                        (vid.title && vid.title.toLowerCase().includes(query)) || 
-                        (vid.genre && vid.genre.toLowerCase().includes(query)) ||
-                        (vid.uploadDate && vid.uploadDate.includes(query)) ||
-                        (vid.description && vid.description.toLowerCase().includes(query))
-                    ).slice(0, 6); 
-
-                    if (results.length > 0) {
-                        let html = '';
-                        results.forEach(vid => {
-                            html += `
-                                <a href="watch.html?id=${vid.id}" class="search-result-item">
-                                    <img src="${vid.thumb}" alt="Thumbnail">
-                                    <div class="search-result-info">
-                                        <h4>${vid.title}</h4>
-                                        <p>${vid.genre || 'Umum'} • <span id="search-view-${vid.id}">Memuat...</span></p>
-                                    </div>
-                                </a>
-                            `;
-                        });
-                        searchDropdown.innerHTML = html;
-                        searchDropdown.classList.add('show');
-
-                        // Panggil Firebase untuk jumlah view real-time di Dropdown
-                        results.forEach(vid => {
-                            if (typeof listenVideoViews === 'function') {
-                                listenVideoViews(vid.id, vid.defaultViews || 0, (totalViews) => {
-                                    const viewEl = document.getElementById(`search-view-${vid.id}`);
-                                    if (viewEl) viewEl.innerText = `${formatViews(totalViews)}`;
-                                });
-                            }
-                        });
-                    } else {
-                        searchDropdown.innerHTML = `<div style="padding: 15px; text-align: center; color: #bbb; font-size: 0.85rem;">Tidak ada hasil untuk "${query}"</div>`;
-                        searchDropdown.classList.add('show');
-                    }
+                       // A. LIVE SEARCH CAMPURAN (VIDEO + POSTINGAN), hanya yang relevan
+            let postSaran = null; // cache postingan dari Firebase
+            const nSaran = s => String(s == null ? '' : s).toLowerCase().normalize('NFKD').replace(/[\u0300-\u036f]/g, '');
+            const skorSaran = (judul, gudang, kata) => {
+                const j = nSaran(judul), g = nSaran(gudang);
+                let n = 0;
+                for (const k of kata) {
+                    if (j.includes(k)) n += 2;
+                    else if (g.includes(k)) n += 1;
+                    else return -1;
                 }
-            });
+                return n;
+            };
+            const potongSaran = (s, maks) => {
+                s = String(s || '').replace(/\s+/g, ' ').trim();
+                return s.length > maks ? s.slice(0, maks - 1) + '…' : s;
+            };
+
+            function tampilSaran() {
+                const query = searchInput.value.trim();
+                const kata = nSaran(query).split(/\s+/).filter(Boolean);
+                if (!kata.length) { searchDropdown.classList.remove('show'); return; }
+
+                const hasil = [];
+                if (typeof videoList !== 'undefined') {
+                    videoList.forEach(vid => {
+                        const n = skorSaran(vid.title, [vid.title, vid.genre, vid.uploadDate, vid.description].join(' '), kata);
+                        if (n >= 0) hasil.push({ tipe: 'video', n: n, t: new Date(vid.uploadDate || 0).getTime() || 0, vid: vid });
+                    });
+                }
+                Object.keys(postSaran || {}).forEach(k => {
+                    const p = postSaran[k];
+                    const n = skorSaran(p.caption, [p.caption, p.uploadDate].join(' '), kata);
+                    if (n >= 0) hasil.push({ tipe: 'post', n: n, t: p.timestamp || 0, key: k, p: p });
+                });
+                hasil.sort((a, b) => b.n - a.n || b.t - a.t);
+                const tampil = hasil.slice(0, 6);
+
+                if (!tampil.length) {
+                    searchDropdown.innerHTML = '<div style="padding: 15px; text-align: center; color: #bbb; font-size: 0.85rem;">Tidak ada hasil untuk "' + escHtmlGlobal(query) + '"</div>' +
+                        '<a href="search.html?q=' + encodeURIComponent(query) + '" class="search-semua">Buka halaman pencarian ❯</a>';
+                    searchDropdown.classList.add('show');
+                    return;
+                }
+
+                let html = '';
+                tampil.forEach(x => {
+                    if (x.tipe === 'video') {
+                        const vid = x.vid;
+                        html += `
+                            <a href="watch.html?id=${vid.id}" class="search-result-item">
+                                <img src="${vid.thumb}" alt="Thumbnail">
+                                <div class="search-result-info">
+                                    <h4>${vid.title}</h4>
+                                    <p><span class="sr-tipe sr-tipe-video">Video</span> ${vid.genre || 'Umum'} • <span id="search-view-${vid.id}">Memuat...</span></p>
+                                </div>
+                            </a>`;
+                    } else {
+                        const p = x.p, sumber = p.videoUrl || p.imageUrl || '';
+                        const isVid = /\.(mp4|webm|mov)(\?|$)/i.test(sumber);
+                        const media = (isVid && !p.thumbnailUrl)
+                            ? '<video src="' + escHtmlGlobal(sumber) + '#t=0.5" preload="metadata" muted playsinline></video>'
+                            : '<img src="' + escHtmlGlobal(p.thumbnailUrl || sumber) + '" alt="Postingan">';
+                        html += `
+                            <a href="post.html?id=${encodeURIComponent(x.key)}" class="search-result-item">
+                                ${media}
+                                <div class="search-result-info">
+                                    <h4>LUVIA STUDIO TV</h4>
+                                    <p class="sr-cap"><span class="sr-tipe sr-tipe-post">Postingan</span> ${escHtmlGlobal(potongSaran(p.caption || 'Tanpa keterangan', 90))}</p>
+                                </div>
+                            </a>`;
+                    }
+                });
+                html += '<a href="search.html?q=' + encodeURIComponent(query) + '" class="search-semua">Lihat semua hasil untuk “' + escHtmlGlobal(query) + '” ❯</a>';
+                searchDropdown.innerHTML = html;
+                searchDropdown.classList.add('show');
+
+                tampil.forEach(x => {
+                    if (x.tipe !== 'video' || typeof listenVideoViews !== 'function') return;
+                    listenVideoViews(x.vid.id, x.vid.defaultViews || 0, (totalViews) => {
+                        const viewEl = document.getElementById(`search-view-${x.vid.id}`);
+                        if (viewEl) viewEl.innerText = `${formatViews(totalViews)}`;
+                    });
+                });
+            }
+
+            // Muat postingan sekali di awal agar saran langsung campuran
+            if (typeof firebase !== 'undefined' && firebase.apps.length) {
+                firebase.database().ref('posts').once('value')
+                    .then(s => { postSaran = s.val() || {}; if (searchDropdown.classList.contains('show')) tampilSaran(); })
+                    .catch(() => { postSaran = {}; });
+            }
+            searchInput.addEventListener('input', tampilSaran);
 
             // Sembunyikan dropdown jika user mengeklik area luar pencarian
             document.addEventListener('click', function(e) {
@@ -1894,4 +1942,41 @@ function bersihkanHtml(html) {
         });
     })(root);
     return root.innerHTML;
+}
+
+
+// ----------------------------------------------------------------------
+//  FONT KUSTOM (diunggah dari admin, disimpan di Firebase)
+// ----------------------------------------------------------------------
+function daftarkanFont(id, nama, v) {
+    id = String(id).replace(/[^A-Za-z0-9_-]/g, '');
+    if (!v || !v.data || !id || document.getElementById('ff-' + id)) return;
+    if (['woff2', 'woff', 'truetype', 'opentype'].indexOf(v.format) === -1) return;
+    if (!/^data:font\/(woff2|woff|ttf|otf);base64,[A-Za-z0-9+\/=]+$/.test(v.data)) return;
+    const aman = String(nama || '').replace(/[^A-Za-z0-9 _-]/g, '').trim();
+    if (!aman) return;
+    const st = document.createElement('style');
+    st.id = 'ff-' + id;
+    st.textContent = '@font-face{font-family:"' + aman + '";src:url("' + v.data + '") format("' + v.format + '");font-display:swap;}';
+    document.head.appendChild(st);
+}
+
+// Halaman publik: hanya mengunduh font yang benar-benar dipakai di isi halaman
+function muatFontKhusus(root) {
+    if (typeof firebase === 'undefined' || !firebase.apps.length || !root) return;
+    const dipakai = {};
+    root.querySelectorAll('[style], font[face]').forEach(el => {
+        const f = (el.style && el.style.fontFamily) || el.getAttribute('face') || '';
+        f.split(',').forEach(n => { const k = n.replace(/["']/g, '').trim().toLowerCase(); if (k) dipakai[k] = true; });
+    });
+    if (!Object.keys(dipakai).length) return;
+    firebase.database().ref('site_pages/font_list').once('value').then(s => {
+        const list = s.val() || {};
+        Object.keys(list).forEach(id => {
+            if (!dipakai[String(list[id].nama || '').toLowerCase()]) return;
+            if (document.getElementById('ff-' + id)) return;
+            firebase.database().ref('site_pages/font_data/' + id).once('value')
+                .then(d => daftarkanFont(id, list[id].nama, d.val()));
+        });
+    }).catch(() => {});
 }
