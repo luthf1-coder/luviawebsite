@@ -374,7 +374,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     executeSearchOnHome(q);
                     searchDropdown.classList.remove('show');
                 } else {
-                    window.location.href = `videos.html?search=${encodeURIComponent(q)}`;
+                    window.location.href = `search.html?q=${encodeURIComponent(q)}`;
                 }
             }
         });
