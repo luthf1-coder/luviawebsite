@@ -108,17 +108,6 @@
         </div>
     </section>
 
-    <!-- BAGIAN TENTANG DIPINDAHKAN KE SINI (Sebelum Follow Us) -->
-    <section id="about" class="section">
-        <div class="container">
-            <div style="text-align: center;">
-                <img data-img="logoBulat" alt="Logo LUVIA STUDIO TV" class="profile-img">
-                <h2> LUVIA TV</h2>
-                <p>Segera Hadir!, nantikan info berikutnya</p>
-            </div>       
-        </div>
-    </section>
-
     <footer>
         <div id="contact" class="container footer-container">
             <!-- Tempat Ikon Sosial Media (Dikosongkan karena akan diisi otomatis oleh Javascript) -->
@@ -300,6 +289,50 @@ window.addEventListener('videoDataReady', () => {
     renderHeroCarousel();
 });
 
+
+// --- KENDALI SLIDER: garis posisi + panah geser ---
+function pasangKendaliSlider(id) {
+    const s = document.getElementById(id);
+    if (!s || s.parentElement.classList.contains('sl-wrap')) return;
+    const wrap = document.createElement('div');
+    wrap.className = 'sl-wrap';
+    s.parentNode.insertBefore(wrap, s);
+    wrap.appendChild(s);
+    wrap.insertAdjacentHTML('beforeend',
+        '<button type="button" class="sl-arrow sl-prev" aria-label="Geser ke kiri">' + icon('arrow-left') + '</button>' +
+        '<button type="button" class="sl-arrow sl-next" aria-label="Geser ke kanan">' + icon('arrow-right') + '</button>' +
+        '<div class="sl-track" aria-hidden="true"><div class="sl-thumb"></div></div>');
+    const prev = wrap.querySelector('.sl-prev'), next = wrap.querySelector('.sl-next');
+    const track = wrap.querySelector('.sl-track'), thumb = wrap.querySelector('.sl-thumb');
+
+    function update() {
+        const maks = s.scrollWidth - s.clientWidth;
+        const ada = maks > 4;
+        wrap.classList.toggle('sl-ada', ada);
+        if (!ada) return;
+        const lebar = Math.max(12, (s.clientWidth / s.scrollWidth) * 100);
+        thumb.style.width = lebar + '%';
+        thumb.style.left = (s.scrollLeft / maks) * (100 - lebar) + '%';
+        prev.disabled = s.scrollLeft <= 2;
+        next.disabled = s.scrollLeft >= maks - 2;
+    }
+    const geser = arah => s.scrollBy({ left: arah * Math.max(s.clientWidth * 0.85, 200), behavior: 'smooth' });
+    prev.onclick = () => geser(-1);
+    next.onclick = () => geser(1);
+    track.addEventListener('click', e => {
+        const r = track.getBoundingClientRect();
+        const maks = s.scrollWidth - s.clientWidth;
+        s.scrollTo({ left: ((e.clientX - r.left) / r.width) * maks, behavior: 'smooth' });
+    });
+    s.addEventListener('scroll', update, { passive: true });
+    window.addEventListener('resize', update);
+    new MutationObserver(update).observe(s, { childList: true });
+    if (window.ResizeObserver) new ResizeObserver(update).observe(s);
+    update();
+}
+pasangKendaliSlider('home-recommendations-slider');
+pasangKendaliSlider('home-trending-slider');
+        
     </script>
 </body>
 </html>
