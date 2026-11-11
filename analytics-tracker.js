@@ -38,7 +38,7 @@ try { if (localStorage.getItem('luvia_cookie_consent') !== 'ya') return; } catch
     // Nama halaman dari URL
     var page = (location.pathname.split('/').pop() || 'index').replace('.html', '') || 'index';
     if (page === 'admin') return;
-    var daftar = ['index', 'videos', 'watch', 'posts', 'post', 'program', 'livestream', 'support'];
+    var daftar = ['index', 'videos', 'watch', 'posts', 'post', 'program', 'livestream', 'support', 'about', 'search'];
     if (daftar.indexOf(page) === -1) page = 'lainnya';
 
     // 1. Pengunjung harian (dicatat sekali per hari per perangkat)
