@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>LUVIA STUDIO - ADMIN PANEL</title>
     <link rel="stylesheet" href="style.css" />
+        <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Poppins:wght@500;600;700&family=Montserrat:wght@500;700&family=Playfair+Display:wght@600;700&family=Merriweather:wght@400;700&display=swap" rel="stylesheet">
     <link rel="icon" type="image/png" data-img="logoBulat">
     
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
@@ -52,6 +53,7 @@
             <button class="tab-btn" onclick="switchTab('tab-platform-live', this); muatPlatformLive();">📡 Bot Backup Live</button>
             <button class="tab-btn" onclick="switchTab('tab-popup', this); muatDaftarPopup();">📢 Pop-up</button>
             <button class="tab-btn" onclick="switchTab('tab-rating', this); muatRating();">⭐ Rating & Ulasan</button>
+            <button class="tab-btn" onclick="switchTab('tab-tentang', this); muatEditorTentang();">📄 Tentang Kami</button>
         </div>
 
 <!-- 1. TAMBAH VIDEO -->
@@ -94,7 +96,11 @@
                 <button id="btn-batal-edit" class="btn-submit-comment" style="background: #ff4d4d; display: none; padding: 10px 20px;" onclick="batalEditVideo()">✖ Batal</button>
             </div>
             
-            <div id="list-hapus-vid" style="margin-top: 30px;"></div>
+            <div id="list-hapus-vid" style="margin-top: 30px;">
+                <h4 style="color:#ff4d4d; border-top:1px solid #333; margin-top:20px; padding-top:10px; display:flex; justify-content:space-between; align-items:center; gap:10px; flex-wrap:wrap;">Daftar Semua Video <button class="btn-reset" onclick="resetViewsSemuaVideo()">↺ Reset Semua Viewers</button></h4>
+                <div class="admin-form-group"><input type="text" id="vid-cari-admin" placeholder="🔍 Cari video (judul, genre, ID, visibilitas)..." oninput="renderDaftarVideoAdmin()" autocomplete="off"></div>
+                <div id="vid-list-isi"><p style="color:#bbb; font-size:13px;">Memuat video...</p></div>
+            </div>
         </div>
         <!-- 2. BUAT PROGRAM -->
         <div id="tab-buat-program" class="panel">
@@ -311,11 +317,13 @@
         <label>Tombol</label>
         <div id="pop-tombol-list"></div>
         <button type="button" class="btn-edit" onclick="popTambahTombol()">➕ Tambah Tombol</button>
-        <p style="font-size:12px; color:#999; margin:8px 0 0;">Kolom "Tujuan" dikosongkan = tombol hanya menutup pesan.</p>
+        <p style="font-size:12px; color:#999; margin:8px 0 0;">Kolom "Tujuan" dikosongkan = tombol hanya menutup pesan. Ketik/pilih "aksi:rating" = tombol membuka pop-up Beri Rating.</p>
     </div>
     <datalist id="dl-tujuan">
+        <option value="aksi:rating" label="Buka pop-up Beri Rating">
         <option value="index.html"><option value="videos.html"><option value="posts.html">
-        <option value="livestream.html"><option value="support.html"><option value="https://">
+        <option value="livestream.html"><option value="support.html"><option value="about.html">
+        <option value="https://">
     </datalist>
 
     <div style="display:flex; gap:10px; flex-wrap:wrap;">
@@ -347,7 +355,68 @@
 
     <div id="rt-list"><p class="rt-kosong">Memuat ulasan...</p></div>
 </div>
-        
+
+
+<!-- TENTANG KAMI (EDITOR GAYA WORD) -->
+<div id="tab-tentang" class="panel">
+    <h3 style="margin-top:0;">📄 Halaman Tentang Kami</h3>
+    <p style="color:#bbb; font-size:13px; margin-top:-6px;">Atur isi halaman <b>about.html</b> seperti di Word. Ikon media sosial di bawah halaman otomatis mengikuti daftar sosmed di <b>videos-data.js</b>.</p>
+
+    <div class="ab-toolbar" onmousedown="if(event.target.closest('button')) event.preventDefault()">
+        <div class="ab-grup">
+            <button type="button" class="ab-tb" title="Urungkan (Ctrl+Z)" onclick="abExec('undo')">↶</button>
+            <button type="button" class="ab-tb" title="Ulangi (Ctrl+Y)" onclick="abExec('redo')">↷</button>
+        </div>
+        <div class="ab-grup">
+            <select class="ab-sel" onchange="abGaya(this)">
+                <option value="">Gaya teks</option><option value="p">Paragraf</option>
+                <option value="h2">Judul Besar</option><option value="h3">Judul Sedang</option>
+                <option value="h4">Judul Kecil</option><option value="blockquote">Kutipan</option>
+            </select>
+            <select class="ab-sel" onchange="abFont(this)">
+                <option value="">Font</option>
+                <option value="Inter">Inter</option><option value="Poppins">Poppins</option>
+                <option value="Montserrat">Montserrat</option><option value="Playfair Display">Playfair Display</option>
+                <option value="Merriweather">Merriweather</option><option value="Segoe UI">Segoe UI</option>
+                <option value="Arial">Arial</option>
+            </select>
+            <select class="ab-sel" onchange="abUkuran(this)">
+                <option value="">Ukuran</option><option value="2">Kecil</option><option value="3">Normal</option>
+                <option value="4">Sedang</option><option value="5">Besar</option><option value="6">Sangat besar</option>
+            </select>
+        </div>
+        <div class="ab-grup">
+            <button type="button" class="ab-tb" title="Tebal (Ctrl+B)" onclick="abExec('bold')"><b>B</b></button>
+            <button type="button" class="ab-tb" title="Miring (Ctrl+I)" onclick="abExec('italic')"><i>I</i></button>
+            <button type="button" class="ab-tb" title="Garis bawah (Ctrl+U)" onclick="abExec('underline')"><u>U</u></button>
+            <button type="button" class="ab-tb" title="Coret" onclick="abExec('strikeThrough')"><s>S</s></button>
+            <input type="color" class="ab-warna" value="#ffffff" title="Warna teks" onchange="abExec('foreColor', this.value)">
+            <input type="color" class="ab-warna" value="#ff914d" title="Sorot teks" onchange="abExec('hiliteColor', this.value)">
+        </div>
+        <div class="ab-grup">
+            <button type="button" class="ab-tb" title="Rata kiri" onclick="abExec('justifyLeft')">Kiri</button>
+            <button type="button" class="ab-tb" title="Rata tengah" onclick="abExec('justifyCenter')">Tengah</button>
+            <button type="button" class="ab-tb" title="Rata kanan" onclick="abExec('justifyRight')">Kanan</button>
+            <button type="button" class="ab-tb" title="Rata kiri-kanan" onclick="abExec('justifyFull')">Rata</button>
+        </div>
+        <div class="ab-grup">
+            <button type="button" class="ab-tb" title="Daftar poin" onclick="abExec('insertUnorderedList')">• Poin</button>
+            <button type="button" class="ab-tb" title="Daftar nomor" onclick="abExec('insertOrderedList')">1. Nomor</button>
+            <button type="button" class="ab-tb" title="Sisipkan link" onclick="abLink()">🔗 Link</button>
+            <button type="button" class="ab-tb" title="Sisipkan gambar dari link" onclick="abGambar()">🖼️ Gambar</button>
+            <button type="button" class="ab-tb" title="Garis pemisah" onclick="abExec('insertHorizontalRule')">―</button>
+            <button type="button" class="ab-tb" title="Hapus format" onclick="abExec('removeFormat')">Tx</button>
+        </div>
+    </div>
+    <div id="ab-editor" class="ab-editor ab-content" contenteditable="true" spellcheck="true"></div>
+
+    <div class="ab-bar">
+        <button type="button" class="btn-submit-comment" onclick="simpanTentang()">💾 Simpan Halaman</button>
+        <a href="about.html" target="_blank" class="btn-edit" style="text-decoration:none; padding:12px 18px; font-size:13px;">👁️ Lihat Halaman</a>
+        <button type="button" class="btn-reset" style="padding:12px 18px; font-size:13px;" onclick="abBawaan()">↺ Kembalikan Bawaan</button>
+        <span id="ab-status" style="font-size:12px; color:#53fc18;"></span>
+    </div>
+</div>
         
         <!-- 5. TAMBAH / KELOLA POSTINGAN -->
 <div id="tab-postingan" class="panel">
@@ -749,56 +818,88 @@ function hapusProgram(id) {
         // ==========================================
         // Tambahkan div ini secara virtual di bawah form input pada admin.html menggunakan JS (tanpa ubah HTML)
         // 3. UPDATE: DAFTAR VIDEO DENGAN THUMBNAIL & TOMBOL ANALITIK
-        function muatDaftarHapus() {
-            // A. DAFTAR SEMUA VIDEO (GABUNGAN BOT & FIREBASE)
-            firebase.database().ref('videos_manual').on('value', snap => {
-                let html = '<h4 style="color:#ff4d4d; border-top:1px solid #333; margin-top:20px; padding-top:10px; display:flex; justify-content:space-between; align-items:center; gap:10px; flex-wrap:wrap;">Daftar Semua Video <button class="btn-reset" onclick="resetViewsSemuaVideo()">↺ Reset Semua Viewers</button></h4>';
-                
-                const adminData = snap.exists() ? snap.val() : {};
-                let allVideos = [];
-                
-                // Masukkan data dari Firebase (Admin)
-                Object.keys(adminData).forEach(k => allVideos.push({ key: k, data: adminData[k], source: 'firebase' }));
-                
-                // Masukkan data dari Bot (GitHub) yang belum disentuh Admin
-                if(typeof botVideos !== 'undefined') {
-                    botVideos.forEach(bv => {
-                        if(!adminData[bv.id]) allVideos.push({ key: bv.id, data: bv, source: 'bot' });
-                    });
-                }
-                
-                // Render tampilannya ke HTML
-                allVideos.reverse().forEach(item => {
-                    const k = item.key; const v = item.data;
-                    const visStatus = v.visibility === 'pribadi' ? '🔒 Pribadi' : (v.visibility === 'unlisted' ? '🔗 Tdk Publik' : '🌍 Publik');
-                    const thumbImg = v.thumb ? v.thumb : IMG.logoBulat;
-                    const safeTitle = v.title.replace(/'/g, "\\'");
-                    const badgeBot = item.source === 'bot' ? '<span style="background:#8c52ff; color:white; padding:2px 5px; border-radius:3px; font-size:9px; margin-left:5px;">🤖 BOT</span>' : '<span style="background:#ff914d; color:white; padding:2px 5px; border-radius:3px; font-size:9px; margin-left:5px;">🔥 ADMIN</span>';
-                    
-                    html += `
-                    <div class="admin-list-item">
-                        <a href="watch.html?id=${encodeURIComponent(k)}" class="admin-list-thumb-link" onclick="return bukaPratinjau(this.href)"><img src="${thumbImg}" class="admin-list-thumb"></a>
-<div class="admin-list-info">
-    <a href="watch.html?id=${encodeURIComponent(k)}" class="admin-link" onclick="return bukaPratinjau(this.href)">
-        <div style="font-weight:bold; font-size:14px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">${v.title}</div>
-    </a>
-    <div style="font-size:11px; color:#bbb; margin-top:4px;">${visStatus} ${badgeBot} • ID: ${k}</div>
-</div>
-                        <div class="admin-list-actions">
-                            <button class="btn-stats" onclick="bukaAnalitik('${k}', '${safeTitle}')">📊</button>
-                            <button class="btn-reset" onclick="resetViewsVideo('${k}', '${safeTitle}')" title="Reset viewers">↺ Reset</button>
-                            <button class="btn-edit" onclick="editVideoManual('${k}')">✎ Edit</button>
-                            <button class="btn-delete" onclick="hapusData('videos_manual/${k}')">🗑️</button>
-                        </div>
-                    </div>`; 
-                });
-                
-                if(!document.getElementById('list-hapus-vid')) {
-                    const div = document.createElement('div'); div.id = 'list-hapus-vid'; document.getElementById('tab-video').appendChild(div);
-                }
-                document.getElementById('list-hapus-vid').innerHTML = html;
+            let daftarVideoAdmin = [];
+
+        function renderDaftarVideoAdmin() {
+            const wadah = document.getElementById('vid-list-isi');
+            if (!wadah) return;
+            const q = ((document.getElementById('vid-cari-admin') || {}).value || '').toLowerCase().trim();
+            const kata = q.split(/\s+/).filter(Boolean);
+            const visTeks = v => v.visibility === 'pribadi' ? 'pribadi' : (v.visibility === 'unlisted' ? 'tidak publik unlisted' : 'publik');
+
+            const tampil = daftarVideoAdmin.filter(item => {
+                const v = item.data;
+                const gudang = [v.title, v.genre, v.description, v.uploadDate, item.key, visTeks(v), item.source === 'bot' ? 'bot' : 'admin'].join(' ').toLowerCase();
+                return kata.every(k => gudang.includes(k));
             });
 
+            let html = q ? '<p style="color:#bbb; font-size:12px; margin:0 0 10px;">' + tampil.length + ' dari ' + daftarVideoAdmin.length + ' video cocok</p>' : '';
+            tampil.forEach(item => {
+                const k = item.key; const v = item.data;
+                const visStatus = v.visibility === 'pribadi' ? '🔒 Pribadi' : (v.visibility === 'unlisted' ? '🔗 Tdk Publik' : '🌍 Publik');
+                const thumbImg = v.thumb ? v.thumb : IMG.logoBulat;
+                const judul = v.title || '(tanpa judul)';
+                const safeTitle = judul.replace(/'/g, "\\'");
+                const total = (Number(v.defaultViews) || 0) + (Number(cacheViewsAdmin[anAman(k)]) || 0);
+                const badgeBot = item.source === 'bot' ? '<span style="background:#8c52ff; color:white; padding:2px 5px; border-radius:3px; font-size:9px; margin-left:5px;">🤖 BOT</span>' : '<span style="background:#ff914d; color:white; padding:2px 5px; border-radius:3px; font-size:9px; margin-left:5px;">🔥 ADMIN</span>';
+
+                html += `
+                <div class="admin-list-item">
+                    <a href="watch.html?id=${encodeURIComponent(k)}" class="admin-list-thumb-link" onclick="return bukaPratinjau(this.href)"><img src="${thumbImg}" class="admin-list-thumb"></a>
+                    <div class="admin-list-info">
+                        <a href="watch.html?id=${encodeURIComponent(k)}" class="admin-link" onclick="return bukaPratinjau(this.href)">
+                            <div style="font-weight:bold; font-size:14px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">${judul}</div>
+                        </a>
+                        <div style="font-size:11px; color:#bbb; margin-top:4px;">${visStatus} ${badgeBot} • ID: ${k} • 👁️ <span class="vid-total">${total.toLocaleString('id-ID')}</span> penonton</div>
+                    </div>
+                    <div class="admin-list-actions">
+                        <button class="btn-stats" onclick="bukaAnalitik('${k}', '${safeTitle}')">📊</button>
+                        <button class="btn-salin" data-id="${k}" onclick="salinLinkVideo(this.dataset.id)" title="Salin link video">🔗 Salin Link</button>
+                        <button class="btn-reset" onclick="resetViewsVideo('${k}', '${safeTitle}')" title="Reset viewers">↺ Reset</button>
+                        <button class="btn-edit" onclick="editVideoManual('${k}')">✎ Edit</button>
+                        <button class="btn-delete" onclick="hapusData('videos_manual/${k}')">🗑️</button>
+                    </div>
+                </div>`;
+            });
+            wadah.innerHTML = html || '<p style="color:#bbb; font-size:13px;">Tidak ada video yang cocok.</p>';
+        }
+
+        // Salin link video (tetap bisa walau visibilitas Tidak Publik / Pribadi)
+        function salinLinkVideo(id) {
+            const url = location.origin + '/watch.html?id=' + encodeURIComponent(id);
+            const selesai = () => tampilToast('Link video disalin');
+            if (navigator.clipboard && window.isSecureContext) {
+                navigator.clipboard.writeText(url).then(selesai).catch(() => salinCadangan(url, selesai));
+            } else { salinCadangan(url, selesai); }
+        }
+        function salinCadangan(teks, selesai) {
+            const t = document.createElement('textarea');
+            t.value = teks; t.style.cssText = 'position:fixed; top:0; left:0; opacity:0;';
+            document.body.appendChild(t); t.focus(); t.select();
+            let ok = false;
+            try { ok = document.execCommand('copy'); } catch (e) {}
+            t.remove();
+            if (ok) selesai();
+            else tampilInput('Salin link ini secara manual:', teks, { judul: 'Link video', simpan: 'Tutup' });
+        }
+    
+        function muatDaftarHapus() {
+                        // A. DAFTAR SEMUA VIDEO (GABUNGAN BOT & FIREBASE) + CARI LIVE + TOTAL VIEWERS
+            firebase.database().ref('videos_manual').on('value', snap => {
+                const adminData = snap.exists() ? snap.val() : {};
+                let allVideos = [];
+                Object.keys(adminData).forEach(k => allVideos.push({ key: k, data: adminData[k], source: 'firebase' }));
+                if (typeof botVideos !== 'undefined') {
+                    botVideos.forEach(bv => {
+                        if (!adminData[bv.id]) allVideos.push({ key: bv.id, data: bv, source: 'bot' });
+                    });
+                }
+                daftarVideoAdmin = allVideos.reverse();
+                renderDaftarVideoAdmin();
+            });
+            // Total viewers realtime (angka tampil dan ikut berubah otomatis)
+            firebase.database().ref('video_views').on('value', s => { cacheViewsAdmin = s.val() || {}; renderDaftarVideoAdmin(); });
+            
             // B. DAFTAR PROGRAM TV (DENGAN TOMBOL EDIT)
             firebase.database().ref('programs_info').on('value', snap => {
                 let html = '<h4 style="color:#ff4d4d; border-top:1px solid #333; margin-top:20px; padding-top:10px;">Daftar Program TV</h4>';
@@ -1929,7 +2030,7 @@ let anData = null;
 
 const anLabelHalaman = {
     index: 'Beranda', videos: 'Daftar Video', watch: 'Menonton Video', posts: 'Feed Postingan',
-    post: 'Detail Postingan', program: 'Program TV', livestream: 'Live Streaming', support: 'Help Center', lainnya: 'Lainnya'
+    post: 'Detail Postingan', program: 'Program TV', livestream: 'Live Streaming', support: 'Help Center', about: 'Tentang Kami', search: 'Pencarian', lainnya: 'Lainnya'
 };
 
 function anAman(s) { return String(s).replace(/[^a-zA-Z0-9_-]/g, '_'); }
@@ -2373,6 +2474,93 @@ function hapusVideoOffline(id) {
             })
             .catch(e => alert('Gagal menghapus: ' + e.message));
     });
+}
+</script>
+
+<script>
+// ==========================================
+// EDITOR TENTANG KAMI (gaya Word)
+// ==========================================
+let abRange = null, abSiap = false;
+const abEd = () => document.getElementById('ab-editor');
+
+function abBawaanHtml() {
+    return '<div style="text-align:center;"><img class="ab-logo" src="' + escHtmlGlobal(IMG.logoBulat) + '" alt="Logo LUVIA TV">' +
+           '<h2>LUVIA TV</h2><p>Segera Hadir!, nantikan info berikutnya</p></div>';
+}
+
+function muatEditorTentang() {
+    if (abSiap) return;
+    abSiap = true;
+    const ed = abEd();
+
+    // Ingat posisi kursor/seleksi agar tombol & pilihan tetap bekerja
+    document.addEventListener('selectionchange', () => {
+        const sel = window.getSelection();
+        if (sel.rangeCount && ed.contains(sel.anchorNode)) abRange = sel.getRangeAt(0).cloneRange();
+    });
+
+    // Tempel: bersihkan format sampah dari Word/web
+    ed.addEventListener('paste', e => {
+        e.preventDefault();
+        const h = e.clipboardData.getData('text/html');
+        const t = e.clipboardData.getData('text/plain');
+        document.execCommand('insertHTML', false, h ? bersihkanHtml(h) : escHtmlGlobal(t).replace(/\n/g, '<br>'));
+    });
+
+    firebase.database().ref('site_pages/about').once('value').then(s => {
+        const d = s.val();
+        ed.innerHTML = (d && d.html) ? bersihkanHtml(d.html) : abBawaanHtml();
+        if (d && d.updated) document.getElementById('ab-status').textContent = 'Terakhir disimpan: ' + new Date(d.updated).toLocaleString('id-ID');
+    }).catch(() => { ed.innerHTML = abBawaanHtml(); });
+}
+
+function abPulihkan() {
+    if (!abRange) return;
+    const sel = window.getSelection();
+    sel.removeAllRanges();
+    sel.addRange(abRange);
+}
+function abExec(cmd, val) {
+    abEd().focus();
+    abPulihkan();
+    try { document.execCommand('styleWithCSS', false, true); } catch (e) {}
+    document.execCommand(cmd, false, val || null);
+}
+function abGaya(sel) { if (sel.value) abExec('formatBlock', '<' + sel.value + '>'); sel.selectedIndex = 0; }
+function abFont(sel) { if (sel.value) abExec('fontName', sel.value); sel.selectedIndex = 0; }
+function abUkuran(sel) { if (sel.value) abExec('fontSize', sel.value); sel.selectedIndex = 0; }
+
+function abLink() {
+    const kosong = !abRange || abRange.collapsed;
+    tampilInput('Alamat link (diawali https://):', 'https://', { judul: 'Sisipkan link', placeholder: 'https://...' }).then(u => {
+        if (!u) return;
+        u = u.trim();
+        if (!/^(https?:\/\/|mailto:|tel:|\/|#)/i.test(u)) u = 'https://' + u;
+        if (kosong) abExec('insertHTML', '<a href="' + escHtmlGlobal(u) + '">' + escHtmlGlobal(u) + '</a>');
+        else abExec('createLink', u);
+    });
+}
+function abGambar() {
+    tampilInput('Link gambar (https://... atau nama file di repo):', 'https://', { judul: 'Sisipkan gambar', placeholder: 'https://...' }).then(u => {
+        if (u && u.trim() && u.trim() !== 'https://') abExec('insertImage', u.trim());
+    });
+}
+function abBawaan() {
+    tampilKonfirmasi('Kembalikan isi editor ke tampilan bawaan? (Baru berlaku di website setelah kamu menekan Simpan.)', { judul: 'Kembalikan bawaan', ya: 'Kembalikan', bahaya: true }).then(ok => {
+        if (ok) abEd().innerHTML = abBawaanHtml();
+    });
+}
+function simpanTentang() {
+    const ed = abEd();
+    const html = bersihkanHtml(ed.innerHTML).trim();
+    if (!ed.textContent.trim() && !ed.querySelector('img')) return alert('Isi halaman masih kosong.');
+    firebase.database().ref('site_pages/about').set({ html: html, updated: Date.now() })
+        .then(() => {
+            tampilToast('Halaman Tentang Kami tersimpan');
+            document.getElementById('ab-status').textContent = 'Terakhir disimpan: ' + new Date().toLocaleString('id-ID');
+        })
+        .catch(e => alert('Gagal menyimpan: ' + e.message + '\n(Pastikan rules Firebase "site_pages" sudah ditambahkan.)'));
 }
 </script>
         
