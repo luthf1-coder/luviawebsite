@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>LUVIA STUDIO - ADMIN PANEL</title>
     <link rel="stylesheet" href="style.css" />
-        <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Poppins:wght@500;600;700&family=Montserrat:wght@500;700&family=Playfair+Display:wght@600;700&family=Merriweather:wght@400;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Anton&family=Bebas+Neue&family=Caveat:wght@400;700&family=Cormorant+Garamond:wght@400;700&family=Crimson+Text:wght@400;700&family=DM+Sans:wght@400;700&family=Dancing+Script:wght@400;700&family=Fira+Code:wght@400;700&family=Inter:wght@400;500;600&family=Lato:wght@400;700&family=Libre+Baskerville:wght@400;700&family=Lobster&family=Lora:wght@400;700&family=Merriweather:wght@400;700&family=Montserrat:wght@400;500;700&family=Nunito:wght@400;700&family=Open+Sans:wght@400;700&family=Oswald:wght@400;700&family=Pacifico&family=Permanent+Marker&family=Playfair+Display:wght@400;700&family=Poppins:wght@400;500;600;700&family=Quicksand:wght@400;700&family=Raleway:wght@400;700&family=Righteous&family=Roboto:wght@400;700&family=Roboto+Mono:wght@400;700&family=Work+Sans:wght@400;700&display=swap" rel="stylesheet">
     <link rel="icon" type="image/png" data-img="logoBulat">
     
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
@@ -362,6 +362,18 @@
     <h3 style="margin-top:0;">📄 Halaman Tentang Kami</h3>
     <p style="color:#bbb; font-size:13px; margin-top:-6px;">Atur isi halaman <b>about.html</b> seperti di Word. Ikon media sosial di bawah halaman otomatis mengikuti daftar sosmed di <b>videos-data.js</b>.</p>
 
+        <details class="ab-fontbox">
+        <summary>🔤 Font Kustom (unggah font sendiri)</summary>
+        <p class="ab-fontinfo">Format .woff2 / .woff / .ttf / .otf, maksimal 1,5 MB per font. Setelah diunggah, font muncul di pilihan <b>Font Unggahan</b> pada toolbar. Pastikan kamu punya lisensi untuk memakai font tersebut.</p>
+        <div class="ab-fontrow">
+            <input type="file" id="ab-font-file" accept=".woff2,.woff,.ttf,.otf">
+            <input type="text" id="ab-font-nama" placeholder="Nama font (opsional)" maxlength="40">
+            <button type="button" class="btn-edit" onclick="abUnggahFont()">⬆️ Unggah Font</button>
+        </div>
+        <div id="ab-font-status" style="font-size:12px; margin-top:.5rem;"></div>
+        <div id="ab-font-daftar"></div>
+    </details>
+
     <div class="ab-toolbar" onmousedown="if(event.target.closest('button')) event.preventDefault()">
         <div class="ab-grup">
             <button type="button" class="ab-tb" title="Urungkan (Ctrl+Z)" onclick="abExec('undo')">↶</button>
@@ -375,10 +387,53 @@
             </select>
             <select class="ab-sel" onchange="abFont(this)">
                 <option value="">Font</option>
-                <option value="Inter">Inter</option><option value="Poppins">Poppins</option>
-                <option value="Montserrat">Montserrat</option><option value="Playfair Display">Playfair Display</option>
-                <option value="Merriweather">Merriweather</option><option value="Segoe UI">Segoe UI</option>
-                <option value="Arial">Arial</option>
+                <optgroup label="Sans-serif">
+                    <option value="Inter" style="font-family:'Inter'">Inter</option>
+                    <option value="Poppins" style="font-family:'Poppins'">Poppins</option>
+                    <option value="Montserrat" style="font-family:'Montserrat'">Montserrat</option>
+                    <option value="Roboto" style="font-family:'Roboto'">Roboto</option>
+                    <option value="Open Sans" style="font-family:'Open Sans'">Open Sans</option>
+                    <option value="Lato" style="font-family:'Lato'">Lato</option>
+                    <option value="Nunito" style="font-family:'Nunito'">Nunito</option>
+                    <option value="Raleway" style="font-family:'Raleway'">Raleway</option>
+                    <option value="Work Sans" style="font-family:'Work Sans'">Work Sans</option>
+                    <option value="DM Sans" style="font-family:'DM Sans'">DM Sans</option>
+                    <option value="Quicksand" style="font-family:'Quicksand'">Quicksand</option>
+                    <option value="Oswald" style="font-family:'Oswald'">Oswald</option>
+                </optgroup>
+                <optgroup label="Serif">
+                    <option value="Playfair Display" style="font-family:'Playfair Display'">Playfair Display</option>
+                    <option value="Merriweather" style="font-family:'Merriweather'">Merriweather</option>
+                    <option value="Lora" style="font-family:'Lora'">Lora</option>
+                    <option value="Libre Baskerville" style="font-family:'Libre Baskerville'">Libre Baskerville</option>
+                    <option value="Cormorant Garamond" style="font-family:'Cormorant Garamond'">Cormorant Garamond</option>
+                    <option value="Crimson Text" style="font-family:'Crimson Text'">Crimson Text</option>
+                </optgroup>
+                <optgroup label="Judul & Dekoratif">
+                    <option value="Bebas Neue" style="font-family:'Bebas Neue'">Bebas Neue</option>
+                    <option value="Anton" style="font-family:'Anton'">Anton</option>
+                    <option value="Righteous" style="font-family:'Righteous'">Righteous</option>
+                    <option value="Pacifico" style="font-family:'Pacifico'">Pacifico</option>
+                    <option value="Lobster" style="font-family:'Lobster'">Lobster</option>
+                    <option value="Dancing Script" style="font-family:'Dancing Script'">Dancing Script</option>
+                    <option value="Caveat" style="font-family:'Caveat'">Caveat</option>
+                    <option value="Permanent Marker" style="font-family:'Permanent Marker'">Permanent Marker</option>
+                </optgroup>
+                <optgroup label="Monospace">
+                    <option value="Roboto Mono" style="font-family:'Roboto Mono'">Roboto Mono</option>
+                    <option value="Fira Code" style="font-family:'Fira Code'">Fira Code</option>
+                    <option value="Courier New" style="font-family:'Courier New'">Courier New</option>
+                </optgroup>
+                <optgroup label="Bawaan sistem">
+                    <option value="Segoe UI">Segoe UI</option>
+                    <option value="Arial">Arial</option>
+                    <option value="Georgia">Georgia</option>
+                    <option value="Times New Roman">Times New Roman</option>
+                    <option value="Verdana">Verdana</option>
+                    <option value="Tahoma">Tahoma</option>
+                    <option value="Trebuchet MS">Trebuchet MS</option>
+                </optgroup>
+                <optgroup label="Font Unggahan" id="ab-font-kustom"></optgroup>
             </select>
             <select class="ab-sel" onchange="abUkuran(this)">
                 <option value="">Ukuran</option><option value="2">Kecil</option><option value="3">Normal</option>
@@ -2493,6 +2548,7 @@ function muatEditorTentang() {
     if (abSiap) return;
     abSiap = true;
     const ed = abEd();
+          abMuatFont();
 
     // Ingat posisi kursor/seleksi agar tombol & pilihan tetap bekerja
     document.addEventListener('selectionchange', () => {
@@ -2561,6 +2617,84 @@ function simpanTentang() {
             document.getElementById('ab-status').textContent = 'Terakhir disimpan: ' + new Date().toLocaleString('id-ID');
         })
         .catch(e => alert('Gagal menyimpan: ' + e.message + '\n(Pastikan rules Firebase "site_pages" sudah ditambahkan.)'));
+}
+
+
+// ---------- FONT KUSTOM ----------
+let abFontList = {};
+
+function abMuatFont() {
+    firebase.database().ref('site_pages/font_list').on('value', s => {
+        abFontList = s.val() || {};
+        Object.keys(abFontList).forEach(id => {
+            if (document.getElementById('ff-' + id)) return;
+            firebase.database().ref('site_pages/font_data/' + id).once('value').then(d => {
+                daftarkanFont(id, abFontList[id] && abFontList[id].nama, d.val());
+                abGambarFont();
+            });
+        });
+        abGambarFont();
+    });
+}
+
+function abGambarFont() {
+    const ids = Object.keys(abFontList);
+    document.getElementById('ab-font-kustom').innerHTML = ids.map(id => {
+        const n = escHtmlGlobal(abFontList[id].nama);
+        return '<option value="' + n + '" style="font-family:\'' + n + '\'">' + n + '</option>';
+    }).join('');
+    document.getElementById('ab-font-daftar').innerHTML = ids.length ? ids.map(id => {
+        const f = abFontList[id], n = escHtmlGlobal(f.nama);
+        return '<div class="ab-fontitem"><span style="font-family:\'' + n + '\', sans-serif; font-size:1.05rem;">' + n + ' — Aa Bb Cc 123</span>' +
+               '<span style="color:#888; font-size:12px;">' + (f.kb || '?') + ' KB</span>' +
+               '<button type="button" class="btn-delete" onclick="abHapusFont(\'' + id + '\')">🗑️</button></div>';
+    }).join('') : '<p style="color:#888; font-size:12px; margin:.6rem 0 0;">Belum ada font unggahan.</p>';
+}
+
+function abUnggahFont() {
+    const f = document.getElementById('ab-font-file').files[0];
+    const st = document.getElementById('ab-font-status');
+    if (!f) return alert('Pilih file font dulu (.woff2 / .woff / .ttf / .otf).');
+    const m = f.name.match(/\.(woff2|woff|ttf|otf)$/i);
+    if (!m) return alert('Format harus .woff2, .woff, .ttf, atau .otf');
+    if (f.size > 1572864) return alert('Ukuran font melebihi 1,5 MB. Gunakan versi .woff2 yang lebih kecil.');
+    const ext = m[1].toLowerCase();
+    const nama = (document.getElementById('ab-font-nama').value.trim() || f.name.replace(/\.[^.]+$/, ''))
+        .replace(/[^A-Za-z0-9 _-]/g, '').replace(/\s+/g, ' ').trim().slice(0, 40);
+    if (!nama) return alert('Nama font tidak valid. Pakai huruf, angka, spasi, atau strip.');
+    if (Object.keys(abFontList).some(id => String(abFontList[id].nama).toLowerCase() === nama.toLowerCase())) {
+        return alert('Nama font itu sudah dipakai. Isi kolom nama dengan nama lain.');
+    }
+    st.style.color = '#bbb'; st.textContent = 'Mengunggah...';
+
+    const fr = new FileReader();
+    fr.onload = () => {
+        const format = { woff2: 'woff2', woff: 'woff', ttf: 'truetype', otf: 'opentype' }[ext];
+        const data = String(fr.result).replace(/^data:[^;,]*/, 'data:font/' + ext);
+        const id = 'f' + Date.now().toString(36);
+        const up = {};
+        up['site_pages/font_data/' + id] = { data: data, format: format };
+        up['site_pages/font_list/' + id] = { nama: nama, format: format, kb: Math.round(f.size / 1024), waktu: Date.now() };
+        firebase.database().ref().update(up).then(() => {
+            st.style.color = '#53fc18'; st.textContent = '✅ Font "' + nama + '" tersimpan. Pilih di toolbar > Font > Font Unggahan.';
+            document.getElementById('ab-font-file').value = '';
+            document.getElementById('ab-font-nama').value = '';
+        }).catch(e => { st.style.color = '#ff4d4d'; st.textContent = '❌ Gagal: ' + e.message; });
+    };
+    fr.onerror = () => { st.style.color = '#ff4d4d'; st.textContent = '❌ File tidak bisa dibaca.'; };
+    fr.readAsDataURL(f);
+}
+
+function abHapusFont(id) {
+    const f = abFontList[id];
+    if (!f) return;
+    tampilKonfirmasi('Hapus font "' + f.nama + '"? Teks yang memakai font ini akan kembali ke font bawaan.', { judul: 'Hapus font', ya: 'Hapus', bahaya: true }).then(ok => {
+        if (!ok) return;
+        const up = {};
+        up['site_pages/font_data/' + id] = null;
+        up['site_pages/font_list/' + id] = null;
+        firebase.database().ref().update(up).then(() => { const s = document.getElementById('ff-' + id); if (s) s.remove(); });
+    });
 }
 </script>
         
