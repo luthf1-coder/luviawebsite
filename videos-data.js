@@ -454,6 +454,7 @@ const webConfig = {
     menuSidebar: [
         { nama: "Home",           pendek: "Home",    link: "index.html",               ikon: "beranda", rail: true },
         { nama: "Videos",         pendek: "Videos",  link: "videos.html",              ikon: "video",   rail: true },
+      { nama: "Postingan",         pendek: "Postingan",  link: "posts.html",              ikon: "putar",   rail: true },
         { nama: "Program TV",     pendek: "Program", link: "index.html#projects",      ikon: "tv",      rail: true },
         { nama: "Live TV",        pendek: "Live",    link: "index.html#livestreaming", ikon: "siaran",  rail: true },
         { nama: "Help Center",    pendek: "Bantuan", link: "support.html",             ikon: "bantuan", rail: true },
