@@ -914,17 +914,19 @@ function renderGridRecommendations(containerId, list = videoList) {
         });
     });
 
-    // Menambahkan Tombol "Lihat Video Lainnya" di bagian paling bawah
-    const btnContainer = document.createElement('div');
-    btnContainer.style.textAlign = 'center';
-    btnContainer.style.marginTop = '30px';
-    btnContainer.style.gridColumn = '1 / -1'; 
-    btnContainer.innerHTML = `
-        <a href="videos.html" class="btn-watch-hero" style="font-size: 15px; padding: 12px 30px;">
-            Lihat Video Lainnya ❯
-        </a>
-    `;
-    container.appendChild(btnContainer);
+        // Tombol "Lihat Video Lainnya" (dilewati jika wadah diberi data-tanpa-tombol, mis. di post.html)
+    if (!container.hasAttribute('data-tanpa-tombol')) {
+        const btnContainer = document.createElement('div');
+        btnContainer.style.textAlign = 'center';
+        btnContainer.style.marginTop = '30px';
+        btnContainer.style.gridColumn = '1 / -1'; 
+        btnContainer.innerHTML = `
+            <a href="videos.html" class="btn-watch-hero" style="font-size: 15px; padding: 12px 30px;">
+                Lihat Video Lainnya ❯
+            </a>
+        `;
+        container.appendChild(btnContainer);
+    }
 
     if (!isLivePage) {
         updateKickBadgeStatus('kick-watch-badge');
