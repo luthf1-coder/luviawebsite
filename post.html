@@ -339,7 +339,8 @@
         function bangunItem(id, c, isReply, parentId) {
             const sukaKu = localStorage.getItem('liked_post_comment_' + id);
             const milikku = localStorage.getItem('my_post_comment_' + id) === 'true';
-            const boleh = milikku || IS_ADMIN_BROWSER;
+            const bisaEdit = milikku && (!!c.isAdmin === IS_ADMIN_BROWSER);
+            const bisaHapus = c.isAdmin ? IS_ADMIN_BROWSER : (milikku || IS_ADMIN_BROWSER);
             const da = 'data-id="' + id + '" data-parent="' + (parentId || '') + '" data-reply="' + (isReply ? 1 : 0) + '" data-nama="' + escHtmlGlobal(namaKomentar(c)) + '"';
             return '<div class="pc-item' + (isReply ? ' pc-reply' : '') + '" id="pc-' + id + '">' +
                 buatAvatar(namaKomentar(c), { kelas: 'pc-ava', admin: !!c.isAdmin, ukuran: isReply ? 24 : 32 }) +
@@ -350,8 +351,8 @@
                         '<span>' + waktuLalu(c.timestamp) + '</span>' +
                         ((c.likes || 0) > 0 ? '<span>' + c.likes + ' suka</span>' : '') +
                         '<button type="button" data-act="reply" ' + da + '>Balas</button>' +
-                        (milikku ? '<button type="button" data-act="edit" ' + da + '>Edit</button>' : '') +
-                        (boleh ? '<button type="button" class="pc-hapus" data-act="del" ' + da + '>Hapus</button>' : '') +
+                        (bisaEdit ? '<button type="button" data-act="edit" ' + da + '>Edit</button>' : '') +
+                        (bisaHapus ? '<button type="button" class="pc-hapus" data-act="del" ' + da + '>Hapus</button>' : '') +
                     '</div>' +
                 '</div>' +
                 '<button type="button" class="pc-like' + (sukaKu ? ' aktif' : '') + '" data-act="like" ' + da + ' aria-label="Suka">' + icon(sukaKu ? IKON.sukaIsi : IKON.suka) + '</button>' +
