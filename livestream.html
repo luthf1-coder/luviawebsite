@@ -251,6 +251,37 @@ el.dataset.admin = c.isAdmin ? '1' : '';
         inTeks.value = ''; inTeks.focus();
     });
 
+
+        // ---------- PLAYER KICK + IZIN SUARA (aturan autoplay browser) ----------
+    let suaraSiap = false;   // true setelah penonton menyentuh halaman / menekan layar "Ketuk"
+
+    function sudahInteraksi() {
+        try { return !!(navigator.userActivation && navigator.userActivation.hasBeenActive); }
+        catch (e) { return false; }
+    }
+
+    function buatIframeKick() {
+        playerWrapper.innerHTML = `<iframe src="https://player.kick.com/${kickUsername}?autoplay=true&muted=false"
+            allow="autoplay; fullscreen; encrypted-media; picture-in-picture" allowfullscreen="true" scrolling="no"
+            style="position:absolute; top:0; left:0; width:100%; height:100%; border:none;"></iframe>`;
+    }
+
+    function pasangPlayerKick() {
+        if (suaraSiap || sudahInteraksi()) { suaraSiap = true; buatIframeKick(); return; }
+
+        const latar = encodeURI(IMG.liveCard);
+        playerWrapper.innerHTML = `
+            <button type="button" class="kick-gate" id="kick-gate" style="--gate-img:url('${latar}')">
+                <span class="kick-gate-ikon">${icon(IKON.suaraOn)}</span>
+                <span class="kick-gate-judul"><span class="kick-gate-dot"></span> SEDANG LIVE</span>
+                <span class="kick-gate-teks">Ketuk untuk menonton dengan suara</span>
+            </button>`;
+        document.getElementById('kick-gate').addEventListener('click', () => {
+            suaraSiap = true;
+            buatIframeKick();
+        });
+    }
+    
     // ---------- STATUS LIVE KICK (dicek ulang tiap 60 detik) ----------
     function setStatusChat(live) {
         const s = document.getElementById('lc-status');
@@ -283,7 +314,7 @@ el.dataset.admin = c.isAdmin ? '1' : '';
         if (live) {
             if (statusTerakhir !== true) {
                 offTampil = false; offKunci = '';
-                playerWrapper.innerHTML = `<iframe src="https://player.kick.com/${kickUsername}" allowfullscreen="true" scrolling="no" style="position:absolute; top:0; left:0; width:100%; height:100%; border:none;"></iframe>`;
+                pasangPlayerKick();
             }
             setStatusChat(true);
             if (viewersText) viewersText.innerHTML = `🔴 <span style="color:#ff4d4d; font-weight:bold;">LIVE</span> • ${icon(IKON.dilihat)} ${viewers} Penonton Saat Ini`;
