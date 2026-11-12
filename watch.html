@@ -536,7 +536,7 @@
             const sudahSuka = localStorage.getItem('liked_' + id);
             const milikku = localStorage.getItem('my_comment_' + id) === 'true';
             const bisaEdit = milikku && (!!c.isAdmin === IS_ADMIN_BROWSER);   // mode admin: komentar orang lain tidak bisa diedit
-            const bisaHapus = milikku || IS_ADMIN_BROWSER;            // admin boleh memoderasi
+            const bisaHapus = c.isAdmin ? IS_ADMIN_BROWSER : (milikku || IS_ADMIN_BROWSER);   // komentar admin hanya bisa dihapus saat mode admin
             const dataAttr = 'data-id="' + id + '" data-parent="' + (parentId || '') + '" data-reply="' + (isReply ? 1 : 0) + '"';
             const kelasAva = 'comment-avatar' + (isReply ? ' avatar-sm' : '');
             const lencana = c.isAdmin ? lencanaAdmin() : '';
