@@ -131,7 +131,7 @@
     // ---------- IDENTITAS ANONIM (kunci "hanya pesan sendiri") ----------
     firebase.auth().onAuthStateChanged(u => {
         uid = u ? u.uid : null;
-        document.querySelectorAll('.lc-msg').forEach(el => el.classList.toggle('lc-own', !!uid && el.dataset.uid === uid));
+        document.querySelectorAll('.lc-msg').forEach(el => el.classList.toggle('lc-own', !!uid && el.dataset.uid === uid && (el.dataset.admin !== '1' || IS_ADMIN_BROWSER)));
     });
     firebase.auth().signInAnonymously().catch(e => console.error('Login anonim gagal:', e));
 
@@ -144,10 +144,12 @@
     function isiPesan(el, key, c) {
         const nama = c.name || 'Anonim';
         const jam = c.timestamp ? new Date(c.timestamp).toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' }) : '';
-        el.className = 'lc-msg' + (uid && c.uid === uid ? ' lc-own' : '') + (c.isAdmin ? ' lc-admin' : '');
+        el.className = 'lc-msg' + (uid && c.uid === uid && (!c.isAdmin || IS_ADMIN_BROWSER) ? ' lc-own' : '') + (c.isAdmin ? ' lc-admin' : '');
         el.id = 'chat-' + key;
         el.dataset.key = key;
         el.dataset.uid = c.uid || '';
+        el.dataset.uid = c.uid || '';
+el.dataset.admin = c.isAdmin ? '1' : '';
         el.innerHTML = `
             ${buatAvatar(nama, { kelas: 'lc-ava', ukuran: 24, admin: !!c.isAdmin })}
             <div class="lc-txt">
