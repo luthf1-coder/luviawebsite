@@ -1983,3 +1983,82 @@ function muatFontKhusus(root) {
         });
     }).catch(() => {});
 }
+
+
+// =====================================================================
+//  POSTINGAN MULTI-SUMBER (upload / link langsung Plyr / embed bebas)
+//  Dipakai oleh admin.html, posts.html, dan post.html
+// =====================================================================
+const POST_EKS = {
+    video:  /\.(mp4|webm|mov|m4v|ogv|m3u8)(\?|#|$)/i,
+    audio:  /\.(mp3|m4a|aac|ogg|oga|opus|wav|flac)(\?|#|$)/i,
+    gambar: /\.(jpe?g|png|gif|webp|avif|bmp)(\?|#|$)/i
+};
+const POST_RASIO = ['16/9', '9/16', '1/1', '4/5', '4/3'];
+
+// Mengembalikan { mode: 'upload'|'plyr'|'embed', jenis: 'video'|'audio'|'gambar'|'embed', url, hls }
+function infoPost(p) {
+    p = p || {};
+    const mode = (p.mediaType === 'embed' || p.mediaType === 'plyr') ? p.mediaType : 'upload';
+    const url = String(p.videoUrl || p.imageUrl || '');
+    if (mode === 'embed') return { mode: mode, jenis: 'embed', url: String(p.embedUrl || ''), hls: false };
+    let jenis = p.kind;
+    if (jenis !== 'video' && jenis !== 'audio' && jenis !== 'gambar') {
+        if (POST_EKS.audio.test(url)) jenis = 'audio';
+        else if (POST_EKS.gambar.test(url)) jenis = 'gambar';
+        else if (POST_EKS.video.test(url) || mode === 'plyr') jenis = 'video';
+        else jenis = 'gambar';      // perilaku lama: selain video dianggap foto
+    }
+    return { mode: mode, jenis: jenis, url: url, hls: /\.m3u8(\?|#|$)/i.test(url) };
+}
+
+// Muncul di feed / daftar? (publik saja, kecuali browser ini mode admin)
+function postBolehTampil(p) {
+    return IS_ADMIN_BROWSER || ((p && p.visibility) || 'publik') === 'publik';
+}
+// Boleh dibuka lewat link? (pribadi hanya admin atau pratinjau dari halaman admin)
+function postBolehDibuka(p) {
+    const v = (p && p.visibility) || 'publik';
+    return v !== 'pribadi' || IS_ADMIN_BROWSER || IZIN_PRATINJAU;
+}
+
+function idDrive(url) {
+    const m = String(url || '').match(/drive\.google\.com\/(?:file\/d\/|open\?id=|uc\?(?:[^#]*&)?id=)([\w-]{10,})/i);
+    return m ? m[1] : '';
+}
+function driveLangsung(url) {
+    const id = idDrive(url);
+    return id ? 'https://drive.google.com/uc?export=download&id=' + id : String(url || '');
+}
+function normalisasiEmbed(url) {
+    url = String(url || '').trim();
+    const d = idDrive(url);
+    if (d) return 'https://drive.google.com/file/d/' + d + '/preview';
+    let m = url.match(/(?:youtube\.com\/watch\?(?:[^#]*&)?v=|youtu\.be\/|youtube\.com\/shorts\/)([\w-]{11})/i);
+    if (m) return 'https://www.youtube.com/embed/' + m[1] + '?rel=0';
+    m = url.match(/^https:\/\/(?:www\.)?vimeo\.com\/(\d+)/i);
+    if (m) return 'https://player.vimeo.com/video/' + m[1];
+    return url;
+}
+
+// Isi kotak di grid (posts.html & post.html). Mengembalikan { media, ikon }
+function postTileInfo(p, ikonVideo) {
+    const i = infoPost(p);
+    const thumb = String((p && p.thumbnailUrl) || '');
+    const iv = ikonVideo || icon(IKON.video);
+    const gb = thumb ? '<img src="' + escHtmlGlobal(thumb) + '" alt="Postingan" loading="lazy">' : '';
+    const ph = (e) => '<div class="grid-ph">' + e + '</div>';
+
+    if (i.jenis === 'gambar') {
+        return { media: '<img src="' + escHtmlGlobal(i.url) + '" alt="Postingan" loading="lazy">', ikon: '' };
+    }
+    if (i.jenis === 'video' && !i.hls) {
+        return {
+            media: '<video src="' + escHtmlGlobal(i.url) + '" poster="' + escHtmlGlobal(thumb) + '" preload="none" playsinline muted loop onmouseenter="this.play()" onmouseleave="this.pause(); this.load();"></video>',
+            ikon: iv
+        };
+    }
+    if (i.jenis === 'video') return { media: gb || ph('▶'), ikon: iv };
+    if (i.jenis === 'audio') return { media: gb || ph('🎵'), ikon: gb ? '🎵' : '' };
+    return { media: gb || ph('🌐'), ikon: gb ? '🌐' : '' };
+}
