@@ -475,49 +475,108 @@
     </div>
 </div>
         
-        <!-- 5. TAMBAH / KELOLA POSTINGAN -->
 <div id="tab-postingan" class="panel">
     <h3 style="margin-top:0;">Upload & Kelola Postingan</h3>
-    <div style="background:#222; padding:15px; border-left:4px solid #00a884; margin-bottom:15px; font-size:12px;" id="info-upload-post">
-    ✅ <strong>Info Sistem:</strong> Upload langsung via server Cloudflare (Maksimal 100MB). Jangan tutup halaman saat loading berjalan.
-</div>
-    
-    <!-- Input Tersembunyi untuk Mode Edit -->
+
+    <!-- Penanda mode edit -->
     <input type="hidden" id="edit-post-id" value="">
-    
-    <div class="admin-form-group" id="form-group-file-post">
-    <label>Pilih File Video/Gambar (Maks 100 MB)</label>
-    <input type="file" id="post-file" accept="video/mp4, image/jpeg, image/png">
-</div>
+
+    <!-- PILIH MODE SUMBER -->
+    <div class="admin-form-group">
+        <label>Mode Sumber Postingan</label>
+        <select id="post-mode" onchange="ubahModePost()">
+            <option value="upload">⬆️ Upload file (Archive.org via Cloudflare, maks 100 MB)</option>
+            <option value="plyr">🎬 Link langsung — diputar player website (Plyr)</option>
+            <option value="embed">🌐 Embed bebas — pakai player bawaan sumber (iframe)</option>
+        </select>
+        <div class="pst-info" id="post-mode-info"></div>
+    </div>
+
+    <!-- MODE 1: UPLOAD -->
+    <div id="pm-upload">
+        <div class="admin-form-group" id="form-group-file-post">
+            <label>Pilih File Video / Audio / Foto (Maks 100 MB)</label>
+            <input type="file" id="post-file" accept="video/mp4,video/webm,audio/mpeg,audio/mp4,audio/ogg,audio/wav,image/jpeg,image/png,image/webp">
+        </div>
+    </div>
+
+    <!-- MODE 2: LINK LANGSUNG + PLYR -->
+    <div id="pm-plyr" style="display:none;">
+        <div class="admin-form-group">
+            <label>Link File Langsung (diawali https://)</label>
+            <input type="text" id="post-url-plyr" placeholder="https://.../video.mp4 , .m3u8 , .mp3 , .jpg , atau link Google Drive">
+        </div>
+        <div class="admin-form-group">
+            <label>Jenis File</label>
+            <select id="post-kind">
+                <option value="auto">Otomatis (dikenali dari akhiran link)</option>
+                <option value="video">🎬 Video</option>
+                <option value="audio">🎵 Audio</option>
+                <option value="gambar">🖼️ Foto</option>
+            </select>
+        </div>
+    </div>
+
+    <!-- MODE 3: EMBED BEBAS -->
+    <div id="pm-embed" style="display:none;">
+        <div class="admin-form-group">
+            <label>Kode Embed / Link Embed</label>
+            <textarea id="post-url-embed" rows="3" placeholder="Tempel kode <iframe ...> lengkap, atau link seperti https://www.youtube.com/watch?v=... / link Google Drive"></textarea>
+        </div>
+        <div class="admin-form-group">
+            <label>Rasio Bingkai (berlaku di HP & tablet; di laptop/TV mengikuti bingkai post)</label>
+            <select id="post-ratio">
+                <option value="16/9">16:9 (video biasa)</option>
+                <option value="9/16">9:16 (vertikal / Reels)</option>
+                <option value="1/1">1:1 (persegi)</option>
+                <option value="4/5">4:5 (potret)</option>
+                <option value="4/3">4:3</option>
+            </select>
+        </div>
+    </div>
+
+    <!-- BAGIAN UMUM -->
+    <div class="admin-form-group">
+        <label>Link Thumbnail (disarankan untuk Video / Audio / Embed)</label>
+        <input type="text" id="post-thumbnail" placeholder="Masukkan link gambar thumbnail (https://...)">
+    </div>
 
     <div class="admin-form-group">
-    <label>Link Thumbnail (Khusus Video)</label>
-    <input type="text" id="post-thumbnail" placeholder="Masukkan link gambar thumbnail (https://...)">
-</div>
-    
-<div class="admin-form-group">
-    <label>Judul / Caption Postingan</label>
-    <textarea id="post-caption" placeholder="Tulis caption..."></textarea>
-</div>
-    
+        <label>Visibilitas</label>
+        <select id="post-visibility">
+            <option value="publik">🌍 Publik (Muncul di feed & semua halaman)</option>
+            <option value="unlisted">🔗 Tidak Publik (Hanya bisa dibuka pakai Link Khusus)</option>
+            <option value="pribadi">🔒 Pribadi (Hanya terlihat oleh Admin)</option>
+        </select>
+    </div>
+
+    <div class="admin-form-group">
+        <label>Judul / Caption Postingan</label>
+        <textarea id="post-caption" placeholder="Tulis caption..."></textarea>
+    </div>
+
     <!-- Area Progress Bar -->
     <div class="upload-progress-container" id="post-progress-container">
         <div class="upload-progress-bar" id="post-progress-bar"></div>
     </div>
     <div id="post-status-text" style="font-size:12px; color:#bbb; margin-bottom:15px; text-align:center;"></div>
-    
+
     <div style="display: flex; gap: 10px;">
-        <button id="btn-start-upload" class="btn-submit-comment" style="flex: 1; background:#00a884;" onclick="mulaiUploadPost()">Mulai Upload</button>
-        
-        <!-- Tombol Khusus Edit (Sembunyi secara default) -->
-        <button id="btn-simpan-edit-post" class="btn-submit-comment" style="flex: 1; display:none;" onclick="simpanEditPostingan()">💾 Simpan Caption</button>
-        <button id="btn-batal-edit-post" class="btn-submit-comment" style="background: #ff4d4d; display: none; padding: 12px 20px;" onclick="batalEditPostingan()">✖ Batal</button>
+        <button id="btn-start-upload" class="btn-submit-comment" style="flex: 1; background:#00a884;" onclick="terbitkanPostingan()">Mulai Upload</button>
+        <button id="btn-simpan-edit-post" class="btn-submit-comment" style="flex: 1; display:none;" onclick="simpanEditPostingan()">💾 Simpan Perubahan</button>
+        <button id="btn-batal-edit-post" class="btn-submit-comment" style="background: #ff4d4d; display: none; padding: 12px 20px; width:auto;" onclick="batalEditPostingan()">✖ Batal</button>
     </div>
 
-    <!-- Tempat Munculnya Daftar Postingan -->
-    <div id="list-hapus-post" style="margin-top: 30px;"></div>
+    <!-- DAFTAR POSTINGAN -->
+    <div style="margin-top: 30px;">
+        <h4 style="color:#ff4d4d; border-top:1px solid #333; padding-top:10px; display:flex; justify-content:space-between; align-items:center; gap:10px; flex-wrap:wrap;">Daftar Semua Postingan <button class="btn-reset" onclick="resetViewsSemuaPost()">↺ Reset Semua Viewers</button></h4>
+        <div class="pst-cari">
+            <span class="pst-cari-ico">🔍</span>
+            <input type="text" id="post-cari" placeholder="Cari postingan (caption, ID, visibilitas, mode)..." autocomplete="off">
+        </div>
+        <div id="list-hapus-post"></div>
+    </div>
 </div>
-
 
     <!-- HTML UNTUK MODAL ANALITIK -->
     <div id="stats-modal">
@@ -1471,201 +1530,319 @@ function bukaInfoKontak() {
     });
 }
 // ==========================================
-// SISTEM UPLOAD POSTINGAN VIA CLOUDFLARE API
+// POSTINGAN MULTI-SUMBER (UPLOAD / PLYR / EMBED)
 // ==========================================
 let filePostingan = null;
+let postCache = {};
+let postViewsCache = {};
+let postListenerAktif = false;
+let postSedangUpload = false;
 
-document.getElementById('post-file').addEventListener('change', function(e) {
-    filePostingan = e.target.files[0];
-    if(filePostingan) {
-        document.getElementById('post-progress-container').style.display = 'block';
-        document.getElementById('post-progress-bar').style.width = '0%';
-        document.getElementById('post-status-text').innerText = `File siap: ${filePostingan.name} (${(filePostingan.size / (1024*1024)).toFixed(2)} MB)`;
-        document.getElementById('btn-start-upload').style.display = 'block';
-        document.getElementById('btn-resume-upload').style.display = 'none'; // Sembunyikan tombol resume
-    }
+const elp = (id) => document.getElementById(id);
+
+const PST_INFO = {
+    upload: '<b>Upload file</b> — file dikirim lewat server Cloudflare ke Archive.org (maks 100 MB). Jangan tutup halaman saat proses berjalan. Cocok untuk file milikmu sendiri.',
+    plyr: '<b>Link langsung + Plyr</b> — tempel link file (.mp4 / .webm / .m3u8 / .mp3 / .jpg, termasuk link Archive.org atau Google Drive). Diputar memakai player website ini. Link harus diawali https://. Untuk file Drive yang besar, mode Embed lebih stabil.',
+    embed: '<b>Embed bebas</b> — tempel kode &lt;iframe&gt; atau link embed dari sumber mana pun (YouTube, Google Drive, Rumble, Vimeo, dll). Tampil dengan player bawaan sumbernya dan mengikuti bingkai post.html.'
+};
+
+function ubahModePost() {
+    const edit = !!elp('edit-post-id').value;
+    const m = elp('post-mode').value;
+    elp('pm-upload').style.display = (m === 'upload' && !edit) ? 'block' : 'none';
+    elp('pm-plyr').style.display = (m === 'plyr') ? 'block' : 'none';
+    elp('pm-embed').style.display = (m === 'embed') ? 'block' : 'none';
+    elp('post-mode-info').innerHTML = PST_INFO[m] || '';
+    elp('btn-start-upload').innerText = (m === 'upload') ? 'Mulai Upload' : 'Terbitkan Postingan';
+}
+
+function jenisFilePost(f) {
+    const t = String((f && f.type) || '').toLowerCase();
+    if (t.indexOf('image/') === 0) return 'gambar';
+    if (t.indexOf('audio/') === 0) return 'audio';
+    return 'video';
+}
+
+elp('post-file').addEventListener('change', function (e) {
+    filePostingan = e.target.files[0] || null;
+    elp('post-progress-bar').style.width = '0%';
+    elp('post-progress-container').style.display = 'none';
+    elp('post-status-text').innerText = filePostingan
+        ? 'File siap: ' + filePostingan.name + ' (' + (filePostingan.size / (1024 * 1024)).toFixed(2) + ' MB)'
+        : '';
 });
 
-function mulaiUploadPost() {
-    if(!filePostingan) return alert("Pilih file dulu!");
+// Tombol utama: mengarahkan sesuai mode
+function terbitkanPostingan() {
+    const mode = elp('post-mode').value;
+    if (mode === 'upload') return mulaiUploadPost();
+    const sumber = ambilSumberPost(mode);
+    if (!sumber) return;
+    simpanDataPostinganReal(sumber);
+}
 
-    // KEAMANAN: Cek batas ukuran file gratisan Cloudflare (100 MB)
+// Membaca & memeriksa kolom link (mode plyr / embed). Mengembalikan null jika tidak valid.
+function ambilSumberPost(mode) {
+    if (mode === 'plyr') {
+        const url = driveLangsung(elp('post-url-plyr').value.trim());
+        if (!/^https:\/\/[^\s"'<>]+$/i.test(url)) {
+            alert('Link tidak valid. Tempel link file langsung yang diawali https://');
+            return null;
+        }
+        return { mediaType: 'plyr', videoUrl: url, kind: elp('post-kind').value };
+    }
+    if (mode === 'embed') {
+        const src = normalisasiEmbed(ambilSrcEmbed(elp('post-url-embed').value));
+        if (!src) {
+            alert('Kode embed tidak valid. Tempel kode <iframe ...> lengkap atau link embed yang diawali https://');
+            return null;
+        }
+        return { mediaType: 'embed', embedUrl: src, videoUrl: '', ratio: elp('post-ratio').value };
+    }
+    return null;
+}
+
+function mulaiUploadPost() {
+    if (postSedangUpload) return;
+    if (!filePostingan) { alert('Pilih file dulu!'); return; }
     if (filePostingan.size > 100 * 1024 * 1024) {
-        alert("Maaf, ukuran file melebihi batas 100MB! Silakan kompres video atau gunakan fitur backup manual.");
+        alert('Maaf, ukuran file melebihi batas 100MB! Silakan kompres file atau pakai mode Link / Embed.');
         return;
     }
 
-    document.getElementById('btn-start-upload').style.display = 'none';
-    const progressBar = document.getElementById('post-progress-bar');
-    const statusText = document.getElementById('post-status-text');
+    const jenis = jenisFilePost(filePostingan);
+    const progressBar = elp('post-progress-bar');
+    const statusText = elp('post-status-text');
+    postSedangUpload = true;
+    elp('btn-start-upload').style.display = 'none';
+    elp('post-progress-container').style.display = 'block';
+    progressBar.style.width = '0%';
+
+    const gagal = (pesan) => {
+        postSedangUpload = false;
+        statusText.innerHTML = '<span style="color:#ff4d4d;">❌ ' + pesan + '</span>';
+        elp('btn-start-upload').style.display = 'block';
+        elp('btn-start-upload').innerText = 'Ulangi Upload';
+    };
 
     const xhr = new XMLHttpRequest();
-    
-    // 1. Lacak progres pengiriman ke server Cloudflare
-    xhr.upload.onprogress = function(event) {
-        if (event.lengthComputable) {
-            const persentase = Math.round((event.loaded / event.total) * 100);
-            progressBar.style.width = persentase + '%';
-            if(persentase < 100) {
-                statusText.innerText = `Mengirim ke server... ${persentase}%`;
-            } else {
-                statusText.innerText = `Memproses di Internet Archive (Tunggu sebentar)...`;
-            }
-        }
+    xhr.upload.onprogress = function (event) {
+        if (!event.lengthComputable) return;
+        const p = Math.round((event.loaded / event.total) * 100);
+        progressBar.style.width = p + '%';
+        statusText.innerText = p < 100 ? 'Mengirim ke server... ' + p + '%' : 'Memproses di Internet Archive (Tunggu sebentar)...';
     };
-
-    // 2. Jika proses selesai
-    xhr.onload = function() {
-        if (xhr.status === 200) {
-            // Berhasil! Ambil Link dari Cloudflare
-            const respons = JSON.parse(xhr.responseText);
-            statusText.innerHTML = `<span style="color:#53fc18;">✅ Upload Sukses! Menyimpan ke Database...</span>`;
-            
-            // Simpan link dan caption ke Firebase
-            simpanDataPostinganReal(respons.url);
-        } else {
-            // Gagal
-            statusText.innerHTML = `<span style="color:#ff4d4d;">❌ Gagal: ${xhr.responseText}</span>`;
-            document.getElementById('btn-start-upload').style.display = 'block';
-            document.getElementById('btn-start-upload').innerText = 'Ulangi Upload';
-        }
+    xhr.onload = function () {
+        if (xhr.status !== 200) { gagal('Gagal: ' + xhr.responseText); return; }
+        let url = '';
+        try { url = JSON.parse(xhr.responseText).url; } catch (e) {}
+        if (!url) { gagal('Respons server tidak dikenali.'); return; }
+        statusText.innerHTML = '<span style="color:#53fc18;">✅ Upload Sukses! Menyimpan ke Database...</span>';
+        simpanDataPostinganReal({ mediaType: 'upload', videoUrl: url, kind: jenis });
     };
+    xhr.onerror = function () { gagal('Koneksi terputus. Silakan ulangi.'); };
 
-    // 3. Jika Jaringan Putus
-    xhr.onerror = function() {
-        statusText.innerHTML = `<span style="color:#ff4d4d;">❌ Koneksi terputus. Silakan ulangi.</span>`;
-        document.getElementById('btn-start-upload').style.display = 'block';
-        document.getElementById('btn-start-upload').innerText = 'Ulangi Upload';
-    };
-
-    // 4. Eksekusi Pengiriman ke API yang sudah kita buat di folder "functions/api/upload.js"
-    xhr.open("PUT", "/api/upload", true);
-    xhr.setRequestHeader("X-File-Name", filePostingan.name);
-    xhr.setRequestHeader("Content-Type", filePostingan.type);
+    xhr.open('PUT', '/api/upload', true);
+    xhr.setRequestHeader('X-File-Name', filePostingan.name);
+    xhr.setRequestHeader('Content-Type', filePostingan.type);
     xhr.send(filePostingan);
 }
 
-// Fungsi Simpan ke Firebase
-function simpanDataPostinganReal(linkVideoAsli) {
-    const caption = document.getElementById('post-caption').value; // Ambil nilai caption
-    const postId = "post_" + Date.now();
-    
-    firebase.database().ref('posts/' + postId).set({
+// Simpan ke Firebase. "sumber" berisi field khusus mode (mediaType, videoUrl / embedUrl, kind, ratio)
+function simpanDataPostinganReal(sumber) {
+    const postId = 'post_' + Date.now();
+    const data = Object.assign({
         id: postId,
-        videoUrl: linkVideoAsli,
-        caption: caption,
+        caption: elp('post-caption').value,
+        thumbnailUrl: elp('post-thumbnail').value.trim(),
+        visibility: elp('post-visibility').value,
         uploadDate: new Date().toISOString().split('T')[0],
-        timestamp: firebase.database.ServerValue.TIMESTAMP
-    }).then(() => {
-        alert("Postingan berhasil diterbitkan secara publik!");
-        document.getElementById('post-file').value = '';
-        document.getElementById('post-caption').value = '';
-        document.getElementById('post-thumbnail').value = '';
-        document.getElementById('post-progress-container').style.display = 'none';
-        document.getElementById('post-status-text').innerText = '';
-        document.getElementById('btn-start-upload').style.display = 'block';
-        document.getElementById('btn-start-upload').innerText = 'Mulai Upload';
-    }).catch(error => {
-        alert("Upload file berhasil, tapi gagal simpan ke Firebase: " + error.message);
+        timestamp: firebase.database.ServerValue.TIMESTAMP,
+        videoUrl: ''
+    }, sumber);
+
+    return firebase.database().ref('posts/' + postId).set(data).then(() => {
+        alert('Postingan berhasil diterbitkan!');
+        batalEditPostingan();
+    }).catch(err => {
+        postSedangUpload = false;
+        elp('btn-start-upload').style.display = 'block';
+        alert('Gagal simpan ke Firebase: ' + err.message + (data.videoUrl ? '\nFile sudah terupload di: ' + data.videoUrl : ''));
     });
 }
-    
 
-// ==========================================
-// DAFTAR, EDIT, HAPUS, & STATISTIK POSTINGAN
-// ==========================================
+// ---------- DAFTAR POSTINGAN ----------
+function labelVisPost(p) {
+    const v = (p && p.visibility) || 'publik';
+    return v === 'pribadi' ? { ikon: '🔒', teks: 'Pribadi', cari: 'pribadi' }
+         : v === 'unlisted' ? { ikon: '🔗', teks: 'Tdk Publik', cari: 'tidak publik unlisted' }
+         : { ikon: '🌍', teks: 'Publik', cari: 'publik' };
+}
 
-// Panggil fungsi ini di dalam fungsi checkLogin() saat admin berhasil masuk
+function thumbAdminPost(p) {
+    const i = infoPost(p);
+    const t = p.thumbnailUrl || '';
+    if (t) return '<img src="' + escHtmlGlobal(t) + '" class="admin-list-thumb" alt="">';
+    if (i.jenis === 'gambar') return '<img src="' + escHtmlGlobal(i.url) + '" class="admin-list-thumb" alt="">';
+    if (i.jenis === 'video' && !i.hls) return '<video src="' + escHtmlGlobal(i.url) + '" class="admin-list-thumb" style="object-fit:cover;" preload="metadata" muted></video>';
+    return '<div class="admin-list-thumb pst-thumb-ph">' + (i.jenis === 'audio' ? '🎵' : (i.jenis === 'embed' ? '🌐' : '▶')) + '</div>';
+}
+
+function renderDaftarPostingan() {
+    const list = elp('list-hapus-post');
+    if (!list) return;
+    const q = (elp('post-cari').value || '').toLowerCase().trim();
+    const keys = Object.keys(postCache).reverse();             // terbaru di atas
+
+    const cocok = keys.filter(k => {
+        if (!q) return true;
+        const p = postCache[k];
+        return [p.caption || '', k, labelVisPost(p).cari, infoPost(p).mode].join(' ').toLowerCase().indexOf(q) !== -1;
+    });
+
+    if (!keys.length) { list.innerHTML = '<p style="color:#bbb; font-size:13px;">Belum ada postingan.</p>'; return; }
+    if (!cocok.length) { list.innerHTML = '<p style="color:#bbb; font-size:13px;">Tidak ada postingan yang cocok.</p>'; return; }
+
+    list.innerHTML = cocok.map(k => {
+        const p = postCache[k];
+        const info = infoPost(p);
+        const vis = labelVisPost(p);
+        const views = Number(postViewsCache[k]) || 0;
+        const href = 'post.html?id=' + encodeURIComponent(k);
+        return '<div class="admin-list-item">' +
+            '<a href="' + href + '" class="admin-list-thumb-link" onclick="return bukaPratinjau(this.href)">' + thumbAdminPost(p) + '</a>' +
+            '<div class="admin-list-info">' +
+                '<a href="' + href + '" class="admin-link" onclick="return bukaPratinjau(this.href)"><div class="pst-judul">' + escHtmlGlobal(p.caption || 'Tanpa Caption') + '</div></a>' +
+                '<div class="pst-meta">' +
+                    '<span>' + vis.ikon + ' ' + vis.teks + '</span>' +
+                    '<span class="pst-badge pst-b-' + info.mode + '">' + (info.mode === 'upload' ? '⬆️ UPLOAD' : (info.mode === 'plyr' ? '🎬 PLYR' : '🌐 EMBED')) + '</span>' +
+                    '<span>• ID: ' + escHtmlGlobal(k) + '</span>' +
+                    '<span class="pst-views">• 👁️ ' + views.toLocaleString('id-ID') + ' penonton</span>' +
+                '</div>' +
+            '</div>' +
+            '<div class="admin-list-actions">' +
+                '<button class="btn-stats" data-act="stat" data-id="' + escHtmlGlobal(k) + '">📊</button>' +
+                '<button class="btn-salin-post" data-act="salin" data-id="' + escHtmlGlobal(k) + '">🔗 Salin Link</button>' +
+                '<button class="btn-reset" data-act="reset" data-id="' + escHtmlGlobal(k) + '" title="Reset viewers">↺ Reset</button>' +
+                '<button class="btn-edit" data-act="edit" data-id="' + escHtmlGlobal(k) + '">✎ Edit</button>' +
+                '<button class="btn-delete" data-act="hapus" data-id="' + escHtmlGlobal(k) + '">🗑️</button>' +
+            '</div>' +
+        '</div>';
+    }).join('');
+}
+
+function klikDaftarPostingan(e) {
+    const b = e.target.closest('[data-act]');
+    if (!b) return;
+    const id = b.dataset.id;
+    const p = postCache[id];
+    if (!p) return;
+    const ket = (p.caption || 'Tanpa Caption').substring(0, 30) + '...';
+    if (b.dataset.act === 'stat') bukaAnalitikPost(id, ket);
+    else if (b.dataset.act === 'salin') salinLinkPost(id);
+    else if (b.dataset.act === 'reset') resetViewsPost(id, ket);
+    else if (b.dataset.act === 'edit') siapkanEditPostingan(id);
+    else if (b.dataset.act === 'hapus') hapusPostingan(id);
+}
+
+function salinLinkPost(id) {
+    const url = new URL('post.html?id=' + encodeURIComponent(id), location.href).href;
+    const cadangan = () => {
+        const t = document.createElement('textarea');
+        t.value = url; t.style.position = 'fixed'; t.style.opacity = '0';
+        document.body.appendChild(t); t.select();
+        let ok = false;
+        try { ok = document.execCommand('copy'); } catch (e) {}
+        t.remove();
+        if (ok) tampilToast('Link postingan disalin');
+        else tampilInput('Salin link ini secara manual:', url, { judul: 'Link postingan' });
+    };
+    if (navigator.clipboard && window.isSecureContext) {
+        navigator.clipboard.writeText(url).then(() => tampilToast('Link postingan disalin')).catch(cadangan);
+    } else { cadangan(); }
+}
+
+// Dipanggil dari checkLogin()
 function muatDaftarPostingan() {
-    firebase.database().ref('posts').on('value', snap => {
-        let html = '<h4 style="color:#ff4d4d; border-top:1px solid #333; margin-top:20px; padding-top:10px; display:flex; justify-content:space-between; align-items:center; gap:10px; flex-wrap:wrap;">Daftar Semua Postingan <button class="btn-reset" onclick="resetViewsSemuaPost()">↺ Reset Semua Viewers</button></h4>';
-        
-        if(snap.exists()) {
-            const data = snap.val();
-            const keys = Object.keys(data).reverse(); // Terbaru di atas
-            
-            keys.forEach(k => {
-                const p = data[k];
-                const isVideo = p.videoUrl.includes('.mp4');
-                const safeCaption = (p.caption || "Tanpa Caption").replace(/'/g, "\\'").substring(0, 30) + "...";
-                
-                html += `
-                <div class="admin-list-item">
-                    <a href="post.html?id=${k}" class="admin-list-thumb-link" onclick="return bukaPratinjau(this.href)">${isVideo ? 
-                        `<video src="${p.videoUrl}" class="admin-list-thumb" style="object-fit:cover;"></video>` : 
-                        `<img src="${p.videoUrl}" class="admin-list-thumb">`
-                      
-                    } </a>
-                    <div class="admin-list-info">
-                        <a href="post.html?id=${k}" class="admin-link" onclick="return bukaPratinjau(this.href)"><div style="font-weight:bold; font-size:13px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">${p.caption || 'Tanpa Caption'}</div></a>
-                        <div style="font-size:11px; color:#bbb; margin-top:4px;">ID: ${k}</div>
-                    </div>
-                    <div class="admin-list-actions">
-                        <button class="btn-stats" onclick="bukaAnalitikPost('${k}', '${safeCaption}')">📊</button>
-                        <button class="btn-reset" onclick="resetViewsPost('${k}', '${safeCaption}')" title="Reset viewers">↺ Reset</button>
-                        <button class="btn-edit" onclick="siapkanEditPostingan('${k}')">✎ Edit</button>
-                        <button class="btn-delete" onclick="hapusPostingan('${k}')">🗑️</button>
-                    </div>
-                </div>`;
-            });
-        } else {
-            html += '<p style="color:#bbb; font-size:13px;">Belum ada postingan.</p>';
-        }
-        
-        const listContainer = document.getElementById('list-hapus-post');
-        if(listContainer) listContainer.innerHTML = html;
-    });
+    if (postListenerAktif) return;
+    postListenerAktif = true;
+    elp('post-cari').addEventListener('input', renderDaftarPostingan);
+    elp('list-hapus-post').addEventListener('click', klikDaftarPostingan);
+    firebase.database().ref('posts').on('value', snap => { postCache = snap.val() || {}; renderDaftarPostingan(); });
+    firebase.database().ref('post_views').on('value', snap => { postViewsCache = snap.val() || {}; renderDaftarPostingan(); });
 }
 
-// Fitur Edit Caption Postingan
+// ---------- EDIT ----------
 function siapkanEditPostingan(id) {
-    firebase.database().ref('posts/' + id).once('value').then(snap => {
-        if(snap.exists()) {
-            const p = snap.val();
-            document.getElementById('edit-post-id').value = id;
-            document.getElementById('post-caption').value = p.caption;
-            document.getElementById('post-thumbnail').value = p.thumbnailUrl || ''; // [TAMBAHAN INI]
-            
-            // Ubah tampilan UI Admin
-            document.getElementById('form-group-file-post').style.display = 'none'; // Hilangkan upload file
-            document.getElementById('info-upload-post').style.display = 'none';
-            document.getElementById('btn-start-upload').style.display = 'none';
-            document.getElementById('btn-simpan-edit-post').style.display = 'block';
-            document.getElementById('btn-batal-edit-post').style.display = 'block';
-            
-            window.scrollTo({ top: 0, behavior: 'smooth' });
-        }
-    });
-}
+    const p = postCache[id];
+    if (!p) return;
+    const info = infoPost(p);
 
-function batalEditPostingan() {
-    document.getElementById('edit-post-id').value = '';
-    document.getElementById('post-caption').value = '';
-    document.getElementById('post-thumbnail').value = ''; // [TAMBAHAN INI]
-    
-    // Kembalikan UI Admin
-    document.getElementById('form-group-file-post').style.display = 'block';
-    document.getElementById('info-upload-post').style.display = 'block';
-    document.getElementById('btn-start-upload').style.display = 'block';
-    document.getElementById('btn-simpan-edit-post').style.display = 'none';
-    document.getElementById('btn-batal-edit-post').style.display = 'none';
+    elp('edit-post-id').value = id;
+    elp('post-mode').value = info.mode;
+    elp('post-mode').disabled = true;                 // mode tidak bisa diganti saat edit
+    elp('post-caption').value = p.caption || '';
+    elp('post-thumbnail').value = p.thumbnailUrl || '';
+    elp('post-visibility').value = p.visibility || 'publik';
+    if (info.mode === 'plyr') {
+        elp('post-url-plyr').value = p.videoUrl || '';
+        elp('post-kind').value = p.kind || 'auto';
+    } else if (info.mode === 'embed') {
+        elp('post-url-embed').value = p.embedUrl || '';
+        elp('post-ratio').value = p.ratio || '16/9';
+    }
+
+    elp('btn-start-upload').style.display = 'none';
+    elp('btn-simpan-edit-post').style.display = 'block';
+    elp('btn-batal-edit-post').style.display = 'block';
+    elp('post-progress-container').style.display = 'none';
+    elp('post-status-text').innerText = info.mode === 'upload'
+        ? 'Mode edit: file upload tidak bisa diganti. Hapus lalu buat ulang jika ingin mengganti file.' : '';
+    ubahModePost();
+    window.scrollTo({ top: 0, behavior: 'smooth' });
 }
 
 function simpanEditPostingan() {
-    const id = document.getElementById('edit-post-id').value;
-    const newCaption = document.getElementById('post-caption').value;
-    const newThumbnail = document.getElementById('post-thumbnail').value; // [TAMBAHAN INI]
-    
-    if(!id) return;
-    
-    firebase.database().ref('posts/' + id).update({
-        caption: newCaption,
-        thumbnailUrl: newThumbnail // [TAMBAHAN INI]
-    }).then(() => {
-        alert("Caption dan Thumbnail postingan berhasil diperbarui!");
+    const id = elp('edit-post-id').value;
+    const p = postCache[id];
+    if (!id || !p) return;
+    const mode = infoPost(p).mode;
+
+    const up = {
+        caption: elp('post-caption').value,
+        thumbnailUrl: elp('post-thumbnail').value.trim(),
+        visibility: elp('post-visibility').value
+    };
+    if (mode !== 'upload') {
+        const sumber = ambilSumberPost(mode);
+        if (!sumber) return;
+        Object.assign(up, sumber);
+    }
+    firebase.database().ref('posts/' + id).update(up).then(() => {
+        alert('Perubahan postingan berhasil disimpan!');
         batalEditPostingan();
-    });
+    }).catch(err => alert('Gagal menyimpan: ' + err.message));
 }
+
+function batalEditPostingan() {
+    ['edit-post-id', 'post-caption', 'post-thumbnail', 'post-url-plyr', 'post-url-embed'].forEach(i => { elp(i).value = ''; });
+    elp('post-file').value = '';
+    filePostingan = null;
+    postSedangUpload = false;
+    elp('post-mode').disabled = false;
+    elp('post-kind').value = 'auto';
+    elp('post-ratio').value = '16/9';
+    elp('post-visibility').value = 'publik';
+    elp('post-progress-container').style.display = 'none';
+    elp('post-progress-bar').style.width = '0%';
+    elp('post-status-text').innerText = '';
+    elp('btn-start-upload').style.display = 'block';
+    elp('btn-simpan-edit-post').style.display = 'none';
+    elp('btn-batal-edit-post').style.display = 'none';
+    ubahModePost();
+}
+
+ubahModePost();   // tampilkan panel & info sesuai mode awal
 
 // Fitur Hapus Postingan
 function hapusPostingan(id) {
@@ -2289,7 +2466,7 @@ function renderPerformaTerbaru() {
         ]).then(r => {
             let v28 = 0;
             hariList.forEach(h => { v28 += ((anData.postViews[h] || {})[anAman(id)] || 0); });
-            const img = p.thumbnailUrl || (/\.(mp4|webm|mov)/i.test(p.videoUrl || '') ? '' : p.videoUrl);
+            const img = p.thumbnailUrl || (infoPost(p).jenis === 'gambar' ? p.videoUrl : '');
             return '<div><h5 style="margin:0 0 8px; color:#bbb;">Postingan terbaru</h5>' +
                 (img ? '<img src="' + img + '" alt="">' : '<div style="aspect-ratio:16/9; background:#000; border-radius:8px; display:flex; align-items:center; justify-content:center; color:#666;">▶ Video</div>') +
                 '<p style="font-weight:bold; margin:10px 0;">' + ((p.caption || '(tanpa caption)').substring(0, 80)) + '</p>' +
