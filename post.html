@@ -142,6 +142,13 @@
 
         firebase.database().ref('posts/' + postId).once('value').then(snap => {
             if (!snap.exists()) { el('post-media-container').innerHTML = '<p class="pp-loading">Postingan ini telah dihapus.</p>'; return; }
+            if (!postBolehDibuka(snap.val())) {
+                el('post-media-container').innerHTML = '<p class="pp-loading">Postingan ini tidak tersedia.</p>';
+                el('post-caption-display').innerText = '';
+                el('post-time-display').innerText = '';
+                el('post-comments-list').innerHTML = '';
+                return;
+            }
             renderPostUtama(snap.val());
             firebase.database().ref('post_views/' + postId).transaction(n => (n || 0) + 1);
             mulaiKomentar();
@@ -166,8 +173,7 @@
     //  POSTINGAN UTAMA
     // =====================================================================
     function renderPostUtama(data) {
-        const fileUrl = data.videoUrl || data.imageUrl || '';
-        const isVideo = /\.(mp4|webm|mov)(\?|$)/i.test(fileUrl);
+        const info = infoPost(data);
         const wadah = el('post-media-container');
 
         // Caption (bisa dilipat)
@@ -186,44 +192,100 @@
             el('post-time-ago').innerText = waktuLalu(data.timestamp).toUpperCase();
         } else { el('post-time-display').innerText = 'Luvia Insight Verse'; }
 
-        if (isVideo) {
-            wadah.innerHTML = '<div class="pp-video-wrap"><video id="plyr-post-player" playsinline loop muted poster="' + escHtmlGlobal(data.thumbnailUrl || '') + '"><source src="' + escHtmlGlobal(fileUrl) + '" type="video/mp4"></video></div>';
-            player = new Plyr('#plyr-post-player', {
-                controls: ['play-large', 'progress', 'current-time', 'mute', 'volume', 'fullscreen'],
-                clickToPlay: true, autoplay: true, muted: true, loop: { active: true }
-            });
-            // ketuk 2x = maju/mundur 10 detik
-            let lastTap = 0;
-            const wrap = wadah.querySelector('.pp-video-wrap');
-            wrap.addEventListener('touchend', (e) => {
-                const now = Date.now(), sel = now - lastTap;
-                if (sel < 300 && sel > 0) {
-                    const k = wrap.getBoundingClientRect();
-                    if (e.changedTouches[0].clientX > k.left + k.width / 2) player.forward(10); else player.rewind(10);
-                    e.preventDefault();
-                }
-                lastTap = now;
-            });
-            wrap.addEventListener('dblclick', (e) => {
-                const k = wrap.getBoundingClientRect();
-                if (e.clientX > k.left + k.width / 2) player.forward(10); else player.rewind(10);
-            });
-        } else {
-            wadah.innerHTML = '<img src="' + escHtmlGlobal(fileUrl) + '" alt="Foto Postingan" class="pp-img"><div class="pp-heart-pop" id="pp-heart-pop">' + icon(IKON.sukaIsi) + '</div>';
-            wadah.addEventListener('dblclick', () => { if (!sudahSuka()) alihkanSuka(true); animasiHati(); });
-            let lastTap = 0;
-            wadah.addEventListener('touchend', () => {
-                const now = Date.now();
-                if (now - lastTap < 300 && now - lastTap > 0) { if (!sudahSuka()) alihkanSuka(true); animasiHati(); }
-                lastTap = now;
-            });
-        }
+        // Media sesuai mode / jenis
+        if (info.mode === 'embed') tampilEmbedPost(wadah, info, data);
+        else if (info.jenis === 'video') tampilVideoPost(wadah, info, data);
+        else if (info.jenis === 'audio') tampilAudioPost(wadah, info, data);
+        else tampilGambarPost(wadah, info);
 
         mulaiSuka();
         mulaiSimpan();
         terapkanIkon();
     }
 
+    // ---- EMBED BEBAS: player bawaan sumber, mengikuti bingkai ----
+    function tampilEmbedPost(wadah, info, data) {
+        const r = POST_RASIO.indexOf(data.ratio) !== -1 ? data.ratio : '16/9';
+        wadah.innerHTML = '<div class="pp-embed" style="--rasio:' + r.replace('/', ' / ') + ';">' +
+            '<iframe src="' + escHtmlGlobal(info.url) + '" allowfullscreen="true" ' +
+            'allow="autoplay; encrypted-media; picture-in-picture; fullscreen" ' +
+            'referrerpolicy="strict-origin-when-cross-origin" loading="lazy" title="Postingan"></iframe></div>';
+    }
+
+    // ---- VIDEO: player Plyr website (mp4/webm/m3u8) ----
+    function tampilVideoPost(wadah, info, data) {
+        wadah.innerHTML = '<div class="pp-video-wrap"><video id="plyr-post-player" playsinline loop muted preload="metadata"></video></div>';
+        const v = el('plyr-post-player');
+        if (data.thumbnailUrl) v.poster = data.thumbnailUrl;
+
+        const mulai = () => {
+            player = new Plyr(v, {
+                controls: ['play-large', 'progress', 'current-time', 'mute', 'volume', 'fullscreen'],
+                clickToPlay: true, autoplay: true, muted: true, loop: { active: true }
+            });
+            pasangKetukDua(wadah.querySelector('.pp-video-wrap'));
+        };
+
+        if (info.hls) pasangHlsPost(v, info.url, mulai);
+        else { v.src = info.url; mulai(); }
+    }
+
+    function pasangHlsPost(video, url, siap) {
+        if (video.canPlayType('application/vnd.apple.mpegurl')) { video.src = url; siap(); return; }   // Safari / iOS
+        const s = document.createElement('script');
+        s.src = 'https://cdn.jsdelivr.net/npm/hls.js@1.5.17/dist/hls.min.js';
+        s.onload = () => {
+            if (window.Hls && Hls.isSupported()) { const h = new Hls(); h.loadSource(url); h.attachMedia(video); }
+            else video.src = url;
+            siap();
+        };
+        s.onerror = () => { video.src = url; siap(); };
+        document.head.appendChild(s);
+    }
+
+    // ---- AUDIO: sampul + player Plyr ----
+    function tampilAudioPost(wadah, info, data) {
+        const sampul = data.thumbnailUrl
+            ? '<img class="pp-audio-cover" src="' + escHtmlGlobal(data.thumbnailUrl) + '" alt="Sampul">'
+            : '<div class="pp-audio-cover pp-audio-ph">🎵</div>';
+        wadah.innerHTML = '<div class="pp-audio-wrap">' + sampul + '<audio id="plyr-post-player" controls playsinline preload="metadata"></audio></div>';
+        const a = el('plyr-post-player');
+        a.src = info.url;
+        player = new Plyr(a, { controls: ['play', 'progress', 'current-time', 'duration', 'mute', 'volume'] });
+    }
+
+    // ---- FOTO ----
+    function tampilGambarPost(wadah, info) {
+        wadah.innerHTML = '<img src="' + escHtmlGlobal(info.url) + '" alt="Foto Postingan" class="pp-img"><div class="pp-heart-pop" id="pp-heart-pop">' + icon(IKON.sukaIsi) + '</div>';
+        wadah.addEventListener('dblclick', () => { if (!sudahSuka()) alihkanSuka(true); animasiHati(); });
+        let lastTap = 0;
+        wadah.addEventListener('touchend', () => {
+            const now = Date.now();
+            if (now - lastTap < 300 && now - lastTap > 0) { if (!sudahSuka()) alihkanSuka(true); animasiHati(); }
+            lastTap = now;
+        });
+    }
+
+    // ketuk 2x = maju/mundur 10 detik (video)
+    function pasangKetukDua(wrap) {
+        if (!wrap) return;
+        let lastTap = 0;
+        wrap.addEventListener('touchend', (e) => {
+            const now = Date.now(), sel = now - lastTap;
+            if (sel < 300 && sel > 0 && player) {
+                const k = wrap.getBoundingClientRect();
+                if (e.changedTouches[0].clientX > k.left + k.width / 2) player.forward(10); else player.rewind(10);
+                e.preventDefault();
+            }
+            lastTap = now;
+        });
+        wrap.addEventListener('dblclick', (e) => {
+            if (!player) return;
+            const k = wrap.getBoundingClientRect();
+            if (e.clientX > k.left + k.width / 2) player.forward(10); else player.rewind(10);
+        });
+    }
+        
     function animasiHati() {
         const h = el('pp-heart-pop'); if (!h) return;
         h.classList.remove('jalan'); void h.offsetWidth; h.classList.add('jalan');
@@ -284,17 +346,13 @@
     //  POSTINGAN LAINNYA (grid ala Instagram)
     // =====================================================================
     function renderPostLain(postsData, viewsData) {
-        const keys = Object.keys(postsData).reverse().filter(k => k !== postId).slice(0, 9);
+        const keys = Object.keys(postsData).reverse().filter(k => k !== postId && postBolehTampil(postsData[k])).slice(0, 9);
         const wadah = el('other-posts-grid');
         if (!keys.length) { wadah.innerHTML = '<p class="pp-empty">Tidak ada postingan lain.</p>'; return; }
         wadah.innerHTML = keys.map(key => {
-            const p = postsData[key];
-            const url = p.videoUrl || p.imageUrl || '';
-            const vid = /\.(mp4|webm|mov)(\?|$)/i.test(url);
-            const media = vid
-                ? '<video src="' + escHtmlGlobal(url) + '" poster="' + escHtmlGlobal(p.thumbnailUrl || '') + '" preload="none" playsinline muted loop onmouseenter="this.play()" onmouseleave="this.pause(); this.load();"></video><span class="pp-g-tipe">' + icon(IKON.video) + '</span>'
-                : '<img src="' + escHtmlGlobal(url) + '" alt="Postingan" loading="lazy">';
-            return '<a href="post.html?id=' + key + '" class="pp-g-item">' + media +
+            const t = postTileInfo(postsData[key]);
+            return '<a href="post.html?id=' + key + '" class="pp-g-item">' + t.media +
+                   (t.ikon ? '<span class="pp-g-tipe">' + t.ikon + '</span>' : '') +
                    '<span class="pp-g-views">' + icon(IKON.dilihat) + ' ' + ringkasAngka(viewsData[key] || 0) + '</span></a>';
         }).join('');
     }
