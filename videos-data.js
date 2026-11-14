@@ -748,24 +748,53 @@ window.addEventListener('storage', (e) => {
 // 3. FUNGSI RENDER REKOMENDASI (GLOBAL VIEWS & TANGGAL KARTU)
 // ==========================================
 
+// ===== CEK STATUS LIVE KICK (server sendiri dulu, lalu langsung; gagal ≠ offline) =====
+const KICK_USERNAME_WEB = "luthfi1234321";
+let _kickStatusCache = null;
+let _kickStatusWaktu = 0;
+
+function ambilJsonKick(url, ms) {
+    const ctrl = new AbortController();
+    const t = setTimeout(() => ctrl.abort(), ms);
+    return fetch(url, { cache: 'no-store', signal: ctrl.signal })
+        .then(r => { clearTimeout(t); if (!r.ok) throw new Error('HTTP ' + r.status); return r.json(); })
+        .catch(e => { clearTimeout(t); throw e; });
+}
+
+// Mengembalikan Promise<{ ok, live, viewers, mulai, playback }>
+// ok:false artinya status TIDAK BISA dicek (bukan berarti offline)
+function ambilStatusKick() {
+    const sekarang = Date.now();
+    if (_kickStatusCache && sekarang - _kickStatusWaktu < 15000) return _kickStatusCache;
+    _kickStatusWaktu = sekarang;
+    _kickStatusCache = (async () => {
+        try {
+            const d = await ambilJsonKick('/api/kick-status', 8000);
+            if (d && d.ok) return { ok: true, live: !!d.live, viewers: d.viewers || 0, mulai: d.mulai || '', playback: d.playback || '' };
+        } catch (e) {}
+        try {
+            const d = await ambilJsonKick('https://kick.com/api/v2/channels/' + KICK_USERNAME_WEB, 8000);
+            const ls = d && d.livestream;
+            const live = !!(ls && ls.is_live !== false);
+            return { ok: true, live: live, viewers: live ? (ls.viewer_count || 0) : 0, mulai: live ? (ls.created_at || ls.start_time || '') : '', playback: live ? (d.playback_url || (ls && ls.playback_url) || '') : '' };
+        } catch (e) {}
+        return { ok: false, live: false, viewers: 0, mulai: '', playback: '' };
+    })();
+    return _kickStatusCache;
+}
+
 async function updateKickBadgeStatus(badgeId) {
     const badge = document.getElementById(badgeId);
     if (!badge) return;
 
-    const kickUsername = "luthfi1234321"; 
-    try {
-        const res = await fetch(`https://kick.com/api/v2/channels/${kickUsername}`);
-        const data = await res.json();
-
-        if (data.livestream && data.livestream.is_live) {
-            const viewers = data.livestream.viewer_count || 0;
-            badge.innerText = `🔴 SEDANG LIVE (${viewers} Penonton)`;
-            badge.className = "badge-live";
-        } else {
-            badge.innerText = "⚪ OFFLINE";
-            badge.className = "badge-offline";
-        }
-    } catch (err) {
+    const st = await ambilStatusKick();
+    if (!st.ok) {
+        badge.innerText = "📡 CEK STATUS";
+        badge.className = "badge-offline";
+    } else if (st.live) {
+        badge.innerText = `🔴 SEDANG LIVE (${st.viewers} Penonton)`;
+        badge.className = "badge-live";
+    } else {
         badge.innerText = "⚪ OFFLINE";
         badge.className = "badge-offline";
     }
