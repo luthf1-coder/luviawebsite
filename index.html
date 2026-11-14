@@ -128,24 +128,7 @@
 
         const kickChannel = "luthfi1234321"; 
         async function updateHomeLiveBadge() {
-            const badge = document.getElementById('kick-home-badge');
-            if (!badge) return;
-
-            try {
-                const res = await fetch(`https://kick.com/api/v2/channels/${kickChannel}`);
-                const data = await res.json();
-
-                if (data.livestream) {
-                    badge.innerText = "🔴 SEDANG LIVE";
-                    badge.className = "badge-live";
-                } else {
-                    badge.innerText = "⚪ OFFLINE";
-                    badge.className = "badge-offline";
-                }
-            } catch (err) {
-                badge.innerText = "📺 KICK LIVE";
-                badge.className = "badge-live";
-            }
+            await updateKickBadgeStatus('kick-home-badge');
         }
         updateHomeLiveBadge();
 
