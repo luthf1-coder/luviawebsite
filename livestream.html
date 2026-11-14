@@ -100,6 +100,7 @@
 
     <!-- SCRIPT UTAMA -->
     <script src="https://cdn.plyr.io/3.7.8/plyr.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/hls.js@1.5.17/dist/hls.min.js"></script>
     <script src="videos-data.js"></script>
     <script src="analytics-tracker.js"></script>
     
@@ -298,23 +299,95 @@ el.dataset.admin = c.isAdmin ? '1' : '';
         return isNaN(t) ? 0 : t;
     }
 
+    // ---------- PEMUTAR LIVE: HLS (Plyr + hls.js), cadangan iframe Kick ----------
+    let hlsLive = null;
+
+    function bersihkanPlayerLive() {
+        try { if (window.playerLive) window.playerLive.destroy(); } catch (e) {}
+        window.playerLive = null;
+        try { if (hlsLive) hlsLive.destroy(); } catch (e) {}
+        hlsLive = null;
+    }
+
+    function pasangIframeKick() {
+        bersihkanPlayerLive();
+        playerWrapper.innerHTML = `<iframe src="https://player.kick.com/${kickUsername}" allowfullscreen="true" scrolling="no" style="position:absolute; top:0; left:0; width:100%; height:100%; border:none;"></iframe>`;
+    }
+
+    function pasangPlayerLive(src) {
+        bersihkanPlayerLive();
+        const valid = /^https:\/\/[^\s"'<>]+$/i.test(src || '') && /\.m3u8(\?|$)/i.test(src || '');
+        if (!valid) { pasangIframeKick(); return; }
+
+        playerWrapper.innerHTML = '<div class="live-hls-box"><video id="live-video" playsinline></video></div>';
+        const v = document.getElementById('live-video');
+        let beres = false;
+        const gagal = () => { if (beres) return; beres = true; pasangIframeKick(); };
+        const sukses = () => {
+            if (beres) return;
+            beres = true;
+            window.playerLive = new Plyr(v, {
+                controls: ['play-large', 'play', 'mute', 'volume', 'pip', 'fullscreen'],
+                settings: [], clickToPlay: true
+            });
+        };
+        const mulaiPutar = () => {
+            v.muted = false;
+            const p = v.play();
+            if (p && p.catch) p.catch(() => { v.muted = true; v.play().catch(() => {}); });
+        };
+
+        if (window.Hls && Hls.isSupported()) {
+            hlsLive = new Hls({ lowLatencyMode: true, enableWorker: true, manifestLoadingMaxRetry: 1 });
+            const batas = setTimeout(gagal, 10000);
+            hlsLive.on(Hls.Events.MANIFEST_PARSED, () => { clearTimeout(batas); sukses(); mulaiPutar(); });
+            hlsLive.on(Hls.Events.ERROR, (e, d) => {
+                if (!d.fatal) return;
+                if (!beres) { clearTimeout(batas); gagal(); return; }
+                if (d.type === Hls.ErrorTypes.NETWORK_ERROR) hlsLive.startLoad();
+                else if (d.type === Hls.ErrorTypes.MEDIA_ERROR) hlsLive.recoverMediaError();
+                else pasangIframeKick();
+            });
+            hlsLive.loadSource(src);
+            hlsLive.attachMedia(v);
+        } else if (v.canPlayType('application/vnd.apple.mpegurl')) {   // Safari / iPhone
+            setTimeout(gagal, 10000);
+            v.addEventListener('loadedmetadata', () => { sukses(); mulaiPutar(); }, { once: true });
+            v.addEventListener('error', gagal, { once: true });
+            v.src = src;
+        } else {
+            pasangIframeKick();
+        }
+    }
+
+    let takTampil = false;   // layar "status belum terdeteksi" sedang dipakai?
+
+    function tampilkanStatusTakTerdeteksi() {
+        takTampil = true;
+        offTampil = false; offKunci = '';
+        pasangIframeKick();
+        if (viewersText) viewersText.innerHTML = `⚠️ <span style="color:#ffb27d;">Status siaran belum terdeteksi</span> • <a href="https://kick.com/${kickUsername}" target="_blank" rel="noopener" style="color:#ff914d; font-weight:bold;">Buka di Kick</a><br><small style="color:#bbb;">Jika video tidak muncul, jaringan/DNS-mu mungkin memblokir Kick. Coba ganti DNS ke Google atau Cloudflare, atau pakai data seluler.</small>`;
+        setStatusChat(false);
+    }
+
     async function cekStatusKick() {
-        let live = false, viewers = 0, mulai = 0;
-        try {
-            const res = await fetch(`https://kick.com/api/v2/channels/${kickUsername}`);
-            const data = await res.json();
-            if (data.livestream && data.livestream.is_live) {
-                live = true;
-                viewers = data.livestream.viewer_count || 0;
-                mulai = parseUTC(data.livestream.created_at || data.livestream.start_time);
-                if (mulai > Date.now()) mulai = 0;
-            }
-        } catch (err) { live = false; }
+        const st = await ambilStatusKick();
+        if (!st.ok) {
+            // Gagal mengecek BUKAN berarti offline: jangan ubah tampilan yang sudah ada
+            if (statusTerakhir === null && !takTampil) tampilkanStatusTakTerdeteksi();
+            return;
+        }
+        takTampil = false;
+        let live = st.live, viewers = st.viewers, mulai = 0;
+        if (live) {
+            mulai = parseUTC(st.mulai);
+            if (mulai > Date.now()) mulai = 0;
+        }
 
         if (live) {
             if (statusTerakhir !== true) {
                 offTampil = false; offKunci = '';
-                pasangPlayerKick();
+                pasangPlayerLive(st.playback);
             }
             setStatusChat(true);
             if (viewersText) viewersText.innerHTML = `🔴 <span style="color:#ff4d4d; font-weight:bold;">LIVE</span> • ${icon(IKON.dilihat)} ${viewers} Penonton Saat Ini`;
@@ -345,6 +418,7 @@ el.dataset.admin = c.isAdmin ? '1' : '';
     }
 
     function renderOfflineState() {
+        bersihkanPlayerLive();
         offTampil = true;
         if (viewersText) viewersText.innerHTML = `⚪ <span style="color:#bbb;">OFFLINE</span>`;
         setStatusChat(false);
