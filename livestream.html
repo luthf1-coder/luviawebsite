@@ -39,6 +39,7 @@
                 <span class="wp-chip wp-chip-views" id="live-viewers-count-text">👁️ Memuat status siaran...</span>
                 <a href="https://kick.com/luthfi1234321" id="btn-live-asli" class="wp-chip" target="_blank" rel="noopener" style="display:none;">Buka di Kick ❯</a>
                 <a href="#" id="btn-live-hls" class="wp-chip wp-chip-genre" target="_blank" rel="noopener" style="display:none;">▶ Tonton lewat tautan langsung</a>
+                <div id="live-debug" style="display:none; width:100%; font-size:.78rem; color:#ffb27d; word-break:break-word;"></div>
             </div>
 
             <div class="wp-desc">
@@ -312,6 +313,7 @@ el.dataset.admin = c.isAdmin ? '1' : '';
     }
 
     let srcLiveTerakhir = '';
+    let infoGalatLive = '';
 
     function tampilTautanLive(tampil) {
         const a = document.getElementById('btn-live-asli');
@@ -321,26 +323,48 @@ el.dataset.admin = c.isAdmin ? '1' : '';
             if (tampil && srcLiveTerakhir) { b.href = srcLiveTerakhir; b.style.display = 'inline-flex'; }
             else b.style.display = 'none';
         }
+        const d = document.getElementById('live-debug');
+        if (d) {
+            if (tampil && infoGalatLive) { d.textContent = 'Info teknis: ' + infoGalatLive; d.style.display = 'block'; }
+            else d.style.display = 'none';
+        }
+    }
+
+    // Pemutar video HLS dicoba tanpa mengirim Referer (tautan yang dibuka langsung juga tanpa Referer)
+    function setTanpaReferrer() {
+        if (document.getElementById('meta-referrer-live')) return;
+        const m = document.createElement('meta');
+        m.id = 'meta-referrer-live'; m.name = 'referrer'; m.content = 'no-referrer';
+        document.head.appendChild(m);
     }
 
     function pasangIframeKick() {
         bersihkanPlayerLive();
-        playerWrapper.innerHTML = `<iframe src="https://player.kick.com/${kickUsername}" allowfullscreen="true" scrolling="no" style="position:absolute; top:0; left:0; width:100%; height:100%; border:none;"></iframe>`;
+        // referrerpolicy eksplisit: iframe Kick tetap memakai pengaturan normal
+        playerWrapper.innerHTML = `<iframe src="https://player.kick.com/${kickUsername}" referrerpolicy="strict-origin-when-cross-origin" allowfullscreen="true" scrolling="no" style="position:absolute; top:0; left:0; width:100%; height:100%; border:none;"></iframe>`;
         tampilTautanLive(true);
     }
 
     function pasangPlayerLive(src) {
         bersihkanPlayerLive();
+        infoGalatLive = '';
         const valid = /^https:\/\/[^\s"'<>]+$/i.test(src || '') && /\.m3u8(\?|$)/i.test(src || '');
         srcLiveTerakhir = valid ? src : '';
-        if (!valid) { pasangIframeKick(); return; }
+        if (!valid) { infoGalatLive = 'alamat video HLS tidak diterima dari server'; pasangIframeKick(); return; }
+        setTanpaReferrer();
 
         playerWrapper.innerHTML = '<div class="live-hls-box"><video id="live-video" playsinline></video></div>';
         const v = document.getElementById('live-video');
         let beres = false;
         let batas = null;
+        const alasan = [];
 
-        const gagal = () => { if (beres) return; beres = true; clearTimeout(batas); pasangIframeKick(); };
+        const gagal = () => {
+            if (beres) return;
+            beres = true; clearTimeout(batas);
+            infoGalatLive = alasan.join(' | ');
+            pasangIframeKick();
+        };
         const sukses = () => {
             if (beres) return;
             beres = true; clearTimeout(batas);
@@ -358,12 +382,12 @@ el.dataset.admin = c.isAdmin ? '1' : '';
 
         // Cadangan: hls.js (hanya berhasil jika server video mengizinkan domain ini)
         const pakaiHlsJs = () => {
-            if (!(window.Hls && Hls.isSupported())) { gagal(); return; }
+            if (!(window.Hls && Hls.isSupported())) { alasan.push('hls.js tidak tersedia'); gagal(); return; }
             hlsLive = new Hls({ lowLatencyMode: true, enableWorker: true, manifestLoadingMaxRetry: 1 });
             hlsLive.on(Hls.Events.MANIFEST_PARSED, () => { sukses(); mulaiPutar(); });
             hlsLive.on(Hls.Events.ERROR, (e, d) => {
                 if (!d.fatal) return;
-                if (!beres) { gagal(); return; }
+                if (!beres) { alasan.push('hls.js: ' + d.details + (d.response ? ' (' + d.response.code + ')' : '')); gagal(); return; }
                 if (d.type === Hls.ErrorTypes.NETWORK_ERROR) hlsLive.startLoad();
                 else if (d.type === Hls.ErrorTypes.MEDIA_ERROR) hlsLive.recoverMediaError();
                 else pasangIframeKick();
@@ -372,12 +396,13 @@ el.dataset.admin = c.isAdmin ? '1' : '';
             hlsLive.attachMedia(v);
         };
 
-        batas = setTimeout(gagal, 12000);
+        batas = setTimeout(() => { alasan.push('waktu habis 12 detik'); gagal(); }, 12000);
 
         // Selalu coba pemutar bawaan browser dulu (tidak terkena aturan CORS); gagal baru hls.js
         v.addEventListener('loadedmetadata', () => { sukses(); mulaiPutar(); }, { once: true });
         v.addEventListener('error', () => {
             if (beres) return;
+            alasan.push('bawaan browser: kode ' + (v.error ? v.error.code : '?'));
             v.removeAttribute('src'); v.load();
             pakaiHlsJs();
         }, { once: true });
@@ -412,6 +437,10 @@ el.dataset.admin = c.isAdmin ? '1' : '';
             if (statusTerakhir !== true) {
                 offTampil = false; offKunci = '';
                 pasangPlayerLive(st.playback);
+            } else if (st.playback && /\.m3u8(\?|$)/i.test(st.playback)) {
+                srcLiveTerakhir = st.playback;      // token baru untuk tombol "tautan langsung"
+                const b = document.getElementById('btn-live-hls');
+                if (b && b.style.display !== 'none') b.href = srcLiveTerakhir;
             }
             setStatusChat(true);
             if (viewersText) viewersText.innerHTML = `🔴 <span style="color:#ff4d4d; font-weight:bold;">LIVE</span> • ${icon(IKON.dilihat)} ${viewers} Penonton Saat Ini`;
