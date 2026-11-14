@@ -37,6 +37,7 @@
 
             <div class="wp-meta">
                 <span class="wp-chip wp-chip-views" id="live-viewers-count-text">👁️ Memuat status siaran...</span>
+                <a href="https://kick.com/luthfi1234321" id="btn-live-asli" class="wp-chip" target="_blank" rel="noopener" style="display:none;">Video tidak muncul? Buka di Kick ❯</a>
             </div>
 
             <div class="wp-desc">
@@ -309,9 +310,15 @@ el.dataset.admin = c.isAdmin ? '1' : '';
         hlsLive = null;
     }
 
+    function tampilTautanLive(tampil) {
+        const a = document.getElementById('btn-live-asli');
+        if (a) a.style.display = tampil ? 'inline-flex' : 'none';
+    }
+
     function pasangIframeKick() {
         bersihkanPlayerLive();
         playerWrapper.innerHTML = `<iframe src="https://player.kick.com/${kickUsername}" allowfullscreen="true" scrolling="no" style="position:absolute; top:0; left:0; width:100%; height:100%; border:none;"></iframe>`;
+        tampilTautanLive(true);
     }
 
     function pasangPlayerLive(src) {
@@ -322,10 +329,13 @@ el.dataset.admin = c.isAdmin ? '1' : '';
         playerWrapper.innerHTML = '<div class="live-hls-box"><video id="live-video" playsinline></video></div>';
         const v = document.getElementById('live-video');
         let beres = false;
-        const gagal = () => { if (beres) return; beres = true; pasangIframeKick(); };
+        let batas = null;
+
+        const gagal = () => { if (beres) return; beres = true; clearTimeout(batas); pasangIframeKick(); };
         const sukses = () => {
             if (beres) return;
-            beres = true;
+            beres = true; clearTimeout(batas);
+            tampilTautanLive(false);
             window.playerLive = new Plyr(v, {
                 controls: ['play-large', 'play', 'mute', 'volume', 'pip', 'fullscreen'],
                 settings: [], clickToPlay: true
@@ -337,26 +347,35 @@ el.dataset.admin = c.isAdmin ? '1' : '';
             if (p && p.catch) p.catch(() => { v.muted = true; v.play().catch(() => {}); });
         };
 
-        if (window.Hls && Hls.isSupported()) {
+        // Cadangan: hls.js (hanya berhasil jika server video mengizinkan domain ini)
+        const pakaiHlsJs = () => {
+            if (!(window.Hls && Hls.isSupported())) { gagal(); return; }
             hlsLive = new Hls({ lowLatencyMode: true, enableWorker: true, manifestLoadingMaxRetry: 1 });
-            const batas = setTimeout(gagal, 10000);
-            hlsLive.on(Hls.Events.MANIFEST_PARSED, () => { clearTimeout(batas); sukses(); mulaiPutar(); });
+            hlsLive.on(Hls.Events.MANIFEST_PARSED, () => { sukses(); mulaiPutar(); });
             hlsLive.on(Hls.Events.ERROR, (e, d) => {
                 if (!d.fatal) return;
-                if (!beres) { clearTimeout(batas); gagal(); return; }
+                if (!beres) { gagal(); return; }
                 if (d.type === Hls.ErrorTypes.NETWORK_ERROR) hlsLive.startLoad();
                 else if (d.type === Hls.ErrorTypes.MEDIA_ERROR) hlsLive.recoverMediaError();
                 else pasangIframeKick();
             });
             hlsLive.loadSource(src);
             hlsLive.attachMedia(v);
-        } else if (v.canPlayType('application/vnd.apple.mpegurl')) {   // Safari / iPhone
-            setTimeout(gagal, 10000);
+        };
+
+        batas = setTimeout(gagal, 12000);
+
+        if (v.canPlayType('application/vnd.apple.mpegurl')) {
+            // Pemutar bawaan browser (Android Chrome, iPhone, Safari): tidak terkena aturan CORS
             v.addEventListener('loadedmetadata', () => { sukses(); mulaiPutar(); }, { once: true });
-            v.addEventListener('error', gagal, { once: true });
+            v.addEventListener('error', () => {
+                if (beres) return;
+                v.removeAttribute('src'); v.load();
+                pakaiHlsJs();
+            }, { once: true });
             v.src = src;
         } else {
-            pasangIframeKick();
+            pakaiHlsJs();
         }
     }
 
@@ -419,6 +438,7 @@ el.dataset.admin = c.isAdmin ? '1' : '';
 
     function renderOfflineState() {
         bersihkanPlayerLive();
+        tampilTautanLive(false);
         offTampil = true;
         if (viewersText) viewersText.innerHTML = `⚪ <span style="color:#bbb;">OFFLINE</span>`;
         setStatusChat(false);
