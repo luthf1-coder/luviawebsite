@@ -36,6 +36,7 @@
             <div class="wp-actions" id="aksi-container">
                 <button type="button" class="wp-btn" id="btn-share"><span data-ikon="bagikan"></span> Bagikan</button>
                 <span id="download-area"></span>
+                <a href="#" id="btn-buka-asli" class="wp-btn" target="_blank" rel="noopener" style="display:none;"><span data-ikon="maju"></span> Buka di Tab Baru</a>
             </div>
 
             <div class="wp-desc collapsed" id="desc-box">
@@ -468,6 +469,17 @@
             else pasangNative(playerWrapper, currentVid);
         }
 
+
+        // Tautan cadangan jika embed diblokir DNS/jaringan penonton
+        let linkAsli = '';
+        if (currentVid.rumbleEmbed) linkAsli = currentVid.rumbleEmbed;
+        else if (currentVid.driveEmbed) linkAsli = currentVid.driveEmbed.replace(/\/preview.*$/, '/view');
+        else if (currentVid.customEmbed) linkAsli = currentVid.customEmbed;
+        else if (currentVid.youtubeId) linkAsli = 'https://www.youtube.com/watch?v=' + currentVid.youtubeId;
+        const btnAsli = document.getElementById('btn-buka-asli');
+        if (btnAsli && linkAsli) { btnAsli.href = linkAsli; btnAsli.style.display = 'inline-flex'; }
+        
+        
         // Tombol unduh (tidak untuk HLS/DASH)
         let downloadAreaHTML = '';
         const safeTitle = (currentVid.title || 'video').replace(/[^\w\- ]+/g, '').trim() || 'video';
