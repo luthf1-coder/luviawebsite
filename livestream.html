@@ -62,6 +62,7 @@
                         <button type="button" id="lc-edit-batal">batal</button>
                     </div>
                     <div id="lc-nama"></div>
+                    <div id="lc-admin-wrap" class="ta-row"></div>
                     <div class="lc-input-row">
                         <input type="text" id="chat-text" placeholder="Ngobrol di sini..." maxlength="200">
                         <button type="submit" class="lc-send" aria-label="Kirim"><span data-ikon="kirim"></span></button>
@@ -159,7 +160,7 @@ el.dataset.admin = c.isAdmin ? '1' : '';
         el.innerHTML = `
             ${buatAvatar(nama, { kelas: 'lc-ava', ukuran: 24, admin: !!c.isAdmin })}
             <div class="lc-txt">
-                <span class="lc-name" style="color:${c.isAdmin ? '#ff914d' : warnaAvatar(nama)}">${escHtmlGlobal(nama)}</span>${c.isAdmin ? lencanaAdmin() : ''}<span class="lc-time">${jam}</span>
+                <span class="lc-name" style="color:${c.isAdmin ? '#ff914d' : warnaAvatar(nama)}">${escHtmlGlobal(nama)}</span>${c.isAdmin ? lencanaAdmin() : ''}${badgeUntukAdmin(c)}<span class="lc-time">${jam}</span>
                 <span class="lc-msgtext">${escHtmlGlobal(c.text)}</span>${c.edited ? '<span class="lc-edited">(diedit)</span>' : ''}
             </div>
             <div class="lc-act">
@@ -228,6 +229,7 @@ el.dataset.admin = c.isAdmin ? '1' : '';
 
     // ---------- NAMA PENGIRIM (bersama di semua halaman) ----------
     const kolomNama = pasangKolomNama('lc-nama', 'chat-name', 'Chat sebagai');
+        document.getElementById('lc-admin-wrap').innerHTML = htmlTombolAdmin('lc-untuk-admin');
 
     // ---------- KIRIM / SIMPAN EDIT ----------
     formChat.addEventListener('submit', async e => {
@@ -249,10 +251,22 @@ el.dataset.admin = c.isAdmin ? '1' : '';
         terakhirKirim = Date.now();
         if (!info.isAdmin) kolomNama.segarkan();
 
+        const untukAdmin = !info.isAdmin && tombolAdminAktif('lc-untuk-admin');
         const data = { name: info.nama, text: teks, uid: uid, timestamp: firebase.database.ServerValue.TIMESTAMP };
         if (info.isAdmin) data.isAdmin = true;
-        chatRef.push(data).catch(err => alert('Gagal mengirim: ' + err.message));
+        if (untukAdmin) data.forAdmin = true;
+        chatRef.push(data).then(() => {
+            if (info.isAdmin) return;
+            const panggil = apakahPanggilAdmin(teks, untukAdmin);
+            kirimNotifAdmin({
+                tipe: panggil ? 'Memanggil Admin 🔔' : 'Live Chat Baru',
+                kategori: panggil ? 'panggil' : 'komentar',
+                pesan: info.nama + ' di live chat: "' + ringkasTeks(teks, 200) + '"',
+                link: 'livestream.html'
+            });
+        }).catch(err => alert('Gagal mengirim: ' + err.message));
         inTeks.value = ''; inTeks.focus();
+        resetTombolAdmin('lc-untuk-admin');
     });
 
 
