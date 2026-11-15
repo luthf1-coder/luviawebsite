@@ -3973,3 +3973,83 @@ a.wp-btn:focus-visible { outline: 3px solid #ff914d; outline-offset: 3px; }
 /* Tombol kontrol ikut membesar di laptop besar dan TV */
 @media (min-width: 1600px) { .page-livestream .plyr { --plyr-control-icon-size: 24px; --plyr-control-spacing: 12px; } }
 @media (min-width: 2200px) { .page-livestream .plyr { --plyr-control-icon-size: 30px; --plyr-control-spacing: 16px; } }
+
+
+/* =====================================================================
+   BLOK 11: TOMBOL "UNTUK ADMIN", LENCANA, NOTIFIKASI ADMIN
+   ===================================================================== */
+
+/* ---------- Tombol "Untuk Admin" (di semua kolom komentar pengunjung) ---------- */
+.ta-btn { position: relative; display: inline-flex; flex-shrink: 0; cursor: pointer; user-select: none; -webkit-user-select: none; -webkit-tap-highlight-color: transparent; touch-action: manipulation; }
+.ta-btn input {
+    position: absolute !important; opacity: 0; width: 1px !important; height: 1px !important;
+    margin: 0 !important; padding: 0 !important; border: 0 !important; pointer-events: none;
+}
+.ta-box {
+    display: inline-flex; align-items: center; gap: .4rem; padding: .35rem .85rem;
+    border-radius: 999px; font-size: .75rem; font-weight: 600; line-height: 1.2; white-space: nowrap;
+    color: rgba(255,255,255,0.78); background: rgba(255,255,255,0.07); border: 1px solid rgba(255,255,255,0.22);
+    transition: background .2s, color .2s, border-color .2s, box-shadow .2s;
+}
+.ta-box .ic { font-size: 1rem; }
+@media (hover: hover) { .ta-btn:hover .ta-box { border-color: #ff914d; color: #fff; } }
+.ta-btn input:checked + .ta-box {
+    color: #fff; background: linear-gradient(45deg, #8c52ff, #ff914d); border-color: transparent;
+    box-shadow: 0 4px 16px var(--glow-o, rgba(255,145,77,0.35));
+}
+.ta-btn input:focus-visible + .ta-box { outline: 3px solid #ff914d; outline-offset: 2px; }
+
+.ta-wrap { display: flex; align-items: center; }
+.ta-wrap:empty, .ta-row:empty { display: none; }
+.form-actions .ta-wrap { margin-right: auto; }
+.wp-comments .form-actions { flex-wrap: wrap; align-items: center; row-gap: .4rem; }
+.ta-row { display: flex; padding: 2px 0 6px; }
+
+/* ---------- Lencana "Untuk Admin" pada komentar yang sudah terkirim ---------- */
+.badge-untuk-admin {
+    display: inline-flex; align-items: center; gap: .25rem; margin-left: 6px; padding: 1px 8px;
+    border-radius: 999px; font-size: .62rem; font-weight: 800; letter-spacing: .4px; white-space: nowrap;
+    color: #ffd9a8; background: rgba(255,145,77,0.14); border: 1px solid rgba(255,145,77,0.55); vertical-align: middle;
+}
+.badge-untuk-admin .ic { font-size: .9em; }
+.comment-header .badge-untuk-admin { align-self: center; margin-left: 0; }
+.lc-txt .badge-untuk-admin { margin-right: .35rem; }
+
+@media (max-width: 600px) { .ta-box { font-size: .72rem; padding: .32rem .75rem; } }
+
+/* ---------- ADMIN: kotak aktifkan notifikasi ---------- */
+.push-box {
+    display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap;
+    background: #151515; border: 1px solid #333; border-left: 4px solid #8c52ff; border-radius: 10px;
+    padding: 12px 14px; margin-bottom: 14px;
+}
+.push-info { flex: 1; min-width: 200px; display: flex; flex-direction: column; gap: 4px; font-size: 13px; }
+.push-info small { color: #999; font-size: 11.5px; line-height: 1.55; }
+.push-status { font-size: 12px; font-weight: 700; }
+.push-status.on { color: #53e8a3; }
+.push-status.off { color: #999; }
+.push-status.blok { color: #ff8a8a; }
+.btn-push {
+    border: none; border-radius: 8px; padding: 10px 16px; font-size: 13px; font-weight: 700; cursor: pointer;
+    color: #fff; white-space: nowrap; background: linear-gradient(45deg, #8c52ff, #ff914d);
+}
+.btn-push:hover { opacity: .88; }
+.btn-push:disabled { opacity: .5; cursor: wait; }
+.btn-push.aktif { background: #333; border: 1px solid #555; }
+@media (max-width: 600px) { .push-box { flex-direction: column; align-items: stretch; } .btn-push { width: 100%; } }
+
+/* ---------- ADMIN: log notifikasi + tombol Buka ---------- */
+.notif-item.notif-panggil { border-left-color: #ff4d6d; background: #231a1f; }
+.notif-item.notif-support { border-left-color: #8c52ff; }
+.notif-item.notif-rating { border-left-color: #ffc94d; }
+.notif-kat { display: inline-block; margin-left: 8px; padding: 1px 8px; border-radius: 999px; font-size: 10px; font-weight: 800; letter-spacing: .4px; vertical-align: middle; background: #333; color: #ddd; }
+.notif-kat.panggil { background: #ff4d6d; color: #fff; }
+.notif-kat.support { background: #8c52ff; color: #fff; }
+.notif-kat.rating { background: #ffc94d; color: #222; }
+.notif-actions { display: flex; align-items: center; gap: 6px; flex-shrink: 0; }
+.notif-go {
+    border: none; border-radius: 999px; padding: 6px 14px; font-size: 12px; font-weight: 700; cursor: pointer;
+    color: #fff; white-space: nowrap; background: linear-gradient(45deg, #8c52ff, #ff914d);
+}
+.notif-go:hover { opacity: .85; }
+@media (max-width: 768px) { .notif-actions { align-self: flex-end; } }
