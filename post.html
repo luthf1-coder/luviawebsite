@@ -59,6 +59,7 @@
                         <button type="button" id="pc-reply-batal" aria-label="Batal"><span data-ikon="tutup"></span></button>
                     </div>
                     <div id="pc-nama"></div>
+                    <div id="pc-admin" class="ta-row"></div>
                     <div class="pp-input-row">
                         <input type="text" id="post-comment-text" placeholder="Tambahkan komentar..." maxlength="500">
                         <button type="submit" class="pp-post-btn" id="pc-kirim">Kirim</button>
@@ -111,6 +112,7 @@
     <script>
     const el = (id) => document.getElementById(id);
     let postId = null;
+            let postJudul = '';        // ringkasan caption, untuk notifikasi admin
     let player = null;
     let balasKe = null;        // { id: komentarInduk, nama }
     let editTarget = null;     // { id, parent, isReply }
@@ -178,6 +180,7 @@
 
         // Caption (bisa dilipat)
         const cap = data.caption || 'Tidak ada keterangan.';
+                postJudul = cap;
         el('post-caption-display').innerText = cap;
         if (cap.length > 140) {
             const box = el('pp-caption'); box.classList.add('lipat');
@@ -381,6 +384,8 @@
 
         // Kolom nama bersama (otomatis terisi dari halaman lain)
         const kolom = pasangKolomNama('pc-nama', 'post-comment-name', 'Komentar sebagai');
+        const wadahAdmin = el('pc-admin');
+        if (wadahAdmin) wadahAdmin.innerHTML = htmlTombolAdmin('pc-untuk-admin');
 
         function setBalasan(target) {
             balasKe = target;
@@ -403,7 +408,7 @@
             return '<div class="pc-item' + (isReply ? ' pc-reply' : '') + '" id="pc-' + id + '">' +
                 buatAvatar(namaKomentar(c), { kelas: 'pc-ava', admin: !!c.isAdmin, ukuran: isReply ? 24 : 32 }) +
                 '<div class="pc-body">' +
-                    '<div class="pc-top"><b class="pc-name">' + escHtmlGlobal(namaKomentar(c)) + '</b>' + (c.isAdmin ? lencanaAdmin() : '') + '</div>' +
+                    '<div class="pc-top"><b class="pc-name">' + escHtmlGlobal(namaKomentar(c)) + '</b>' + (c.isAdmin ? lencanaAdmin() : '') + badgeUntukAdmin(c) + '</div>' +
                     '<div class="pc-text">' + escHtmlGlobal(c.text) + '</div>' +
                     '<div class="pc-sub">' +
                         '<span>' + waktuLalu(c.timestamp) + '</span>' +
@@ -484,14 +489,28 @@
             if (!info.ok) { alert(info.pesan); return; }
             if (!info.isAdmin) kolom.segarkan();
 
+            const eraBalasan = !!balasKe;
+            const untukAdmin = !info.isAdmin && tombolAdminAktif('pc-untuk-admin');
             const data = { name: info.nama, uid: idPengguna(), text: teks, timestamp: firebase.database.ServerValue.TIMESTAMP, likes: 0 };
             if (info.isAdmin) data.isAdmin = true;
+            if (untukAdmin) data.forAdmin = true;
 
             let baru;
             if (balasKe) { baru = commentsRef.child(balasKe.id).child('replies').push(data); balasanTerbuka.add(balasKe.id); }
             else baru = commentsRef.push(data);
             localStorage.setItem('my_post_comment_' + baru.key, 'true');
+
+            if (!info.isAdmin) {
+                const panggil = apakahPanggilAdmin(teks, untukAdmin);
+                kirimNotifAdmin({
+                    tipe: panggil ? 'Memanggil Admin 🔔' : (eraBalasan ? 'Balasan di Postingan' : 'Komentar Postingan'),
+                    kategori: panggil ? 'panggil' : 'komentar',
+                    pesan: info.nama + (eraBalasan ? ' membalas komentar' : ' berkomentar') + ' di postingan "' + ringkasTeks(postJudul, 40) + '": "' + ringkasTeks(teks, 200) + '"',
+                    link: 'post.html?id=' + encodeURIComponent(postId)
+                });
+            }
             batalAksi();
+            resetTombolAdmin('pc-untuk-admin');
             setTimeout(() => { list.scrollTop = list.scrollHeight; }, 300);
         });
     }
