@@ -1704,6 +1704,13 @@ function tampilkanRating() {
         firebase.database().ref('ratings').push(data)
             .then(() => {
                 simpanLokal(RT_SELESAI, '1');
+                kirimNotifAdmin({
+                    tipe: nilai < 5 ? 'Rating Rendah ⭐ (' + nilai + ')' : 'Rating Baru ⭐ (5)',
+                    kategori: 'rating',
+                    bintang: nilai,
+                    pesan: (nama || 'Pengunjung') + ' memberi ' + nilai + ' bintang' + (teks ? ': "' + ringkasTeks(teks, 200) + '"' : ''),
+                    link: 'admin:rating'
+                });
                 wrap.remove();
                 tampilToast('Terima kasih atas penilaianmu!');
             })
@@ -2090,4 +2097,49 @@ function postTileInfo(p, ikonVideo) {
     if (i.jenis === 'video') return { media: gb || ph('▶'), ikon: iv };
     if (i.jenis === 'audio') return { media: gb || ph('🎵'), ikon: gb ? '🎵' : '' };
     return { media: gb || ph('🌐'), ikon: gb ? '🌐' : '' };
+}
+
+
+// ----------------------------------------------------------------------
+//  LANGKAH 8  ->  TOMBOL "UNTUK ADMIN" + NOTIFIKASI KE ADMIN
+// ----------------------------------------------------------------------
+// Tombol centang "Untuk Admin" (tidak tampil di mode admin)
+function htmlTombolAdmin(id) {
+    if (IS_ADMIN_BROWSER) return '';
+    return '<label class="ta-btn" title="Tandai agar komentar ini dijawab khusus oleh admin (tetap terlihat oleh semua orang)">' +
+        '<input type="checkbox" id="' + id + '">' +
+        '<span class="ta-box">' + icon(IKON.perisai) + '<span>Untuk Admin</span></span></label>';
+}
+function tombolAdminAktif(id) { const e = document.getElementById(id); return !!(e && e.checked); }
+function resetTombolAdmin(id) { const e = document.getElementById(id); if (e) e.checked = false; }
+function badgeUntukAdmin(c) {
+    return (c && c.forAdmin) ? '<span class="badge-untuk-admin">' + icon(IKON.perisai) + ' Untuk Admin</span>' : '';
+}
+// Memanggil admin = tombol "Untuk Admin" dicentang ATAU menulis @admin / @luvia
+function apakahPanggilAdmin(teks, tombolAktif) {
+    return !!tombolAktif || /@admin|@luvia/i.test(String(teks || ''));
+}
+function ringkasTeks(s, maks) {
+    s = String(s == null ? '' : s).replace(/\s+/g, ' ').trim();
+    return s.length > maks ? s.slice(0, maks - 1) + '…' : s;
+}
+// Hanya 3 jenis yang diteruskan sebagai notifikasi ke perangkat admin
+function layakPushKlien(d) {
+    return d.kategori === 'support' || d.kategori === 'panggil' || (d.kategori === 'rating' && Number(d.bintang) < 5);
+}
+// Kirim 1 notifikasi ke admin. d = { tipe, kategori, pesan, link, bintang? }
+function kirimNotifAdmin(d) {
+    if (IS_ADMIN_BROWSER || typeof firebase === 'undefined' || !firebase.apps.length) return;
+    try {
+        const ref = firebase.database().ref('admin_notifications').push();
+        ref.set(Object.assign({ timestamp: firebase.database.ServerValue.TIMESTAMP, read: false }, d)).then(() => {
+            if (!layakPushKlien(d)) return;
+            try {
+                fetch('/api/push', {
+                    method: 'POST', headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ aksi: 'notifikasi', key: ref.key }), keepalive: true
+                }).catch(() => {});
+            } catch (e) {}
+        }).catch(() => {});
+    } catch (e) {}
 }
