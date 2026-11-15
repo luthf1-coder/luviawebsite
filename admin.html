@@ -191,6 +191,16 @@
                     <h3 style="margin: 0; color: #ff914d;">🔔 Log Notifikasi & Reaksi Penonton</h3>
                     <button onclick="hapusSemuaNotif()" style="background: #ff4d4d; color: white; border: none; padding: 8px 12px; border-radius: 6px; cursor: pointer; font-weight: bold;">🗑️ Hapus Semua</button>
                 </div>
+
+                <div class="push-box">
+                    <div class="push-info">
+                        <b>🔔 Notifikasi ke Perangkat</b>
+                        <span class="push-status off" id="push-status">Belum diaktifkan di perangkat ini</span>
+                        <small>Hanya mengirim: (1) pesan support, (2) penonton yang memanggil admin (video &amp; livestream), (3) rating di bawah bintang 5. Tetap masuk walau halaman admin ditutup. Hanya <b>1 perangkat</b> yang bisa aktif: mengaktifkan di perangkat lain otomatis mematikan perangkat ini.</small>
+                    </div>
+                    <button type="button" class="btn-push" id="btn-push" onclick="togglePushNotif()">🔔 Aktifkan Notifikasi</button>
+                </div>
+                
                 <div id="admin-notif-list" style="max-height: 250px; overflow-y: auto; background: #111; padding: 15px; border-radius: 8px; border: 1px solid #333;">
                     <p style="text-align: center; color: #888;">Memuat notifikasi...</p>
                 </div>
@@ -629,20 +639,212 @@ function togglePengunjung() {
         // DAFTARKAN MESIN NOTIFIKASI BROWSER HP (sw.js)
         if ('serviceWorker' in navigator) { navigator.serviceWorker.register('sw.js'); }
 
-        function mintaIzinNotifikasi() {
-            if ("Notification" in window && Notification.permission !== "granted" && Notification.permission !== "denied") {
-                Notification.requestPermission().then(permission => {
-                    if (permission === "granted") { munculkanNotifHP("Notifikasi Aktif!", "Siap menerima laporan penonton."); }
-                });
+        // ====== NOTIFIKASI PUSH (hanya 1 perangkat aktif) ======
+        const TAUTAN_WEB_AMAN = /^(watch|post|livestream|support|videos|posts|program|index)\.html([?#][^\s"'<>]*)?$/;
+        const KATEGORI_NOTIF = ['support', 'panggil', 'rating', 'komentar'];
+        let pushPantauJalan = false;
+
+        // kategori notifikasi (notifikasi lama tanpa kategori ditebak dari judulnya)
+        function notifKategori(n) {
+            if (n && KATEGORI_NOTIF.indexOf(n.kategori) !== -1) return n.kategori;
+            const t = String((n && n.tipe) || '');
+            if (/komplain/i.test(t)) return 'support';
+            if (/mention admin/i.test(t)) return 'panggil';
+            return '';
+        }
+        function labelKategori(kat) {
+            const peta = { support: 'SUPPORT', panggil: 'MEMANGGIL ADMIN', rating: 'RATING', komentar: 'KOMENTAR' };
+            return peta[kat] ? '<span class="notif-kat ' + kat + '">' + peta[kat] + '</span>' : '';
+        }
+
+        function idPerangkatPush() {
+            let id = '';
+            try { id = localStorage.getItem('luvia_push_device') || ''; } catch (e) {}
+            if (!id) {
+                id = 'p' + Date.now().toString(36) + Math.random().toString(36).slice(2, 10);
+                try { localStorage.setItem('luvia_push_device', id); } catch (e) {}
+            }
+            return id;
+        }
+        function pushDidukung() { return ('Notification' in window) && ('serviceWorker' in navigator) && ('PushManager' in window); }
+        function pushAktif() {
+            try { return pushDidukung() && localStorage.getItem('luvia_push_aktif') === '1' && Notification.permission === 'granted'; }
+            catch (e) { return false; }
+        }
+        function b64uKeBytes(s) {
+            s = String(s).replace(/-/g, '+').replace(/_/g, '/');
+            while (s.length % 4) s += '=';
+            const bin = atob(s), u = new Uint8Array(bin.length);
+            for (let i = 0; i < bin.length; i++) u[i] = bin.charCodeAt(i);
+            return u;
+        }
+
+        function segarkanTombolPush() {
+            const st = document.getElementById('push-status'), bt = document.getElementById('btn-push');
+            if (!st || !bt) return;
+            let teks, kelas;
+            if (!pushDidukung()) { teks = 'Browser ini tidak mendukung notifikasi push (di iPhone/iPad: tambahkan situs ke Layar Utama dulu)'; kelas = 'blok'; }
+            else if (Notification.permission === 'denied') { teks = 'Diblokir oleh browser. Izinkan notifikasi untuk situs ini di pengaturan browser, lalu muat ulang.'; kelas = 'blok'; }
+            else if (pushAktif()) { teks = '✅ Aktif di perangkat ini'; kelas = 'on'; }
+            else { teks = 'Belum diaktifkan di perangkat ini'; kelas = 'off'; }
+            st.textContent = teks;
+            st.className = 'push-status ' + kelas;
+            bt.textContent = pushAktif() ? '🔕 Matikan Notifikasi' : '🔔 Aktifkan Notifikasi';
+            bt.classList.toggle('aktif', pushAktif());
+        }
+
+        async function pushApi(isi) {
+            const kunci = localStorage.getItem('luvia_push_key') || '';
+            const r = await fetch('/api/push', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json', 'X-Admin-Key': kunci },
+                body: JSON.stringify(isi)
+            });
+            let j = {};
+            try { j = await r.json(); } catch (e) {}
+            return { status: r.status, ok: r.ok && !!j.ok, data: j };
+        }
+
+        async function aktifkanPerangkatIni() {
+            if (Notification.permission === 'denied') {
+                alert('Notifikasi diblokir oleh browser. Izinkan notifikasi untuk situs ini di pengaturan browser, lalu muat ulang halaman.');
+                return;
+            }
+            let kunci = localStorage.getItem('luvia_push_key') || '';
+            if (!kunci) {
+                const masuk = await tampilInput('Masukkan Kunci Admin (nilai PUSH_ADMIN_KEY di Cloudflare). Hanya ditanya sekali di perangkat ini.', '', { judul: 'Kunci Admin', placeholder: 'Kunci admin...' });
+                if (masuk === null || !masuk.trim()) return;
+                localStorage.setItem('luvia_push_key', masuk.trim());
+            }
+            let izin = Notification.permission;
+            if (izin !== 'granted') izin = await Notification.requestPermission();
+            if (izin !== 'granted') { alert('Izin notifikasi tidak diberikan, jadi notifikasi tidak diaktifkan.'); return; }
+
+            const rk = await fetch('/api/push?aksi=kunci', { cache: 'no-store' });
+            let jk = {};
+            try { jk = await rk.json(); } catch (e) {}
+            if (!jk.publicKey) { alert('Server push belum siap: ' + (jk.pesan || 'periksa pengaturan Cloudflare.')); return; }
+
+            const reg = await navigator.serviceWorker.ready;
+            const lama = await reg.pushManager.getSubscription();
+            if (lama) { try { await lama.unsubscribe(); } catch (e) {} }
+            const sub = await reg.pushManager.subscribe({ userVisibleOnly: true, applicationServerKey: b64uKeBytes(jk.publicKey) });
+
+            const hasil = await pushApi({ aksi: 'aktifkan', deviceId: idPerangkatPush(), subscription: sub.toJSON() });
+            if (!hasil.ok) {
+                try { await sub.unsubscribe(); } catch (e) {}
+                if (hasil.status === 401) { localStorage.removeItem('luvia_push_key'); alert('Kunci admin salah. Tekan Aktifkan lagi dan masukkan kunci yang benar.'); }
+                else alert('Gagal mengaktifkan: ' + (hasil.data.pesan || ('kode ' + hasil.status)));
+                return;
+            }
+            localStorage.setItem('luvia_push_aktif', '1');
+            localStorage.setItem('luvia_push_waktu', String(Date.now()));
+            tampilToast('Notifikasi aktif di perangkat ini');
+        }
+
+        async function matikanPerangkatIni() {
+            try { await pushApi({ aksi: 'matikan', deviceId: idPerangkatPush() }); } catch (e) {}
+            try {
+                const reg = await navigator.serviceWorker.ready;
+                const s = await reg.pushManager.getSubscription();
+                if (s) await s.unsubscribe();
+            } catch (e) {}
+            localStorage.removeItem('luvia_push_aktif');
+            tampilToast('Notifikasi dimatikan di perangkat ini');
+        }
+
+        async function togglePushNotif() {
+            if (!pushDidukung()) { alert('Browser ini tidak mendukung notifikasi push. Di iPhone/iPad, tambahkan situs ke Layar Utama (Share → Add to Home Screen) lalu buka dari sana.'); return; }
+            const bt = document.getElementById('btn-push');
+            if (bt) bt.disabled = true;
+            try {
+                if (pushAktif()) await matikanPerangkatIni();
+                else await aktifkanPerangkatIni();
+            } catch (e) {
+                alert('Gagal: ' + (e && e.message ? e.message : e));
+            } finally {
+                if (bt) bt.disabled = false;
+                segarkanTombolPush();
             }
         }
 
-        function munculkanNotifHP(judul, isi) {
-            if (Notification.permission === "granted") {
-                navigator.serviceWorker.ready.then(reg => {
-                    reg.showNotification(judul, { body: isi, icon: IMG.logoBulat, badge: IMG.logoBulat, vibrate: [200, 100, 200] });
+        // Perangkat ini dimatikan oleh server (perangkat lain mengaktifkan, atau langganan kedaluwarsa)
+        async function pushDimatikanServer(adaPerangkatLain) {
+            if (localStorage.getItem('luvia_push_aktif') !== '1') return;      // sudah diproses
+            localStorage.removeItem('luvia_push_aktif');
+            try {
+                const reg = await navigator.serviceWorker.ready;
+                const s = await reg.pushManager.getSubscription();
+                if (s) await s.unsubscribe();
+            } catch (e) {}
+            segarkanTombolPush();
+            tampilAlert(adaPerangkatLain
+                ? 'Notifikasi dimatikan karena ada perangkat lain yang mengaktifkannya.'
+                : 'Notifikasi di perangkat ini berhenti karena langganannya sudah tidak berlaku. Tekan "Aktifkan Notifikasi" untuk mengaktifkan lagi.',
+                'Notifikasi dimatikan');
+        }
+
+        async function cekStatusPerangkat() {
+            if (localStorage.getItem('luvia_push_aktif') !== '1') return;
+            const t = parseInt(localStorage.getItem('luvia_push_waktu') || '0', 10);
+            if (Date.now() - t < 120000) return;                                // beri waktu penyebaran data server
+            try {
+                const r = await fetch('/api/push?aksi=status&device=' + encodeURIComponent(idPerangkatPush()), { cache: 'no-store' });
+                if (!r.ok) return;
+                const j = await r.json();
+                if (j && j.ok && !j.aktif) pushDimatikanServer(!!j.ada);
+            } catch (e) {}
+        }
+
+        function mulaiPantauPush() {
+            if (pushPantauJalan) return;
+            pushPantauJalan = true;
+            if ('serviceWorker' in navigator) {
+                navigator.serviceWorker.addEventListener('message', e => {
+                    const d = e.data || {};
+                    if (d.type === 'push-dimatikan') pushDimatikanServer(true);
+                    else if (d.type === 'buka-tautan') bukaTautanAdmin(d.link);
                 });
             }
+            document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'visible') cekStatusPerangkat(); });
+            setInterval(cekStatusPerangkat, 90000);
+            setTimeout(cekStatusPerangkat, 4000);
+        }
+
+        // ---- tombol "Buka" pada log notifikasi & klik notifikasi perangkat ----
+        function bukaObrolanBila(did) {
+            let n = 0;
+            const coba = () => {
+                if (kontakCache[did]) { bukaChatRoom(did); return; }
+                if (++n <= 12) setTimeout(coba, 500);
+            };
+            coba();
+        }
+        function bukaTautanAdmin(link) {
+            link = String(link || '');
+            if (link.indexOf('admin:') === 0) {
+                const bagian = link.split(':');
+                if (bagian[1] === 'rating') {
+                    const b = document.querySelector('.tab-btn[onclick*="tab-rating"]');
+                    if (b) { switchTab('tab-rating', b); muatRating(); }
+                } else if (bagian[1] === 'support') {
+                    const b = document.getElementById('btn-tab-komplain');
+                    if (b) switchTab('tab-komplain', b);
+                    const did = bagian.slice(2).join(':');
+                    if (did) bukaObrolanBila(did);
+                    window.scrollTo({ top: 0, behavior: 'smooth' });
+                }
+                return;
+            }
+            if (TAUTAN_WEB_AMAN.test(link)) bukaPratinjau(link);   // juga bisa membuka video/postingan pribadi
+        }
+        function prosesHashNotif() {
+            const m = location.hash.match(/^#t=(.+)$/);
+            if (!m) return;
+            let link = '';
+            try { link = decodeURIComponent(m[1]); } catch (e) {}
+            history.replaceState(null, '', location.pathname + location.search);
+            if (link) bukaTautanAdmin(link);
         }
 
         function checkLogin(isAuto = false) {
@@ -654,7 +856,9 @@ function togglePengunjung() {
                 document.getElementById('login-overlay').style.display = 'none';
                 document.getElementById('admin-dashboard').style.display = 'block';
                 waktuLoginAdmin = Date.now();
-                mintaIzinNotifikasi();
+                segarkanTombolPush();
+                mulaiPantauPush();
+                setTimeout(prosesHashNotif, 1500);
                 setTimeout(muatPilihanDropdown, 1500); 
                 jalankanPantauanNotif();
                 muatLogNotifikasi(); // <--- TAMBAHKAN BARIS INI
@@ -1446,29 +1650,41 @@ function bukaInfoKontak() {
         // FITUR LOG NOTIFIKASI & HAPUS
         // ==========================================
         function muatLogNotifikasi() {
+            const list = document.getElementById('admin-notif-list');
+            if (list && !list.dataset.pasang) {
+                list.dataset.pasang = '1';
+                list.addEventListener('click', e => {
+                    const b = e.target.closest('[data-link]');
+                    if (b) bukaTautanAdmin(b.dataset.link);
+                });
+            }
             firebase.database().ref('admin_notifications').on('value', snap => {
-                const list = document.getElementById('admin-notif-list');
                 if (!snap.exists()) {
                     list.innerHTML = '<p style="text-align:center; color:#888;">Tidak ada log notifikasi baru.</p>';
                     return;
                 }
-                
                 const data = snap.val();
                 let html = '';
-                
+
                 // Balik urutan agar notifikasi terbaru ada di paling atas
                 Object.keys(data).reverse().forEach(k => {
-                    const n = data[k];
-                    const time = new Date(n.timestamp).toLocaleString('id-ID', {day:'numeric', month:'short', hour:'2-digit', minute:'2-digit'});
-                    
+                    const n = data[k] || {};
+                    const time = new Date(n.timestamp).toLocaleString('id-ID', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' });
+                    const kat = notifKategori(n);
+                    const link = String(n.link || '');
+                    const adaLink = link.indexOf('admin:') === 0 || TAUTAN_WEB_AMAN.test(link);
+
                     html += `
-                    <div class="notif-item">
+                    <div class="notif-item${kat ? ' notif-' + kat : ''}">
                         <div class="notif-info">
-                            <strong style="color:white;">${n.tipe}</strong><br>
-                            ${n.pesan}
+                            <strong style="color:white;">${escHtmlGlobal(n.tipe)}</strong>${labelKategori(kat)}<br>
+                            ${escHtmlGlobal(n.pesan)}
                             <div class="notif-time">${time}</div>
                         </div>
-                        <button class="notif-delete" onclick="hapusNotif('${k}')" title="Hapus Notif Ini">✖</button>
+                        <div class="notif-actions">
+                            ${adaLink ? `<button type="button" class="notif-go" data-link="${escHtmlGlobal(link)}">Buka ❯</button>` : ''}
+                            <button class="notif-delete" onclick="hapusNotif('${k}')" title="Hapus Notif Ini">✖</button>
+                        </div>
                     </div>`;
                 });
                 list.innerHTML = html;
