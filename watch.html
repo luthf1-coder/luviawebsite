@@ -54,6 +54,7 @@
                         <div id="cm-nama"></div>
                         <textarea id="comment-text" placeholder="Tambahkan komentar..." required></textarea>
                         <div class="form-actions">
+                            <span class="ta-wrap" id="cm-admin-wrap"></span>
                             <button type="button" class="btn-cancel btn-icon" aria-label="Batal" title="Batal" onclick="document.getElementById('comment-text').value=''"><span data-ikon="tutup"></span></button>
                             <button type="submit" class="btn-submit-comment">Komentar</button>
                         </div>
@@ -558,7 +559,7 @@
             let h = '<div class="yt-comment-wrapper" id="comment-' + id + '">' +
                 buatAvatar(namaKomentar(c), { kelas: kelasAva, admin: !!c.isAdmin }) +
                 '<div class="comment-content">' +
-                    '<div class="comment-header"><span class="comment-name">@' + escHtmlGlobal(namaKomentar(c)) + '</span>' + lencana +
+                    '<div class="comment-header"><span class="comment-name">@' + escHtmlGlobal(namaKomentar(c)) + '</span>' + lencana + badgeUntukAdmin(c) +
                     '<span class="comment-time">' + waktuLalu(c.timestamp) + '</span></div>' +
                     '<div class="comment-text">' + escHtmlGlobal(c.text) + '</div>' +
                     '<div class="comment-actions">' +
@@ -575,6 +576,7 @@
                             ((IS_ADMIN_BROWSER || ambilNama()) ? '' : '<input type="text" id="reply-name-' + id + '" placeholder="Nama pengguna..." maxlength="24" class="reply-input-name">') +
                             '<textarea id="reply-text-' + id + '" placeholder="Balas komentar..."></textarea>' +
                             '<div class="form-actions" style="margin-top:5px;">' +
+                                '<span class="ta-wrap">' + htmlTombolAdmin('reply-admin-' + id) + '</span>' +
                                 '<button type="button" class="btn-cancel btn-icon" data-act="reply-cancel" title="Batal" aria-label="Batal" ' + dataAttr + '>' + icon(IKON.tutup) + '</button>' +
                                 '<button type="button" class="btn-submit-comment" data-act="reply-send" ' + dataAttr + '>Balas</button>' +
                             '</div>' +
@@ -638,6 +640,8 @@
             }
         });
 
+        const tautanKomentar = 'watch.html?id=' + encodeURIComponent(currentVid.id) + '#comments-section';
+
         async function kirimBalasan(parentId) {
             const nameEl = document.getElementById('reply-name-' + parentId);
             const textEl = document.getElementById('reply-text-' + parentId);
@@ -646,15 +650,19 @@
             const isi = textEl.value.trim();
             if (!isi) return;
             if (!info.isAdmin && kolomKomentar) kolomKomentar.segarkan();
+            const untukAdmin = !info.isAdmin && tombolAdminAktif('reply-admin-' + parentId);
             const data = { name: info.nama, uid: idPengguna(), text: isi, timestamp: firebase.database.ServerValue.TIMESTAMP, likes: 0 };
             if (info.isAdmin) data.isAdmin = true;
+            if (untukAdmin) data.forAdmin = true;
             const baru = commentsRef.child(parentId).child('replies').push(data);
             localStorage.setItem('my_comment_' + baru.key, 'true');
             if (!info.isAdmin) {
-                firebase.database().ref('admin_notifications').push({
-                    tipe: 'Balasan Komentar',
-                    pesan: info.nama + ' membalas komentar di video "' + currentVid.title + '": "' + isi + '"',
-                    timestamp: Date.now(), read: false
+                const panggil = apakahPanggilAdmin(isi, untukAdmin);
+                kirimNotifAdmin({
+                    tipe: panggil ? 'Memanggil Admin 🔔' : 'Balasan Komentar',
+                    kategori: panggil ? 'panggil' : 'komentar',
+                    pesan: info.nama + ' membalas komentar di video "' + currentVid.title + '": "' + ringkasTeks(isi, 200) + '"',
+                    link: tautanKomentar
                 });
             }
             textEl.value = '';
@@ -662,6 +670,8 @@
 
         // Form komentar utama
         kolomKomentar = pasangKolomNama('cm-nama', 'comment-name', 'Komentar sebagai');
+        const wadahAdmin = document.getElementById('cm-admin-wrap');
+        if (wadahAdmin) wadahAdmin.innerHTML = htmlTombolAdmin('cm-untuk-admin');
 
         document.getElementById('comment-form').addEventListener('submit', async (e) => {
             e.preventDefault();
@@ -673,22 +683,26 @@
             if (!isi) return;
             if (!info.isAdmin && kolomKomentar) kolomKomentar.segarkan();
 
+            const untukAdmin = !info.isAdmin && tombolAdminAktif('cm-untuk-admin');
             const data = { name: info.nama, uid: idPengguna(), text: isi, timestamp: firebase.database.ServerValue.TIMESTAMP, likes: 0 };
             if (info.isAdmin) data.isAdmin = true;
+            if (untukAdmin) data.forAdmin = true;
             const baru = commentsRef.push(data);
             localStorage.setItem('my_comment_' + baru.key, 'true');
 
             if (!info.isAdmin) {
-                let tipe = 'Komentar Baru';
-                if (/@admin|@luvia/i.test(isi)) tipe = 'Mention Admin 🔔';
+                const panggil = apakahPanggilAdmin(isi, untukAdmin);
+                let tipe = 'Komentar Baru', kategori = 'komentar';
+                if (panggil) { tipe = 'Memanggil Admin 🔔'; kategori = 'panggil'; }
                 else if (isi.includes('@')) tipe = 'Mention Antar Penonton';
-                firebase.database().ref('admin_notifications').push({
-                    tipe: tipe,
-                    pesan: info.nama + ' berkomentar di video "' + currentVid.title + '": "' + isi + '"',
-                    timestamp: Date.now(), read: false
+                kirimNotifAdmin({
+                    tipe: tipe, kategori: kategori,
+                    pesan: info.nama + ' berkomentar di video "' + currentVid.title + '": "' + ringkasTeks(isi, 200) + '"',
+                    link: tautanKomentar
                 });
             }
             textInput.value = '';
+            resetTombolAdmin('cm-untuk-admin');
         });
     }
 
