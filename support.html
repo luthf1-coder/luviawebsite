@@ -302,8 +302,10 @@ async function kirimPesan() {
     }
 
     firebase.database().ref('complaints').push(payload).then(() => {
-        firebase.database().ref('admin_notifications').push({
-            tipe: "Komplain Masuk 🔔", pesan: info.nama + ': "' + isi + '"', timestamp: Date.now(), read: false
+        kirimNotifAdmin({
+            tipe: 'Komplain Masuk 🔔', kategori: 'support',
+            pesan: info.nama + ': "' + ringkasTeks(isi, 200) + '"',
+            link: 'admin:support:' + deviceId
         });
         batalAksi();
         pertamaRender = true;      // setelah kirim, selalu turun ke pesan terbaru
